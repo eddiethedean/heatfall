@@ -1,0 +1,5 @@
+range_key_dict
+geodude
+py-staticmaps
+Pillow<=9.5.0
+more_itertools
