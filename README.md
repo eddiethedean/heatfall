@@ -2,7 +2,7 @@
 -----------------
 
 # Heatfall: Easy to use functions for plotting heat maps of geographic data on static maps
-[![PyPI Latest Release](https://img.shields.io/pypi/v/landfall.svg)](https://pypi.org/project/heatfall/)
+[![PyPI Latest Release](https://img.shields.io/pypi/v/heatfall.svg)](https://pypi.org/project/heatfall/)
 ![Tests](https://github.com/eddiethedean/heatfall/actions/workflows/tests.yml/badge.svg)
 
 ## What is it?
