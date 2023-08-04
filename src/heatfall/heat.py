@@ -2,7 +2,7 @@
 Functions for plotting heatmaps of points.
 """
 
-from typing import Optional
+from typing import List, Optional
 
 import staticmaps
 import pygeodesy
@@ -10,6 +10,7 @@ from range_key_dict import RangeKeyDict
 from geodude import calculate_geohashes
 from tinytim.columns import value_counts
 from more_itertools import numeric_range
+import h3
 
 
 tp = staticmaps.tile_provider_OSM
@@ -36,6 +37,20 @@ class Context(staticmaps.Context):
             fill_color=fill_color,
             width=width,
             color=color))
+        
+    def add_h3_poly(
+        self,
+        h,
+        fill_color,
+        width,
+        color
+    ) -> None:
+        self.add_object(staticmaps.Area(
+            make_h3_poly_points(h),
+            fill_color=fill_color,
+            width=width,
+            color=color
+        ))
 
     def add_neighbor_hash_polys(
         self,
@@ -65,6 +80,7 @@ class Context(staticmaps.Context):
                 color = colors[id]
             point = staticmaps.create_latlng(lat, lon)
             self.add_object(staticmaps.Marker(point, color=color, size=size))
+
     def add_heat_hashes(self, lats, lons, precision):
         hashes = calculate_geohashes(lats, lons, precision)
         counts = dict(value_counts(hashes))
@@ -72,6 +88,14 @@ class Context(staticmaps.Context):
         for h, count in counts.items():
             c = colors[count]
             self.add_hash_poly(h, c, 1, staticmaps.TRANSPARENT)
+
+    def add_heat_h3s(self, lats, lons, precision: int) -> None:
+        hashes = calculate_h3_hashes(lats, lons, precision)
+        counts = dict(value_counts(hashes))
+        colors = density_colors(list(counts.values()))
+        for h, count in counts.items():
+            c = colors[count]
+            self.add_h3_poly(h, c, 1, staticmaps.TRANSPARENT)
 
 
 def plot_heat_hashes(
@@ -84,6 +108,19 @@ def plot_heat_hashes(
     context = Context()
     context.set_tile_provider(tileprovider)
     context.add_heat_hashes(lats, lons, percision)
+    return context.render_pillow(*size)
+
+
+def plot_heat_h3s(
+    lats,
+    lons,
+    precision,
+    tileprovider=tp,
+    size=(800, 500)
+):
+    context = Context()
+    context.set_tile_provider(tileprovider)
+    context.add_heat_h3s(lats, lons, precision)
     return context.render_pillow(*size)
 
 
@@ -142,7 +179,7 @@ def plot_heat_map(super_cluster, p, tileprovider=tp, size=(800, 500)):
     return context.render_pillow(*size)
 
 
-def make_hash_poly_points(h):
+def make_hash_poly_points(h) -> List[staticmaps.LatLng]:
     b = pygeodesy.geohash.bounds(h)
     sw = b.latS, b.lonW
     nw = b.latN, b.lonW
@@ -150,6 +187,12 @@ def make_hash_poly_points(h):
     se = b.latS, b.lonE
     polygon = [sw, nw, ne, se, sw]
     return [staticmaps.create_latlng(lat, lon) for lat, lon in polygon]
+
+
+def make_h3_poly_points(h: str) -> List[staticmaps.LatLng]:
+    points = list(h3.h3_to_geo_boundary(h))
+    points.append(points[0])
+    return [staticmaps.create_latlng(lat, lon) for lat, lon in points]
 
 
 def plot_hash(h, tileprovider=tp, size=(800, 500)):
@@ -185,3 +228,7 @@ def plot_nine(h, tileprovider=tp, size=(800, 500)):
                                     width=2,
                                     color=staticmaps.BLUE)
     return context.render_pillow(*size)
+
+
+def calculate_h3_hashes(latitudes, longitudes, precision) -> List[str]:
+    return [h3.geo_to_h3(lat, lon, precision) for lat, lon in zip(latitudes, longitudes)]
