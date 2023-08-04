@@ -179,7 +179,7 @@ def plot_heat_map(super_cluster, p, tileprovider=tp, size=(800, 500)):
     return context.render_pillow(*size)
 
 
-def make_hash_poly_points(h) -> List[staticmaps.LatLng]:
+def make_hash_poly_points(h) -> List:
     b = pygeodesy.geohash.bounds(h)
     sw = b.latS, b.lonW
     nw = b.latN, b.lonW
@@ -189,7 +189,7 @@ def make_hash_poly_points(h) -> List[staticmaps.LatLng]:
     return [staticmaps.create_latlng(lat, lon) for lat, lon in polygon]
 
 
-def make_h3_poly_points(h: str) -> List[staticmaps.LatLng]:
+def make_h3_poly_points(h: str) -> List:
     points = list(h3.h3_to_geo_boundary(h))
     points.append(points[0])
     return [staticmaps.create_latlng(lat, lon) for lat, lon in points]
