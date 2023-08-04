@@ -190,9 +190,8 @@ def make_hash_poly_points(h) -> List:
 
 
 def make_h3_poly_points(h: str) -> List:
-    points = list(h3.h3_to_geo_boundary(h))
-    points.append(points[0])
-    return [staticmaps.create_latlng(lat, lon) for lat, lon in points]
+    points = list(h3.h3_to_geo_boundary(h, geo_json=True))
+    return [staticmaps.create_latlng(lat, lon) for lon, lat in points]
 
 
 def plot_hash(h, tileprovider=tp, size=(800, 500)):
