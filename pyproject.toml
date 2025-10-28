@@ -7,7 +7,7 @@ name = "heatfall"
 version = "1.0.0"
 description = "Easy to use functions for plotting heat maps of geographic data on static maps"
 readme = "README.md"
-license = {text = "MIT"}
+license = "MIT"
 authors = [{name = "Odos Matthews"}]
 maintainers = [{name = "Odos Matthews"}]
 keywords = ["geospatial", "heatmap", "visualization", "staticmaps", "h3", "geohash"]
@@ -15,7 +15,6 @@ classifiers = [
     "Development Status :: 4 - Beta",
     "Intended Audience :: Developers",
     "Intended Audience :: Science/Research",
-    "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3 :: Only",
