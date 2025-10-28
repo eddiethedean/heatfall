@@ -1,17 +1,96 @@
 [build-system]
-requires = ["setuptools>=42.0", "wheel"]
+requires = ["setuptools>=61.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
+[project]
+name = "heatfall"
+version = "1.0.0"
+description = "Easy to use functions for plotting heat maps of geographic data on static maps"
+readme = "README.md"
+license = {text = "MIT"}
+authors = [{name = "Odos Matthews"}]
+maintainers = [{name = "Odos Matthews"}]
+keywords = ["geospatial", "heatmap", "visualization", "staticmaps", "h3", "geohash"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Scientific/Engineering :: GIS",
+    "Topic :: Scientific/Engineering :: Visualization",
+]
+requires-python = ">=3.8"
+dependencies = [
+    "landfall>=0.4.0",
+    "pygeodesy",
+    "geodude",
+    "h3>=4.0.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.3.0",
+    "pytest-cov>=5.0.0",
+    "mypy>=1.13.0",
+    "ruff>=0.1.0",
+    "tox>=4.0.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/eddiethedean/heatfall"
+Repository = "https://github.com/eddiethedean/heatfall"
+Issues = "https://github.com/eddiethedean/heatfall/issues"
+Documentation = "https://github.com/eddiethedean/heatfall#readme"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+heatfall = ["py.typed"]
+
 [tool.pytest.ini_options]
-addopts = "--cov=heatfall"
-testpaths = [
-    "tests",
+minversion = "6.0"
+addopts = [
+    "--cov=heatfall",
+    "--cov-report=term-missing",
+    "--cov-report=html",
+    "--cov-report=xml",
+    "--strict-markers",
+    "--strict-config",
+    "--verbose"
+]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+markers = [
+    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
+    "integration: marks tests as integration tests",
+    "unit: marks tests as unit tests"
+]
+filterwarnings = [
+    "error",
+    "ignore::DeprecationWarning",
+    "ignore::PendingDeprecationWarning"
 ]
 
 [tool.mypy]
 mypy_path = "src"
 check_untyped_defs = true
 disallow_any_generics = true
+disallow_untyped_defs = true
 ignore_missing_imports = true
 no_implicit_optional = true
 show_error_codes = true
@@ -21,3 +100,36 @@ warn_return_any = true
 warn_unreachable = true
 warn_unused_configs = true
 no_implicit_reexport = true
+
+[tool.flake8]
+max-line-length = 160
+extend-ignore = ["E203", "W503"]
+exclude = [
+    ".git",
+    "__pycache__",
+    "build",
+    "dist",
+    ".tox",
+    ".venv",
+]
+
+[tool.coverage.run]
+source = ["src/heatfall"]
+omit = [
+    "*/tests/*",
+    "*/test_*",
+]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "if self.debug:",
+    "if settings.DEBUG",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if 0:",
+    "if __name__ == .__main__.:",
+    "class .*\\bProtocol\\):",
+    "@(abc\\.)?abstractmethod",
+]

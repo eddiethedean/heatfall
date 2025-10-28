@@ -1,7 +1,4 @@
-range_key_dict
+landfall>=0.4.0
+pygeodesy
 geodude
-py-staticmaps
-Pillow<=9.5.0
-more_itertools
-tinytim
-h3
+h3>=4.0.0
