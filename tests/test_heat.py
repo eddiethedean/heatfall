@@ -80,6 +80,14 @@ class TestPlotHeatHashes:
 class TestPlotHeatH3s:
     """Test H3-based heat mapping."""
 
+    @pytest.mark.parametrize(
+        "lat,lon", [(27.88, -82.49), (34.05, -118.25), (35.68, 139.69)]
+    )
+    def test_heat_h3s_across_longitudes(self, lat, lon):
+        """Render cells on both sides of the 90-degree longitude bounds."""
+        img = heatfall.plot_heat_h3s([lat], [lon], precision=8, size=(200, 200))
+        assert img.size == (200, 200)
+
     def test_basic_heat_h3s(self, sample_coordinates):
         """Test basic H3 heatmap."""
         img = heatfall.plot_heat_h3s(

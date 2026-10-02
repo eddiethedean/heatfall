@@ -19,6 +19,18 @@ import landfall
 from landfall.color import process_colors
 
 
+def _validate_coordinates(lats: List[float], lons: List[float]) -> None:
+    """Reject mismatched lists and coordinates outside geographic bounds."""
+    if len(lats) != len(lons):
+        raise ValueError(
+            f"lats and lons must have same length (got {len(lats)} and {len(lons)})"
+        )
+    if not all(-90 <= lat <= 90 for lat in lats):
+        raise ValueError("All latitudes must be between -90 and 90")
+    if not all(-180 <= lon <= 180 for lon in lons):
+        raise ValueError("All longitudes must be between -180 and 180")
+
+
 class Context(landfall.Context):
     """Extended Context with heatmap-specific methods."""
 
@@ -38,6 +50,7 @@ class Context(landfall.Context):
             precision: Geohash precision (1-12)
             color_scheme: Color scheme ("distinct", "random", "wheel")
         """
+        _validate_coordinates(lats, lons)
         hashes = calculate_geohashes(lats, lons, precision)
         counts = Counter(hashes)
 
@@ -136,22 +149,13 @@ def plot_heat_hashes(
         >>> img.save("heatmap.png")
     """
     # Validate inputs
-    if len(lats) != len(lons):
-        raise ValueError(
-            f"lats and lons must have same length (got {len(lats)} and {len(lons)})"
-        )
+    _validate_coordinates(lats, lons)
 
     if len(lats) == 0:
         raise ValueError("lats and lons cannot be empty")
 
     if not (1 <= precision <= 12):
         raise ValueError(f"Geohash precision must be 1-12 (got {precision})")
-
-    if not all(-90 <= lat <= 90 for lat in lats):
-        raise ValueError("All latitudes must be between -90 and 90")
-
-    if not all(-180 <= lon <= 180 for lon in lons):
-        raise ValueError("All longitudes must be between -180 and 180")
 
     # Create context and add heatmap
     context = Context()
@@ -196,22 +200,13 @@ def plot_heat_h3s(
         >>> img.save("h3_heatmap.png")
     """
     # Validate inputs
-    if len(lats) != len(lons):
-        raise ValueError(
-            f"lats and lons must have same length (got {len(lats)} and {len(lons)})"
-        )
+    _validate_coordinates(lats, lons)
 
     if len(lats) == 0:
         raise ValueError("lats and lons cannot be empty")
 
     if not (0 <= precision <= 15):
         raise ValueError(f"H3 precision must be 0-15 (got {precision})")
-
-    if not all(-90 <= lat <= 90 for lat in lats):
-        raise ValueError("All latitudes must be between -90 and 90")
-
-    if not all(-180 <= lon <= 180 for lon in lons):
-        raise ValueError("All longitudes must be between -180 and 180")
 
     # Create context and add heatmap
     context = Context()
@@ -235,18 +230,16 @@ def make_hash_poly_points(h: str) -> List[Any]:
 def make_h3_poly_points(h: str) -> List[Any]:
     """Convert H3 cell string to polygon points for rendering."""
     points = list(h3.cell_to_boundary(h))
-    return [staticmaps.create_latlng(lat, lon) for lon, lat in points]
+    return [staticmaps.create_latlng(lat, lon) for lat, lon in points]
 
 
 def calculate_h3_hashes(
     latitudes: List[float], longitudes: List[float], precision: int
 ) -> List[str]:
     """Calculate H3 cell identifiers for given coordinates."""
-    if len(latitudes) != len(longitudes):
-        raise ValueError(
-            f"latitudes and longitudes must have same length "
-            f"(got {len(latitudes)} and {len(longitudes)})"
-        )
+    _validate_coordinates(latitudes, longitudes)
+    if not (0 <= precision <= 15):
+        raise ValueError(f"H3 precision must be 0-15 (got {precision})")
 
     return [
         h3.latlng_to_cell(lat, lon, precision)

@@ -1,13 +1,14 @@
 [build-system]
-requires = ["setuptools>=61.0", "wheel"]
+# Keep the license table supported while retaining Python 3.8 builds.
+requires = ["setuptools>=61.0,<77", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "heatfall"
-version = "1.0.0"
+version = "1.0.1"
 description = "Easy to use functions for plotting heat maps of geographic data on static maps"
 readme = "README.md"
-license = "MIT"
+license = {file = "LICENSE"}
 authors = [{name = "Odos Matthews"}]
 maintainers = [{name = "Odos Matthews"}]
 keywords = ["geospatial", "heatmap", "visualization", "staticmaps", "h3", "geohash"]
@@ -29,9 +30,9 @@ classifiers = [
 ]
 requires-python = ">=3.8"
 dependencies = [
-    "landfall>=0.4.0",
+    "landfall>=0.4.2",
     "pygeodesy",
-    "geodude",
+    "geodude>=0.1.1",
     "h3>=4.0.0",
 ]
 
@@ -99,6 +100,12 @@ warn_return_any = true
 warn_unreachable = true
 warn_unused_configs = true
 no_implicit_reexport = true
+
+[tool.ruff]
+target-version = "py38"
+
+[tool.ruff.lint]
+select = ["E4", "E7", "E9", "F"]
 
 [tool.flake8]
 max-line-length = 160

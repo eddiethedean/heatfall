@@ -7,9 +7,9 @@
 [![Python Support](https://img.shields.io/pypi/pyversions/heatfall.svg)](https://pypi.org/project/heatfall/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-## 🎉 Version 1.0.0 - Major Release!
+## Version 1.0.1
 
-**Heatfall** has reached a major milestone! Version 1.0.0 represents a complete modernization of the package with significant improvements in reliability, functionality, and maintainability.
+Version 1.0.1 fixes H3 coordinate ordering, strengthens input validation, and improves packaging and development tooling. See the [changelog](CHANGELOG.md) for details.
 
 ## What is it?
 
@@ -53,9 +53,9 @@
 ## Requirements
 
 - **Python 3.8-3.13** (comprehensive version support)
-- **landfall>=0.4.0** (core geospatial plotting infrastructure)
+- **landfall>=0.4.2** (core geospatial plotting infrastructure)
 - **pygeodesy** (geohash calculations)
-- **geodude** (geohash utilities)
+- **geodude>=0.1.1** (geohash utilities)
 - **h3>=4.0.0** (H3 hexagonal indexing)
 
 ## Installation
@@ -144,7 +144,7 @@ context.add_polygons([
 ], color="green", width=2)
 
 # Add circles
-context.add_circles([27.9], [-82.5], radius_meters=1000, 
+context.add_circles([27.9], [-82.5], [1000],
                    color="yellow", fill_transparency=50)
 
 # Render everything together
@@ -170,12 +170,12 @@ context.add_points(school_lats, school_lons,
                   colors=["blue"], point_size=10)
 
 # Service area circles
-context.add_circles(hospital_lats, hospital_lons, 
-                   radius_meters=2000, color="red", fill_transparency=80)
+context.add_circles(hospital_lats, hospital_lons,
+                   [2000] * len(hospital_lats), color="red", fill_transparency=80)
 
 # Road network
 for road_segment in road_segments:
-    context.add_line(road_segment, color="gray", width=2)
+    context.add_line(road_segment, color="#808080", width=2)
 
 # City boundaries
 context.add_polygons(city_boundaries, color="black", width=3)
@@ -248,6 +248,10 @@ pip install -e .[dev]
 ```
 
 ### Running Tests
+
+Rendering tests use mock tiles. Tests explicitly marked `integration` can use real
+tile downloads.
+
 ```sh
 # Run all tests
 pytest
@@ -310,7 +314,7 @@ context = heatfall.Context()
 context.add_points(lats, lons, colors=["red"], point_size=10)
 context.add_lines(route_coords, color="blue", width=3)
 context.add_polygons(boundaries, color="green", width=2)
-context.add_circles(centers, radius_meters=1000, color="yellow")
+context.add_circles(lats, lons, [1000] * len(lats), color="yellow")
 
 # Plus heatmap-specific methods
 context.add_heat_hashes(lats, lons, precision=4, color_scheme="distinct")
@@ -382,4 +386,4 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 **Made with ❤️ for the geospatial Python community**
 
-*Version 1.0.0 - A major milestone in geospatial heatmap visualization*
+*Version 1.0.1 - Geographic heatmap visualization*

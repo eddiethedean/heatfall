@@ -2,12 +2,62 @@
 
 from PIL import Image
 import staticmaps
+import pytest
 
 from heatfall.heat import Context
+from tests.mock_tile_downloader import MockTileDownloader
 
 
 class TestContext:
     """Test Context class methods."""
+
+    def test_default_context_uses_offline_tiles(self):
+        """New contexts, including plotting wrappers, receive the mock downloader."""
+        assert isinstance(Context()._tile_downloader, MockTileDownloader)
+
+    @pytest.mark.parametrize("method", ["add_heat_hashes", "add_heat_h3s"])
+    @pytest.mark.parametrize(
+        "lats,lons,message",
+        [
+            ([27.9, 28.0], [-82.5], "same length"),
+            ([91.0], [0.0], "latitudes must be between"),
+            ([-91.0], [0.0], "latitudes must be between"),
+            ([float("nan")], [0.0], "latitudes must be between"),
+            ([float("inf")], [0.0], "latitudes must be between"),
+            ([0.0], [181.0], "longitudes must be between"),
+            ([0.0], [-181.0], "longitudes must be between"),
+            ([0.0], [float("nan")], "longitudes must be between"),
+            ([0.0], [float("inf")], "longitudes must be between"),
+        ],
+    )
+    def test_invalid_heat_coordinates(self, method, lats, lons, message):
+        """Reject bad data before adding any heatmap geometry."""
+        context = Context()
+        with pytest.raises(ValueError, match=message):
+            getattr(context, method)(lats, lons, precision=8)
+        assert not context._objects
+
+    @pytest.mark.parametrize(
+        "method,precision",
+        [
+            ("add_heat_hashes", 0),
+            ("add_heat_hashes", 13),
+            ("add_heat_h3s", -1),
+            ("add_heat_h3s", 16),
+        ],
+    )
+    def test_invalid_heat_precision(self, method, precision):
+        with pytest.raises(ValueError, match="(?i)precision must be"):
+            getattr(Context(), method)([27.9], [-82.5], precision)
+
+    def test_landfall_circle_layer(self):
+        """Compose the documented circle API with a heatmap."""
+        context = Context()
+        context.add_heat_hashes([27.9], [-82.5], precision=4)
+        context.add_circles(
+            [27.9], [-82.5], [1000], color="yellow", fill_transparency=50
+        )
+        assert context.render_pillow(800, 600).size == (800, 600)
 
     def test_context_creation(self):
         """Test basic context creation."""

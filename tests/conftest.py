@@ -4,13 +4,19 @@ import pytest
 import staticmaps
 
 from heatfall.heat import Context
+from tests.mock_tile_downloader import MockTileDownloader
+
+
+@pytest.fixture(autouse=True)
+def offline_tiles(monkeypatch, request):
+    """Use mock tiles for ordinary tests; integration tests may use real tiles."""
+    if request.node.get_closest_marker("integration") is None:
+        monkeypatch.setattr("staticmaps.context.TileDownloader", MockTileDownloader)
 
 
 @pytest.fixture
 def mock_context():
     """Create a heatfall context with mock tile downloader."""
-    from tests.mock_tile_downloader import MockTileDownloader
-
     context = Context()
     context.set_tile_downloader(MockTileDownloader())
     return context
@@ -19,8 +25,6 @@ def mock_context():
 @pytest.fixture
 def mock_staticmaps_context():
     """Create a staticmaps context with mock tile downloader."""
-    from tests.mock_tile_downloader import MockTileDownloader
-
     context = staticmaps.Context()
     context.set_tile_downloader(MockTileDownloader())
     return context

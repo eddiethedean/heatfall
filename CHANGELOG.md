@@ -1,5 +1,21 @@
 # Changelog
 
+## [1.0.1] - 2026-10-02
+
+### Fixed
+- Preserve latitude/longitude order when rendering H3 cell boundaries.
+- Validate coordinates in Context heatmap methods, including non-finite values.
+- Use license metadata compatible with Python 3.8 build tools.
+- Discover Python interpreters portably in tox.
+- Use mock map tiles automatically in tests unless marked as integration tests.
+- Include shared test fixtures and development configuration in source archives.
+- Correct the Landfall circle examples to pass a sequence of radii.
+
+### Changed
+- Require landfall>=0.4.2 and geodude>=0.1.1.
+- Add GitHub Actions checks for supported Python versions, macOS and Windows,
+  code quality, and package builds.
+
 ## [1.0.0] - 2025-01-XX
 
 ### 🎉 Major Release - Complete Modernization

@@ -1,5 +1,6 @@
 """Tests for helper functions."""
 
+import h3
 import pytest
 from s2sphere.sphere import LatLng
 
@@ -89,17 +90,20 @@ class TestHelperFunctionIntegration:
         assert all(34 <= lat <= 35 for lat in lats)
         assert all(-119 <= lng <= -118 for lng in lngs)
 
-    def test_h3_polygon_coordinates(self):
-        """Test that H3 polygon coordinates are reasonable."""
-        points = make_h3_poly_points("8a1fb46622dffff")
+    @pytest.mark.parametrize(
+        "lat,lon", [(27.88, -82.49), (34.05, -118.25), (35.68, 139.69)]
+    )
+    def test_h3_polygon_coordinates(self, lat, lon):
+        """Preserve H3 boundaries in Tampa, Los Angeles, and Tokyo."""
+        cell = h3.latlng_to_cell(lat, lon, 8)
+        expected = h3.cell_to_boundary(cell)
+        points = make_h3_poly_points(cell)
 
-        # Extract lat/lon values
-        lats = [p.lat().degrees for p in points]
-        lngs = [p.lng().degrees for p in points]
-
-        # Should be reasonable coordinates
-        assert all(-90 <= lat <= 90 for lat in lats)
-        assert all(-180 <= lng <= 180 for lng in lngs)
+        assert len(points) == len(expected)
+        for point, coordinate in zip(points, expected):
+            assert (point.lat().degrees, point.lng().degrees) == pytest.approx(
+                coordinate
+            )
 
     def test_polygon_closing(self):
         """Test that polygons are properly closed."""
