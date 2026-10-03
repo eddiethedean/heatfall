@@ -21,7 +21,7 @@ its point count; the map tiles and attribution come from OpenStreetMap.*
 
 [Install](#install) · [Quick start](#quick-start) · [Choose a grid](#choose-a-grid)
 · [Add other layers](#add-other-layers) · [API](#api) · [Troubleshooting](#troubleshooting)
-· [Documentation source](docs/index.md)
+· [Documentation source](https://github.com/eddiethedean/heatfall/blob/main/docs/index.md)
 
 ## Install
 
@@ -310,7 +310,7 @@ Open `docs/_build/html/index.html` to view the site. With Python 3.13 available,
 documentation and fails on warnings.
 
 The repository is configured for Read the Docs through `.readthedocs.yaml`.
-See the [documentation setup guide](docs/development.md#connect-read-the-docs)
+See the [documentation setup guide](https://github.com/eddiethedean/heatfall/blob/main/docs/development.md#connect-read-the-docs)
 for importing the GitHub repository into a Read the Docs account.
 
 The README images are actual package output. Reproduce them with:
