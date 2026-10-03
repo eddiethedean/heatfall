@@ -137,6 +137,7 @@ troubleshooting
 
 api
 development
+releasing
 changelog
 ```
 

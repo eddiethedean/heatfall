@@ -2,15 +2,6 @@
 
 ## [Unreleased]
 
-### Added
-- Add a Read the Docs configuration and a Sphinx documentation site with usage
-  guides, geographic considerations, and an API reference generated from code.
-- Add pinned documentation dependencies, an isolated tox build, and a strict
-  documentation check in GitHub Actions.
-- Add a heat-colored documentation theme with light/dark modes, a visual
-  landing page, copyable examples, and focused data, basemap, and troubleshooting
-  guides.
-
 ## [1.1.0] - 2026-10-02
 
 ### Changed
@@ -24,6 +15,15 @@
   Context heat layer methods; use `opacity=1` for solid fills.
 - Add GitHub Actions checks for supported Python versions, macOS and Windows,
   code quality, and package builds.
+- Add a Read the Docs configuration and a Sphinx documentation site with usage
+  guides, geographic considerations, and an API reference generated from code.
+- Add pinned documentation dependencies, an isolated tox build, and a strict
+  documentation check in GitHub Actions.
+- Add a heat-colored documentation theme with light/dark modes, a visual
+  landing page, copyable examples, and focused data, basemap, and troubleshooting
+  guides.
+- Add release instructions and CI validation of the installed wheel, dependency
+  consistency, and downloadable distribution artifacts.
 
 ### Fixed
 - Composite antimeridian pieces together so translucent H3 cells do not acquire
@@ -34,7 +34,6 @@
   artificial outlines between split pieces in all rendering backends.
 - Close pole-containing H3 cells through their pole and limit their rendering
   to the Web Mercator latitude range.
-
 - Preserve latitude/longitude order when rendering H3 cell boundaries.
 - Validate coordinates in Context heatmap methods, including non-finite values.
 - Use license metadata compatible with Python 3.8 build tools.
@@ -43,7 +42,7 @@
 - Include shared test fixtures and development configuration in source archives.
 - Correct the Landfall circle examples to pass a sequence of radii.
 
-## [1.0.0] - 2025-01-XX
+## [1.0.0] - 2025-10-28
 
 ### 🎉 Major Release - Complete Modernization
 

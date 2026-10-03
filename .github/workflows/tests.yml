@@ -83,8 +83,24 @@ jobs:
       - name: Build
         run: python -m build
       - name: Check metadata
-        run: python -m twine check dist/*
+        run: python -m twine check --strict dist/*
       - name: Install wheel
-        run: python -m pip install dist/*.whl
+        run: python -m pip install dist/*.whl pytest pytest-cov
+      - name: Check installed dependencies
+        run: python -m pip check
       - name: Check version
-        run: python -c "from importlib.metadata import version; import heatfall; assert heatfall.__version__ == version('heatfall')"
+        run: >-
+          python -c "from importlib.metadata import version; import heatfall;
+          assert heatfall.__version__ == version('heatfall');
+          assert 'site-packages' in heatfall.__file__"
+      - name: Test installed wheel
+        working-directory: ${{ runner.temp }}
+        run: python -m pytest "${{ github.workspace }}/tests" --cov-fail-under=100
+      - name: Save distributions
+        if: matrix.python == '3.13'
+        uses: actions/upload-artifact@v7
+        with:
+          name: heatfall-distributions
+          path: dist/*
+          if-no-files-found: error
+          retention-days: 14

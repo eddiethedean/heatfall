@@ -76,3 +76,8 @@ installation with the `docs` extra, Sphinx configuration, and strict warnings.
 See the [Read the Docs Sphinx guide](https://docs.readthedocs.com/platform/stable/intro/sphinx.html)
 for the import workflow. Account connection and project import are separate from
 the repository configuration.
+
+## Prepare a release
+
+See the [release guide](releasing.md) for 1.1.0 compatibility notes, package
+validation, and the tag, upload, and verification steps.

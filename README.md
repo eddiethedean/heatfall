@@ -37,8 +37,8 @@ To install the latest code from `main`, including fixes that may not yet be on P
 python -m pip install "git+https://github.com/eddiethedean/heatfall.git@main"
 ```
 
-The examples below target **1.1.0**. If your PyPI installation is older, use the
-GitHub installation above for the opacity controls and H3 fixes. See the
+The examples below require **1.1.0 or newer** for opacity controls and H3 fixes.
+Check your version with `python -m pip show heatfall`. See the
 [changelog](https://github.com/eddiethedean/heatfall/blob/main/CHANGELOG.md) for
 release details.
 
@@ -247,8 +247,7 @@ Heatfall splits crossing H3 cell boundaries into closed polygons at the
 antimeridian, with intersections calculated along spherical edges. Both pieces
 keep the original cell's observation count and color, and the automatic map
 extent follows the short span across the seam. Exact `180` and `-180` longitude
-are accepted. Use the GitHub installation above for this fix until the next
-PyPI release.
+are accepted. These fixes require Heatfall 1.1.0 or newer.
 
 This handling applies to rendered H3 cells. Polygon-to-cell filling of external
 GeoJSON is outside Heatfall's point API. For polar cells, H3 rendering is clipped
@@ -340,6 +339,9 @@ access when those tiles are not already cached.
 For changes, include a runnable example or a regression test where appropriate,
 run the checks above, and open a pull request. For bug reports, include your Python
 and Heatfall versions, a small coordinate sample, the precision, and the traceback.
+
+Maintainers can follow the [release guide](https://github.com/eddiethedean/heatfall/blob/main/docs/releasing.md)
+for compatibility notes, distribution validation, and publishing steps.
 
 ## Dependencies and license
 

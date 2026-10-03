@@ -1,4 +1,7 @@
 creds.py
+.DS_Store
+.venv-release/
+.venv-wheel/
 notebooks/
 src/heatfall.egg-info/
 src/heatfall/__pycache__/
