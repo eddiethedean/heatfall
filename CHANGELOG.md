@@ -2,7 +2,17 @@
 
 ## [Unreleased]
 
+### Changed
+- Default geohash and H3 heat fills to 60% opacity so basemap details remain
+  visible. Regenerate the README images with the new default.
+
+### Added
+- Add a keyword-only `opacity` option (0–1) to both plotting functions and
+  Context heat layer methods; use `opacity=1` for solid fills.
+
 ### Fixed
+- Composite antimeridian pieces together so translucent H3 cells do not acquire
+  a darker seam where their pieces meet.
 - Split H3 cell boundaries at the antimeridian using spherical intersections,
   preserving cell counts and colors across the resulting polygons.
 - Keep automatic H3 map extents centered across ±180° longitude and remove

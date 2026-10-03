@@ -113,6 +113,12 @@ Each observation contributes **one count** to its cell. Only occupied cells are
 drawn. Within a heat layer, cells with the same count share a color; different
 count levels receive different palette colors.
 
+Heat fills default to **60% opacity (40% transparent)**, keeping streets and
+labels visible beneath the cells. Set `opacity` on either plotting function or
+heat layer method to control the fill: `0.4` is lighter, `1.0` is solid, and `0.0`
+is invisible. Opacity applies uniformly to the layer; counts still determine
+the palette colors.
+
 | `color_scheme` | Behavior |
 | --- | --- |
 | `"distinct"` — default | Generates visually distinct colors for the count levels |
@@ -185,12 +191,13 @@ Both plotting functions accept the same arguments:
 | `color_scheme` | `"distinct"` | `"distinct"`, `"random"`, or `"wheel"` |
 | `tileprovider` | OpenStreetMap | A `staticmaps.TileProvider` for the basemap |
 | `size` | `(800, 500)` | Output `(width, height)` in pixels |
+| `opacity` | `0.6` | Keyword-only fill opacity from `0.0` to `1.0` |
 
 The heat layer methods mutate the context and return `None`:
 
 ```python
-context.add_heat_hashes(lats, lons, precision, color_scheme="distinct")
-context.add_heat_h3s(lats, lons, precision, color_scheme="distinct")
+context.add_heat_hashes(lats, lons, precision, color_scheme="distinct", opacity=0.6)
+context.add_heat_h3s(lats, lons, precision, color_scheme="distinct", opacity=0.6)
 ```
 
 The default provider is `staticmaps.tile_provider_OSM`.
@@ -205,6 +212,7 @@ keyword is spelled **`tileprovider`**, without an underscore.
 - Lists must have matching lengths. Out-of-range coordinates and non-finite
   values such as `NaN` and infinity raise `ValueError`.
 - Use an integer precision in the supported range and one of the named palettes.
+- Opacity must be finite and between `0.0` and `1.0`, inclusive.
 - Standalone plotting functions reject empty lists. Adding an empty heat layer
   to a `Context` is a no-op; add some content before rendering.
 - Repeated coordinates count as repeated observations. Deduplicate your input

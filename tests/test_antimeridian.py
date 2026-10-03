@@ -1,6 +1,7 @@
 """Regression tests for H3 boundaries and map extents at ±180° longitude."""
 
 import math
+import re
 import xml.etree.ElementTree as ET
 
 import h3
@@ -99,11 +100,11 @@ def test_split_pieces_keep_original_observation_count(monkeypatch):
     )
     context = Context()
     context.add_heat_h3s([0, 0, 35.68], [180, -180, 139.69], precision=5)
-    assert len(context._objects) == 3
-    assert [obj.fill_color() for obj in context._objects] == [
-        staticmaps.RED,
-        staticmaps.RED,
-        staticmaps.BLUE,
+    assert len(context._objects) == 2
+    assert len(context._objects[0]._parts) == 2
+    assert [obj.fill_color().int_rgba() for obj in context._objects] == [
+        (255, 0, 0, 153),
+        (0, 0, 255, 153),
     ]
 
 
@@ -121,7 +122,7 @@ def test_automatic_center_stays_at_dateline(monkeypatch, size, resolution, longi
 
 def test_seam_has_no_gap_or_world_spanning_fill(monkeypatch):
     context = red_context(monkeypatch)
-    context.add_heat_h3s([0, 0], [180, -180], precision=5)
+    context.add_heat_h3s([0, 0], [180, -180], precision=5, opacity=1)
     image = context.render_pillow(800, 500)
     filled = [
         (x, y)
@@ -138,7 +139,7 @@ def test_seam_has_no_gap_or_world_spanning_fill(monkeypatch):
 
 def test_fixed_world_view_fills_only_dateline_edges(monkeypatch):
     context = red_context(monkeypatch)
-    context.add_heat_h3s([0], [180], precision=2)
+    context.add_heat_h3s([0], [180], precision=2, opacity=1)
     context.set_center(staticmaps.create_latlng(0, 0))
     context.set_zoom(2)
     image = context.render_pillow(1024, 300)
@@ -153,10 +154,14 @@ def test_svg_pieces_do_not_span_the_world(monkeypatch):
     center, zoom = context.determine_center_zoom(800, 500)
     world_width = 256 * 2**zoom
     svg = ET.fromstring(context.render_svg(800, 500).tostring())
-    polygons = svg.findall(".//{http://www.w3.org/2000/svg}polygon")
-    assert len(polygons) == 6  # Two pieces, each drawn in three world copies.
-    for polygon in polygons:
-        xs = [float(pair.split(",")[0]) for pair in polygon.attrib["points"].split()]
+    paths = svg.findall(".//{http://www.w3.org/2000/svg}path")
+    assert len(paths) == 3  # One compound path in each world copy.
+    for path in paths:
+        assert path.attrib["d"].count("M") == 2
+        xs = [
+            float(pair.split(",")[0])
+            for pair in re.findall(r"[-\d.e]+,[-\d.e]+", path.attrib["d"])
+        ]
         assert max(xs) - min(xs) < world_width / 100
     assert abs(center.lng().degrees) > 179
 
@@ -173,7 +178,10 @@ def test_polar_cells_render_without_invalid_mercator_coordinates(latitude, resol
     context.set_tile_provider(staticmaps.tile_provider_None)
     context.add_heat_h3s([latitude], [180], resolution)
     for obj in context._objects:
-        assert all(abs(point.lat().degrees) <= 85.051129 for point in obj.interpolate())
+        for part in obj._parts:
+            assert all(
+                abs(point.lat().degrees) <= 85.051129 for point in part.interpolate()
+            )
     assert context.render_pillow(400, 300).size == (400, 300)
 
 

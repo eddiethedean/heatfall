@@ -8,7 +8,7 @@ using either geohash binning or H3 hexagonal binning.
 from typing import List, Tuple, Any, Optional, cast
 from collections import Counter
 import math
-from PIL import Image
+from PIL import Image, ImageDraw
 
 import staticmaps
 import pygeodesy
@@ -112,23 +112,116 @@ class _H3Area(staticmaps.Area):
             ]
         return self._interpolation_cache
 
+
+class _H3Cell(staticmaps.Object):
+    """Render split pieces as one fill so opacity is applied once per cell."""
+
+    def __init__(
+        self, polygons: List[List[Any]], fill_color: Any, longitude: float
+    ) -> None:
+        super().__init__()
+        self._parts = [_H3Area(polygon, width=0) for polygon in polygons]
+        self._fill_color = fill_color
+        self._longitude = longitude
+
+    def fill_color(self) -> Any:
+        return self._fill_color
+
+    def bounds(self) -> Any:
+        bounds = self._parts[0].bounds()
+        for part in self._parts[1:]:
+            bounds = bounds.union(part.bounds())
+        return bounds
+
+    def extra_pixel_bounds(self) -> Tuple[int, int, int, int]:
+        return (0, 0, 0, 0)
+
+    def _project(self, trans: Any) -> List[List[Tuple[float, float]]]:
+        # Align both seam pieces with the cell's longitude before rendering.
+        # Otherwise world repetition can composite the shared edge twice.
+        reference_x, _ = trans.ll2pixel(staticmaps.create_latlng(0, self._longitude))
+        polygons = []
+        for part in self._parts:
+            pixels = [trans.ll2pixel(point) for point in part.interpolate()]
+            midpoint = (min(x for x, _ in pixels) + max(x for x, _ in pixels)) / 2
+            shift = (
+                round((reference_x - midpoint) / trans.world_width())
+                * trans.world_width()
+            )
+            polygons.append([(x + shift, y) for x, y in pixels])
+        return polygons
+
     def pixel_rect(self, trans: Any) -> Tuple[float, float, float, float]:
-        # S2 normalizes -180 to +180 in bounds. Use actual projected vertices
-        # and the nearest world copy when staticmaps adjusts the map center.
-        pixels = [trans.ll2pixel(point) for point in self.interpolate()]
+        # S2 normalizes -180 to +180 in bounds. Use projected vertices and the
+        # nearest world copy when staticmaps adjusts the map center.
+        pixels = [pixel for polygon in self._project(trans) for pixel in polygon]
         left = min(x for x, _ in pixels)
         right = max(x for x, _ in pixels)
         shift = (
             round((trans.image_width() / 2 - (left + right) / 2) / trans.world_width())
             * trans.world_width()
         )
-        margin_left, margin_top, margin_right, margin_bottom = self.extra_pixel_bounds()
         return (
-            left + shift - margin_left,
-            min(y for _, y in pixels) - margin_top,
-            right + shift + margin_right,
-            max(y for _, y in pixels) + margin_bottom,
+            left + shift,
+            min(y for _, y in pixels),
+            right + shift,
+            max(y for _, y in pixels),
         )
+
+    def render_pillow(self, renderer: Any) -> None:
+        # staticmaps calls objects for several world offsets. Draw all copies
+        # into one overlay on the zero-offset call, including shared cap edges.
+        if renderer.offset_x() != 0:
+            return
+        trans = renderer.transformer()
+        world_width = trans.world_width()
+        copies = math.ceil(trans.image_width() / (2 * world_width))
+        overlay = Image.new("RGBA", renderer.image().size, (0, 0, 0, 0))
+        draw = ImageDraw.Draw(overlay)
+        for polygon in self._project(trans):
+            # Drawing into one overlay replaces shared pixels rather than
+            # blending them repeatedly; composite the entire cell once.
+            for copy in range(-copies, copies + 1):
+                draw.polygon(
+                    [(x + copy * world_width, y) for x, y in polygon],
+                    fill=self._fill_color.int_rgba(),
+                )
+        renderer.alpha_compose(overlay)
+
+    def render_svg(self, renderer: Any) -> None:
+        contours = [
+            "M " + " L ".join(f"{x},{y}" for x, y in polygon) + " Z"
+            for polygon in self._project(renderer.transformer())
+        ]
+        renderer.group().add(
+            renderer.drawing().path(
+                d=" ".join(contours),
+                fill=self._fill_color.hex_rgb(),
+                opacity=self._fill_color.float_a(),
+            )
+        )
+
+    def render_cairo(self, renderer: Any) -> None:
+        context = renderer.context()
+        context.new_path()
+        for polygon in self._project(renderer.transformer()):
+            context.move_to(*polygon[0])
+            for x, y in polygon[1:]:
+                context.line_to(x, y)
+            context.close_path()
+        context.set_source_rgba(*self._fill_color.float_rgba())
+        context.fill()
+
+
+def _validate_opacity(opacity: float) -> None:
+    if not 0 <= opacity <= 1:
+        raise ValueError("opacity must be between 0 and 1")
+
+
+def _with_opacity(color: Any, opacity: float) -> Any:
+    """Copy a palette color, preserving any existing transparency."""
+    red, green, blue, alpha = color.int_rgba()
+    return staticmaps.Color(red, green, blue, round(alpha * opacity))
 
 
 def _validate_coordinates(lats: List[float], lons: List[float]) -> None:
@@ -152,6 +245,8 @@ class Context(landfall.Context):
         lons: List[float],
         precision: int,
         color_scheme: str = "distinct",
+        *,
+        opacity: float = 0.6,
     ) -> None:
         """
         Add geohash-based heatmap to the map.
@@ -161,8 +256,10 @@ class Context(landfall.Context):
             lons: List of longitude values
             precision: Geohash precision (1-12)
             color_scheme: Color scheme ("distinct", "random", "wheel")
+            opacity: Fill opacity from 0 (invisible) to 1 (solid), default 0.6
         """
         _validate_coordinates(lats, lons)
+        _validate_opacity(opacity)
         hashes = calculate_geohashes(lats, lons, precision)
         counts = Counter(hashes)
 
@@ -171,7 +268,10 @@ class Context(landfall.Context):
         colors_list = process_colors(color_scheme, len(unique_counts))
 
         # Map counts to colors
-        count_to_color = dict(zip(unique_counts, colors_list))
+        count_to_color = {
+            count: _with_opacity(color, opacity)
+            for count, color in zip(unique_counts, colors_list)
+        }
 
         for h, count in counts.items():
             color = count_to_color[count]
@@ -179,7 +279,7 @@ class Context(landfall.Context):
                 staticmaps.Area(
                     make_hash_poly_points(h),
                     fill_color=color,
-                    width=1,
+                    width=0,
                     color=staticmaps.TRANSPARENT,
                 )
             )
@@ -190,6 +290,8 @@ class Context(landfall.Context):
         lons: List[float],
         precision: int,
         color_scheme: str = "distinct",
+        *,
+        opacity: float = 0.6,
     ) -> None:
         """
         Add H3-based heatmap to the map.
@@ -199,7 +301,9 @@ class Context(landfall.Context):
             lons: List of longitude values
             precision: H3 resolution (0-15)
             color_scheme: Color scheme ("distinct", "random", "wheel")
+            opacity: Fill opacity from 0 (invisible) to 1 (solid), default 0.6
         """
+        _validate_opacity(opacity)
         hashes = calculate_h3_hashes(lats, lons, precision)
         counts = Counter(hashes)
 
@@ -208,19 +312,19 @@ class Context(landfall.Context):
         colors_list = process_colors(color_scheme, len(unique_counts))
 
         # Map counts to colors
-        count_to_color = dict(zip(unique_counts, colors_list))
+        count_to_color = {
+            count: _with_opacity(color, opacity)
+            for count, color in zip(unique_counts, colors_list)
+        }
 
         for h, count in counts.items():
-            color = count_to_color[count]
-            for polygon in _make_h3_polygons(h):
-                self.add_object(
-                    _H3Area(
-                        polygon,
-                        fill_color=color,
-                        width=0,
-                        color=staticmaps.TRANSPARENT,
-                    )
+            self.add_object(
+                _H3Cell(
+                    _make_h3_polygons(h),
+                    count_to_color[count],
+                    h3.cell_to_latlng(h)[1],
                 )
+            )
 
 
 tp = staticmaps.tile_provider_OSM
@@ -233,6 +337,8 @@ def plot_heat_hashes(
     color_scheme: str = "distinct",
     tileprovider: staticmaps.TileProvider = tp,
     size: Tuple[int, int] = (800, 500),
+    *,
+    opacity: float = 0.6,
 ) -> Image.Image:
     """
     Plot a heatmap of geographic points using geohash binning.
@@ -247,12 +353,13 @@ def plot_heat_hashes(
         color_scheme: Color scheme - "distinct" (default), "random", or "wheel"
         tileprovider: Tile provider for the base map (default: OpenStreetMap)
         size: Output image size in pixels as (width, height)
+        opacity: Fill opacity from 0 (invisible) to 1 (solid), default 0.6
 
     Returns:
         PIL Image object containing the rendered heatmap
 
     Raises:
-        ValueError: If lats/lons lengths don't match or precision is invalid
+        ValueError: If coordinates, precision, or opacity are invalid
 
     Example:
         >>> import heatfall
@@ -273,7 +380,7 @@ def plot_heat_hashes(
     # Create context and add heatmap
     context = Context()
     context.set_tile_provider(tileprovider)
-    context.add_heat_hashes(lats, lons, precision, color_scheme)
+    context.add_heat_hashes(lats, lons, precision, color_scheme, opacity=opacity)
     return cast(Image.Image, context.render_pillow(*size))
 
 
@@ -284,6 +391,8 @@ def plot_heat_h3s(
     color_scheme: str = "distinct",
     tileprovider: staticmaps.TileProvider = tp,
     size: Tuple[int, int] = (800, 500),
+    *,
+    opacity: float = 0.6,
 ) -> Image.Image:
     """
     Plot a heatmap of geographic points using H3 hexagonal binning.
@@ -298,12 +407,13 @@ def plot_heat_h3s(
         color_scheme: Color scheme - "distinct" (default), "random", or "wheel"
         tileprovider: Tile provider for the base map (default: OpenStreetMap)
         size: Output image size in pixels as (width, height)
+        opacity: Fill opacity from 0 (invisible) to 1 (solid), default 0.6
 
     Returns:
         PIL Image object containing the rendered heatmap
 
     Raises:
-        ValueError: If lats/lons lengths don't match or precision is invalid
+        ValueError: If coordinates, precision, or opacity are invalid
 
     Example:
         >>> import heatfall
@@ -324,7 +434,7 @@ def plot_heat_h3s(
     # Create context and add heatmap
     context = Context()
     context.set_tile_provider(tileprovider)
-    context.add_heat_h3s(lats, lons, precision, color_scheme)
+    context.add_heat_h3s(lats, lons, precision, color_scheme, opacity=opacity)
     return cast(Image.Image, context.render_pillow(*size))
 
 
