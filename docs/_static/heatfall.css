@@ -5,9 +5,15 @@ body {
   --toc-width: 15rem;
 }
 .sidebar-brand {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 0.75rem;
   border-top: 4px solid transparent;
   border-image: linear-gradient(90deg, #a52a26, #ed6b26, #f4bd54) 1;
 }
+.sidebar-logo-container { margin: 0; }
+.sidebar-logo { width: 42px; height: 42px; object-fit: contain; }
 .sidebar-brand-text { font-weight: 800; letter-spacing: -0.03em; }
 .sidebar-tree .current > .reference { font-weight: 700; }
 .content { line-height: 1.7; }

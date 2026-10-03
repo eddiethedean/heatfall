@@ -22,6 +22,8 @@
 - Add a heat-colored documentation theme with light/dark modes, a visual
   landing page, copyable examples, and focused data, basemap, and troubleshooting
   guides.
+- Replace the original illustration with a transparent hexagonal flame logo used in
+  the README, documentation navigation, and browser icon.
 - Add release instructions and CI validation of the installed wheel, dependency
   consistency, and downloadable distribution artifacts.
 

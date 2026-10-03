@@ -42,6 +42,11 @@ page, card, and content styles in `docs/_static/heatfall.css`. Code examples hav
 copy buttons. Preview both color modes and a narrow viewport when changing the
 layout; keep actual map examples and their attribution visible.
 
+The transparent logo is `docs/heatfall_logo.png`, shared by the README, docs
+navigation, and browser icon. It was generated with the built-in imagegen tool;
+the [generation prompt](https://github.com/eddiethedean/heatfall/blob/main/examples/heatfall_logo_prompt.txt)
+records its hexagonal flame motif and ember, orange, and amber colors.
+
 With tox installed and Python 3.13 available, the equivalent isolated build is:
 
 ```sh

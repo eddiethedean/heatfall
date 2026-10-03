@@ -27,6 +27,8 @@ myst_enable_extensions = ["substitution", "colon_fence"]
 myst_substitutions = {"release": release}
 
 html_theme = "furo"
+html_logo = "heatfall_logo.png"
+html_favicon = "heatfall_logo.png"
 html_title = f"{project} {release}"
 html_static_path = ["_static"]
 html_css_files = ["heatfall.css"]

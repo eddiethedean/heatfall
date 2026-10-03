@@ -1,4 +1,4 @@
-<img src="https://raw.githubusercontent.com/eddiethedean/heatfall/main/docs/heatfall_logo.png" alt="Heatfall logo" width="100" align="right">
+<img src="https://raw.githubusercontent.com/eddiethedean/heatfall/main/docs/heatfall_logo.png" alt="Heatfall logo: a hexagonal flame in ember, orange, and amber" width="100" align="right">
 
 # Heatfall
 
