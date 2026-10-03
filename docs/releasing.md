@@ -1,5 +1,23 @@
 # Releasing Heatfall
 
+## Published release: 1.1.0
+
+Heatfall 1.1.0 was published to [PyPI](https://pypi.org/project/heatfall/1.1.0/)
+on **October 3, 2026 (UTC)**. The annotated
+[tag `v1.1.0`](https://github.com/eddiethedean/heatfall/tree/v1.1.0) points to
+[commit `dc94cb1`](https://github.com/eddiethedean/heatfall/commit/dc94cb17ea00c71e3caa97b813adf093352820c9).
+
+- All 14 jobs in the [Release workflow](https://github.com/eddiethedean/heatfall/actions/runs/37095082186)
+  passed, including the full test matrix, documentation, code quality, package
+  validation, and trusted publishing.
+- PyPI provides both `heatfall-1.1.0-py3-none-any.whl` and
+  `heatfall-1.1.0.tar.gz`.
+- A fresh installation from PyPI confirmed version 1.1.0 and passed
+  `python -m pip check`.
+
+The checklist below records the release process using 1.1.0 as an example.
+For future releases, replace that version with the new version throughout.
+
 ## 1.1.0 release notes
 
 This release builds on 1.0.0 with H3 geometry fixes, configurable transparency,

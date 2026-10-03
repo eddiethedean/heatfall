@@ -2,7 +2,12 @@
 
 ## [Unreleased]
 
-## [1.1.0] - 2026-10-02
+## [1.1.0] - 2026-10-03
+
+Published to [PyPI](https://pypi.org/project/heatfall/1.1.0/) from
+[tag `v1.1.0`](https://github.com/eddiethedean/heatfall/tree/v1.1.0).
+All 14 jobs in the [release workflow](https://github.com/eddiethedean/heatfall/actions/runs/37095082186)
+passed, including trusted publishing of the wheel and source archive.
 
 ### Changed
 - Default geohash and H3 heat fills to 60% opacity so basemap details remain

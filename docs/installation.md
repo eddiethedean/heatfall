@@ -6,9 +6,15 @@ Heatfall supports **Python 3.8–3.13**. Install the latest published release:
 python -m pip install heatfall
 ```
 
-These docs describe the version shown on the documentation home page. Features added in
-1.1.0 include configurable opacity, translucent defaults, and antimeridian-safe
-H3 rendering. If that version is not yet on PyPI, install the current source:
+[Heatfall 1.1.0](https://pypi.org/project/heatfall/1.1.0/) was published on
+October 3, 2026 (UTC). It includes configurable opacity, translucent defaults,
+and antimeridian-safe H3 rendering. Install that exact release with:
+
+```sh
+python -m pip install "heatfall==1.1.0"
+```
+
+To try development changes from `main`, install the current source:
 
 ```sh
 python -m pip install "git+https://github.com/eddiethedean/heatfall.git@main"

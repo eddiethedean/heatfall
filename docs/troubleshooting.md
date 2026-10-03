@@ -26,8 +26,14 @@ python -c "import sys, heatfall; print(sys.executable); print(heatfall.__version
 ```
 
 Run installation commands with the same interpreter that runs your script or
-notebook. If the version documented here has not yet been published to PyPI,
-use the [source installation instructions](installation.md).
+notebook. Heatfall 1.1.0 is available on PyPI; upgrade an older installation with:
+
+```sh
+python -m pip install --upgrade heatfall
+```
+
+See the [installation guide](installation.md) to pin the release or install
+development changes from source.
 
 ## Resolve input errors
 
