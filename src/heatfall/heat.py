@@ -5,8 +5,9 @@ This module provides functions for creating heatmaps of geographic points
 using either geohash binning or H3 hexagonal binning.
 """
 
-from typing import List, Tuple, Any, cast
+from typing import List, Tuple, Any, Optional, cast
 from collections import Counter
+import math
 from PIL import Image
 
 import staticmaps
@@ -17,6 +18,117 @@ from geodude import calculate_geohashes
 # Import from landfall
 import landfall
 from landfall.color import process_colors
+
+
+_MERCATOR_MAX_LAT = math.degrees(math.atan(math.sinh(math.pi)))
+
+
+def _clip_longitude(
+    ring: List[Tuple[float, float]], longitude: float, keep_east: bool
+) -> List[Tuple[float, float]]:
+    """Clip an unwrapped H3 ring along a meridian on the sphere."""
+    clipped = []
+    previous = ring[-1]
+    previous_inside = (previous[1] >= longitude) == keep_east
+    for current in ring:
+        inside = (current[1] >= longitude) == keep_east
+        if inside != previous_inside:
+            lat1, lon1 = previous
+            lat2, lon2 = current
+            if abs(lat1) == 90 and lat1 == lat2:
+                latitude = lat1  # The artificial closing edge of a polar cap.
+            else:
+                a = math.radians(lon1 - longitude)
+                b = math.radians(lon2 - longitude)
+                latitude = math.degrees(
+                    math.atan(
+                        (
+                            math.tan(math.radians(lat1)) * math.sin(b)
+                            - math.tan(math.radians(lat2)) * math.sin(a)
+                        )
+                        / math.sin(b - a)
+                    )
+                )
+            clipped.append((latitude, longitude))
+        if inside:
+            clipped.append(current)
+        previous, previous_inside = current, inside
+    return clipped
+
+
+def _make_h3_polygons(h: str) -> List[List[Any]]:
+    """Return closed cell pieces confined to [-180, 180] longitude.
+
+    Unwrap successive vertices before clipping, so the closing edge also takes
+    the short path. Intersections follow H3's spherical great-circle edges.
+    Cells containing a pole close through that pole rather than across the map.
+    """
+    boundary = list(h3.cell_to_boundary(h))
+    ring = [boundary[0]]
+    for lat, lon in boundary[1:] + boundary[:1]:
+        previous_lon = ring[-1][1]
+        ring.append((lat, previous_lon + (lon - previous_lon + 180) % 360 - 180))
+    if abs(ring[-1][1] - ring[0][1]) > 180:
+        pole = 90.0 if h3.cell_to_latlng(h)[0] > 0 else -90.0
+        ring.extend([(pole, ring[-1][1]), (pole, ring[0][1])])
+    else:
+        ring.pop()  # Clipping treats the ring as implicitly closed.
+
+    polygons = []
+    first = math.floor((min(lon for _, lon in ring) + 180) / 360)
+    last = math.floor((max(lon for _, lon in ring) + 180) / 360)
+    for world in range(first, last + 1):
+        piece = _clip_longitude(ring, -180 + world * 360, True)
+        piece = _clip_longitude(piece, 180 + world * 360, False)
+        # A ring that merely touches the seam can leave a zero-width fragment.
+        if len({lon for _, lon in piece}) < 2:
+            continue
+        points = [
+            staticmaps.create_latlng(lat, lon - world * 360) for lat, lon in piece
+        ]
+        points.append(points[0])
+        polygons.append(points)
+    return polygons
+
+
+class _H3Area(staticmaps.Area):
+    """A seam-safe area for every staticmaps rendering backend."""
+
+    _interpolation_cache: Optional[List[Any]]
+
+    def interpolate(self) -> List[Any]:
+        # Interpolation can overshoot a meridian by floating-point roundoff.
+        # Limit polar caps to the latitude covered by Web Mercator map tiles.
+        if self._interpolation_cache is None:
+            points = super().interpolate()
+            self._interpolation_cache = [
+                staticmaps.create_latlng(
+                    max(
+                        -_MERCATOR_MAX_LAT, min(_MERCATOR_MAX_LAT, point.lat().degrees)
+                    ),
+                    max(-180.0, min(180.0, point.lng().degrees)),
+                )
+                for point in points
+            ]
+        return self._interpolation_cache
+
+    def pixel_rect(self, trans: Any) -> Tuple[float, float, float, float]:
+        # S2 normalizes -180 to +180 in bounds. Use actual projected vertices
+        # and the nearest world copy when staticmaps adjusts the map center.
+        pixels = [trans.ll2pixel(point) for point in self.interpolate()]
+        left = min(x for x, _ in pixels)
+        right = max(x for x, _ in pixels)
+        shift = (
+            round((trans.image_width() / 2 - (left + right) / 2) / trans.world_width())
+            * trans.world_width()
+        )
+        margin_left, margin_top, margin_right, margin_bottom = self.extra_pixel_bounds()
+        return (
+            left + shift - margin_left,
+            min(y for _, y in pixels) - margin_top,
+            right + shift + margin_right,
+            max(y for _, y in pixels) + margin_bottom,
+        )
 
 
 def _validate_coordinates(lats: List[float], lons: List[float]) -> None:
@@ -100,14 +212,15 @@ class Context(landfall.Context):
 
         for h, count in counts.items():
             color = count_to_color[count]
-            self.add_object(
-                staticmaps.Area(
-                    make_h3_poly_points(h),
-                    fill_color=color,
-                    width=1,
-                    color=staticmaps.TRANSPARENT,
+            for polygon in _make_h3_polygons(h):
+                self.add_object(
+                    _H3Area(
+                        polygon,
+                        fill_color=color,
+                        width=0,
+                        color=staticmaps.TRANSPARENT,
+                    )
                 )
-            )
 
 
 tp = staticmaps.tile_provider_OSM

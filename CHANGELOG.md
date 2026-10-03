@@ -1,5 +1,15 @@
 # Changelog
 
+## [Unreleased]
+
+### Fixed
+- Split H3 cell boundaries at the antimeridian using spherical intersections,
+  preserving cell counts and colors across the resulting polygons.
+- Keep automatic H3 map extents centered across ±180° longitude and remove
+  artificial outlines between split pieces in all rendering backends.
+- Close pole-containing H3 cells through their pole and limit their rendering
+  to the Web Mercator latitude range.
+
 ## [1.0.1] - 2026-10-02
 
 ### Fixed

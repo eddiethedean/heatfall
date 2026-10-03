@@ -210,6 +210,33 @@ keyword is spelled **`tileprovider`**, without an underscore.
 - Repeated coordinates count as repeated observations. Deduplicate your input
   first if your analysis should count unique locations instead.
 
+### Crossing the antimeridian
+
+H3 maps can contain points on both sides of ±180° longitude:
+
+```python
+import heatfall
+
+image = heatfall.plot_heat_h3s(
+    lats=[10.0, 10.0, 10.0],
+    lons=[179.5, -179.5, 179.5],
+    precision=3,
+)
+image.save("antimeridian.png")
+```
+
+Heatfall splits crossing H3 cell boundaries into closed polygons at the
+antimeridian, with intersections calculated along spherical edges. Both pieces
+keep the original cell's observation count and color, and the automatic map
+extent follows the short span across the seam. Exact `180` and `-180` longitude
+are accepted. Use the GitHub installation above for this fix until the next
+PyPI release.
+
+This handling applies to rendered H3 cells. Polygon-to-cell filling of external
+GeoJSON is outside Heatfall's point API. For polar cells, H3 rendering is clipped
+to the Web Mercator tile latitude limit of approximately ±85.0511°; these maps
+do not display the poles.
+
 ## Troubleshooting
 
 | Symptom | What to check |
