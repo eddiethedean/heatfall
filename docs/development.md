@@ -65,16 +65,19 @@ HTML documentation does not render maps or download tiles.
 
 ## Connect Read the Docs
 
+Heatfall's documentation is published at
+[heatfall.readthedocs.io](https://heatfall.readthedocs.io/en/latest/index.html).
 The repository's `.readthedocs.yaml` defines the OS, Python version, package
 installation with the `docs` extra, Sphinx configuration, and strict warnings.
+To configure hosting for a fork or reconnect the project:
 
 1. Sign in to [Read the Docs](https://app.readthedocs.org/) and connect your GitHub
    account.
 2. Import `eddiethedean/heatfall`, choose `main` as the default branch, and keep
    the root `.readthedocs.yaml` as the configuration file.
-3. Trigger the first build and use the documentation URL assigned to the
-   project. Update the README and package documentation link to that verified
-   URL once hosting is active.
+3. Trigger the first build and verify the documentation URL assigned to the
+   project. For a fork, set the README and package documentation links to its
+   own published URL.
 4. Optionally activate release-tag versions and pull request previews in the
    project's settings.
 

@@ -6,6 +6,7 @@
 
 [![PyPI](https://img.shields.io/pypi/v/heatfall.svg)](https://pypi.org/project/heatfall/)
 [![Tests](https://github.com/eddiethedean/heatfall/actions/workflows/tests.yml/badge.svg)](https://github.com/eddiethedean/heatfall/actions/workflows/tests.yml)
+[![Documentation](https://app.readthedocs.org/projects/heatfall/badge/?version=latest)](https://heatfall.readthedocs.io/en/latest/index.html)
 [![Python](https://img.shields.io/badge/python-3.8%E2%80%933.13-blue)](https://github.com/eddiethedean/heatfall/blob/main/pyproject.toml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green)](https://github.com/eddiethedean/heatfall/blob/main/LICENSE)
 
@@ -21,7 +22,7 @@ its point count; the map tiles and attribution come from OpenStreetMap.*
 
 [Install](#install) · [Quick start](#quick-start) · [Choose a grid](#choose-a-grid)
 · [Add other layers](#add-other-layers) · [API](#api) · [Troubleshooting](#troubleshooting)
-· [Documentation source](https://github.com/eddiethedean/heatfall/blob/main/docs/index.md)
+· [Documentation](https://heatfall.readthedocs.io/en/latest/index.html)
 
 ## Install
 
@@ -39,7 +40,7 @@ python -m pip install "git+https://github.com/eddiethedean/heatfall.git@main"
 
 The examples below require **1.1.0 or newer** for opacity controls and H3 fixes.
 Check your version with `python -m pip show heatfall`. See the
-[changelog](https://github.com/eddiethedean/heatfall/blob/main/CHANGELOG.md) for
+[changelog](https://heatfall.readthedocs.io/en/latest/changelog.html) for
 release details.
 
 The default OpenStreetMap basemap needs network access when tiles are not cached.
@@ -70,7 +71,9 @@ Both plotting functions return a `PIL.Image.Image`. Heatfall fits the map to the
 added cells automatically. `size` is the output width and height in pixels.
 
 For dataframe columns, pass lists such as `df["latitude"].tolist()` and
-`df["longitude"].tolist()`.
+`df["longitude"].tolist()`. See the
+[point data guide](https://heatfall.readthedocs.io/en/latest/data.html) for CSV
+input and coordinate conversion.
 
 ## Choose a grid
 
@@ -174,10 +177,13 @@ context.render_pillow(800, 500).save("layered-heatmap.png")
 ![A Heatfall H3 layer with a point, route, and circle](https://raw.githubusercontent.com/eddiethedean/heatfall/main/docs/images/layers.png)
 
 Landfall also supplies polygons, GeoJSON support, styling, and SVG rendering.
-See its [documentation](https://github.com/eddiethedean/landfall#readme) for the
+See its [documentation](https://landfall.readthedocs.io/en/latest/) for the
 inherited methods. For Heatfall's own layer methods, see the API below.
 
 ## API
+
+The [full API reference](https://heatfall.readthedocs.io/en/latest/api.html)
+documents signatures, defaults, return values, and context heat methods.
 
 The public package exports two plotting functions and `Context`:
 
@@ -254,20 +260,26 @@ GeoJSON is outside Heatfall's point API. For polar cells, H3 rendering is clippe
 to the Web Mercator tile latitude limit of approximately ±85.0511°; these maps
 do not display the poles.
 
+See [geographic considerations](https://heatfall.readthedocs.io/en/latest/geography.html)
+for coordinate rules, antimeridian behavior, and polar limits.
+
 ## Documentation
 
-The documentation includes a visual example gallery, a heat-colored light/dark
-theme, searchable guides, and an API reference generated from the package.
-Browse the source guides below, or [build the site locally](#build-the-documentation).
+Read the [full documentation on Read the Docs](https://heatfall.readthedocs.io/en/latest/index.html).
+It includes a visual example gallery, a heat-colored light/dark theme, searchable
+guides, and an API reference generated from the package.
 
 | Guide | What you will find |
 | --- | --- |
-| [Getting started](https://github.com/eddiethedean/heatfall/blob/main/docs/installation.md) | Installation, coordinates, and your first image |
-| [Usage and styling](https://github.com/eddiethedean/heatfall/blob/main/docs/usage.md) | Grid choices, palettes, transparency, and layers |
-| [Point data](https://github.com/eddiethedean/heatfall/blob/main/docs/data.md) | CSV input, coordinate pairs, and count semantics |
-| [Basemaps and output](https://github.com/eddiethedean/heatfall/blob/main/docs/basemaps.md) | Providers, fixed views, rendering without tiles, and SVG |
-| [Geography](https://github.com/eddiethedean/heatfall/blob/main/docs/geography.md) | Antimeridian handling and polar limits |
-| [Troubleshooting](https://github.com/eddiethedean/heatfall/blob/main/docs/troubleshooting.md) | Common errors and reproducible bug reports |
+| [Getting started](https://heatfall.readthedocs.io/en/latest/installation.html) | Installation, coordinates, and your first image |
+| [Usage and styling](https://heatfall.readthedocs.io/en/latest/usage.html) | Grid choices, palettes, transparency, and layers |
+| [Point data](https://heatfall.readthedocs.io/en/latest/data.html) | CSV input, coordinate pairs, and count semantics |
+| [Basemaps and output](https://heatfall.readthedocs.io/en/latest/basemaps.html) | Providers, fixed views, rendering without tiles, and SVG |
+| [Geography](https://heatfall.readthedocs.io/en/latest/geography.html) | Antimeridian handling and polar limits |
+| [Troubleshooting](https://heatfall.readthedocs.io/en/latest/troubleshooting.html) | Common errors and reproducible bug reports |
+| [API reference](https://heatfall.readthedocs.io/en/latest/api.html) | Function signatures, defaults, and context heat methods |
+| [Development](https://heatfall.readthedocs.io/en/latest/development.html) | Local checks, documentation builds, and contributing |
+| [Releasing](https://heatfall.readthedocs.io/en/latest/releasing.html) | Compatibility notes and trusted publishing |
 
 ## Troubleshooting
 
@@ -323,9 +335,9 @@ Open `docs/_build/html/index.html` to view the site. With Python 3.13 available,
 `python -m tox -e docs` builds it in an isolated environment. CI also builds the
 documentation and fails on warnings.
 
-The repository is configured for Read the Docs through `.readthedocs.yaml`.
-See the [documentation setup guide](https://github.com/eddiethedean/heatfall/blob/main/docs/development.md#connect-read-the-docs)
-for importing the GitHub repository into a Read the Docs account.
+The published documentation builds through `.readthedocs.yaml`. See the
+[documentation development guide](https://heatfall.readthedocs.io/en/latest/development.html#build-the-documentation)
+for build tools and theme customization.
 
 The README images are actual package output. Reproduce them with:
 
@@ -340,7 +352,7 @@ For changes, include a runnable example or a regression test where appropriate,
 run the checks above, and open a pull request. For bug reports, include your Python
 and Heatfall versions, a small coordinate sample, the precision, and the traceback.
 
-Maintainers can follow the [release guide](https://github.com/eddiethedean/heatfall/blob/main/docs/releasing.md)
+Maintainers can follow the [release guide](https://heatfall.readthedocs.io/en/latest/releasing.html)
 for compatibility notes, distribution validation, and publishing steps. Pushing
 a matching `vX.Y.Z` tag runs the release checks and publishes to PyPI through
 trusted publishing.

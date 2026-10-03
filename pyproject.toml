@@ -55,7 +55,7 @@ dev = [
 Homepage = "https://github.com/eddiethedean/heatfall"
 Repository = "https://github.com/eddiethedean/heatfall"
 Issues = "https://github.com/eddiethedean/heatfall/issues"
-Documentation = "https://github.com/eddiethedean/heatfall#readme"
+Documentation = "https://heatfall.readthedocs.io/en/latest/index.html"
 
 [tool.setuptools]
 package-dir = {"" = "src"}

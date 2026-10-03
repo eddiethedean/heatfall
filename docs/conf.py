@@ -73,4 +73,6 @@ pygments_style = "friendly"
 pygments_dark_style = "monokai"
 copybutton_prompt_text = r">>> |\.\.\. "
 copybutton_prompt_is_regexp = True
-html_baseurl = os.environ.get("READTHEDOCS_CANONICAL_URL", "")
+html_baseurl = os.environ.get(
+    "READTHEDOCS_CANONICAL_URL", "https://heatfall.readthedocs.io/en/latest/"
+)

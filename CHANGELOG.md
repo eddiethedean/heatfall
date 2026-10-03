@@ -17,6 +17,8 @@
   code quality, and package builds.
 - Add a Read the Docs configuration and a Sphinx documentation site with usage
   guides, geographic considerations, and an API reference generated from code.
+- Link the README guides and package documentation metadata to the published
+  Read the Docs site, and add a documentation build-status badge.
 - Add pinned documentation dependencies, an isolated tox build, and a strict
   documentation check in GitHub Actions.
 - Add a heat-colored documentation theme with light/dark modes, a visual
