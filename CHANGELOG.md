@@ -1,5 +1,13 @@
 # Changelog
 
+## [Unreleased]
+
+### Added
+- Add a Read the Docs configuration and a Sphinx documentation site with usage
+  guides, geographic considerations, and an API reference generated from code.
+- Add pinned documentation dependencies, an isolated tox build, and a strict
+  documentation check in GitHub Actions.
+
 ## [1.1.0] - 2026-10-02
 
 ### Changed

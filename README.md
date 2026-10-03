@@ -12,7 +12,7 @@
 Heatfall groups geographic observations into geohash rectangles or H3 cells,
 counts the points in each cell, and draws the occupied cells over a basemap.
 Save the result as a Pillow image, or combine a heat layer with points, routes,
-and service areas through [Landfall](https://github.com/eddiethedean/landfall).
+and service areas through [Landfall](https://landfall.readthedocs.io/en/latest/).
 
 ![H3 cells over downtown Tampa, rendered by Heatfall](https://raw.githubusercontent.com/eddiethedean/heatfall/main/docs/images/h3.png)
 
@@ -21,6 +21,7 @@ its point count; the map tiles and attribution come from OpenStreetMap.*
 
 [Install](#install) · [Quick start](#quick-start) · [Choose a grid](#choose-a-grid)
 · [Add other layers](#add-other-layers) · [API](#api) · [Troubleshooting](#troubleshooting)
+· [Documentation source](docs/index.md)
 
 ## Install
 
@@ -139,6 +140,11 @@ not apply smoothing, accept observation weights, or add a numeric legend.
 `heatfall.Context` extends `landfall.Context`, so heat cells can share a map with
 ordinary geographic objects. Add the heat layer first, then add the overlays.
 
+Landfall's [Context API](https://landfall.readthedocs.io/en/latest/api/#context)
+documents the inherited methods; its
+[shapes and styling guide](https://landfall.readthedocs.io/en/latest/shapes-and-styling/)
+explains point sizes, line widths, circle radii, and overlay colors.
+
 ```python
 import heatfall
 
@@ -204,6 +210,10 @@ The default provider is `staticmaps.tile_provider_OSM`.
 Configure a context's basemap with `context.set_tile_provider(provider)` and
 render it with `context.render_pillow(width, height)`. The standalone plotting
 keyword is spelled **`tileprovider`**, without an underscore.
+See Landfall's [custom tile service guide](https://landfall.readthedocs.io/en/latest/custom-tile-service/)
+for basemap configuration and its
+[SVG example](https://landfall.readthedocs.io/en/latest/shapes-and-styling/#combine-shapes-and-export-svg)
+for exporting a composed map.
 
 ### Input rules
 
@@ -285,6 +295,23 @@ To run the complete Python version matrix, install the matching interpreters and
 run `python -m tox`. For a single installed version, use `python -m tox -e py311`.
 CI runs tests on Python 3.8–3.13 on Linux, Python 3.13 on macOS and Windows, and
 checks formatting, linting, types, and package builds.
+
+### Build the documentation
+
+Use Python 3.12 or newer for Sphinx and the documentation dependencies:
+
+```sh
+python -m pip install -e ".[docs]"
+python -m sphinx -b html -W --keep-going docs docs/_build/html
+```
+
+Open `docs/_build/html/index.html` to view the site. With Python 3.13 available,
+`python -m tox -e docs` builds it in an isolated environment. CI also builds the
+documentation and fails on warnings.
+
+The repository is configured for Read the Docs through `.readthedocs.yaml`.
+See the [documentation setup guide](docs/development.md#connect-read-the-docs)
+for importing the GitHub repository into a Read the Docs account.
 
 The README images are actual package output. Reproduce them with:
 

@@ -1,4 +1,5 @@
-include CHANGELOG.md requirements.txt requirements_dev.txt tox.ini
+include .readthedocs.yaml CHANGELOG.md requirements.txt requirements_dev.txt tox.ini
 recursive-include tests *.py
 recursive-include examples *.py
-recursive-include docs *.png
+recursive-include docs *.py *.md *.rst *.png
+prune docs/_build

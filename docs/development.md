@@ -1,0 +1,72 @@
+# Development and documentation
+
+## Set up a checkout
+
+```sh
+git clone https://github.com/eddiethedean/heatfall.git
+cd heatfall
+python -m venv .venv
+```
+
+Activate the environment with `source .venv/bin/activate` on macOS/Linux, or
+`.venv\Scripts\Activate.ps1` in Windows PowerShell. Install development tools:
+
+```sh
+python -m pip install -e ".[dev]"
+python -m pytest
+python -m tox -e ruff,mypy
+```
+
+Ordinary tests use mock map tiles. Tests explicitly marked `integration` may
+request real tiles. CI covers Python 3.8–3.13 on Linux, Python 3.13 on macOS and
+Windows, linting, type checks, package builds, and the documentation build.
+
+## Build the documentation
+
+Documentation tooling requires **Python 3.12 or newer**; Read the Docs and the CI
+documentation job use Python 3.13. In an environment with that Python version:
+
+```sh
+python -m pip install -e ".[docs]"
+python -m sphinx -b html -W --keep-going docs docs/_build/html
+```
+
+Open `docs/_build/html/index.html` in a browser. Warnings fail the build so broken
+references and missing pages are caught before publishing. The API reference
+imports the installed package; its displayed version comes from
+`heatfall.__version__`.
+
+With tox installed and Python 3.13 available, the equivalent isolated build is:
+
+```sh
+python -m tox -e docs
+```
+
+The checked-in map images are reused during documentation builds. To regenerate
+them from synthetic observations and real OpenStreetMap tiles:
+
+```sh
+python examples/generate_doc_maps.py
+```
+
+The image generator needs network access when tiles are not cached. Building the
+HTML documentation does not render maps or download tiles.
+
+## Connect Read the Docs
+
+The repository's `.readthedocs.yaml` defines the OS, Python version, package
+installation with the `docs` extra, Sphinx configuration, and strict warnings.
+
+1. Sign in to [Read the Docs](https://app.readthedocs.org/) and connect your GitHub
+   account.
+2. Import `eddiethedean/heatfall`, choose `main` as the default branch, and keep
+   the root `.readthedocs.yaml` as the configuration file.
+3. Trigger the first build and use the documentation URL assigned to the
+   project. Update the README and package documentation link to that verified
+   URL once hosting is active.
+4. Optionally activate release-tag versions and pull request previews in the
+   project's settings.
+
+See the [Read the Docs Sphinx guide](https://docs.readthedocs.com/platform/stable/intro/sphinx.html)
+for the import workflow. Account connection and project import are separate from
+the repository configuration.
