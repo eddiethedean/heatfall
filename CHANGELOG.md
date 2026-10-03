@@ -1,14 +1,18 @@
 # Changelog
 
-## [Unreleased]
+## [1.1.0] - 2026-10-02
 
 ### Changed
 - Default geohash and H3 heat fills to 60% opacity so basemap details remain
   visible. Regenerate the README images with the new default.
+- Require landfall>=0.4.2 and geodude>=0.1.1.
+- Expand the README with rendered examples, API details, and troubleshooting.
 
 ### Added
 - Add a keyword-only `opacity` option (0–1) to both plotting functions and
   Context heat layer methods; use `opacity=1` for solid fills.
+- Add GitHub Actions checks for supported Python versions, macOS and Windows,
+  code quality, and package builds.
 
 ### Fixed
 - Composite antimeridian pieces together so translucent H3 cells do not acquire
@@ -20,9 +24,6 @@
 - Close pole-containing H3 cells through their pole and limit their rendering
   to the Web Mercator latitude range.
 
-## [1.0.1] - 2026-10-02
-
-### Fixed
 - Preserve latitude/longitude order when rendering H3 cell boundaries.
 - Validate coordinates in Context heatmap methods, including non-finite values.
 - Use license metadata compatible with Python 3.8 build tools.
@@ -30,11 +31,6 @@
 - Use mock map tiles automatically in tests unless marked as integration tests.
 - Include shared test fixtures and development configuration in source archives.
 - Correct the Landfall circle examples to pass a sequence of radii.
-
-### Changed
-- Require landfall>=0.4.2 and geodude>=0.1.1.
-- Add GitHub Actions checks for supported Python versions, macOS and Windows,
-  code quality, and package builds.
 
 ## [1.0.0] - 2025-01-XX
 

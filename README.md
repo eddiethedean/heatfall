@@ -36,8 +36,8 @@ To install the latest code from `main`, including fixes that may not yet be on P
 python -m pip install "git+https://github.com/eddiethedean/heatfall.git@main"
 ```
 
-The examples below target **1.0.1**. If your PyPI installation is older, use the
-GitHub installation above for the H3 coordinate fixes. See the
+The examples below target **1.1.0**. If your PyPI installation is older, use the
+GitHub installation above for the opacity controls and H3 fixes. See the
 [changelog](https://github.com/eddiethedean/heatfall/blob/main/CHANGELOG.md) for
 release details.
 
@@ -250,7 +250,7 @@ do not display the poles.
 | Symptom | What to check |
 | --- | --- |
 | Every cell has the same color | Counts may all be equal. Use a coarser precision if you want more aggregation. |
-| Cells appear in the wrong place | Check latitude/longitude order and decimal-degree units. For H3, use Heatfall 1.0.1 or newer. |
+| Cells appear in the wrong place | Check latitude/longitude order and decimal-degree units. For H3, use Heatfall 1.1.0 or newer. |
 | Cells are larger or smaller than expected | Geohash and H3 use different precision scales. Adjust within the range for your chosen grid. |
 | Basemap tiles are missing or rendering stalls | Check network access and tile-provider availability. Cached tiles can avoid later requests. |
 | Colors differ between runs or maps | Palettes are generated per layer. Distinct and random colors can vary, and the number of count levels changes the palette. |
