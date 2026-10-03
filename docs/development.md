@@ -36,6 +36,12 @@ references and missing pages are caught before publishing. The API reference
 imports the installed package; its displayed version comes from
 `heatfall.__version__`.
 
+The Furo theme supplies responsive navigation, search, and light/dark modes.
+Heatfall's ember and amber palette is configured in `docs/conf.py`, with landing
+page, card, and content styles in `docs/_static/heatfall.css`. Code examples have
+copy buttons. Preview both color modes and a narrow viewport when changing the
+layout; keep actual map examples and their attribution visible.
+
 With tox installed and Python 3.13 available, the equivalent isolated build is:
 
 ```sh

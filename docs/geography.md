@@ -44,13 +44,8 @@ H3 rendering is clipped to the Web Mercator tile latitude limit of approximately
 ±85.0511°. Pole-containing cells close through their pole before clipping, but
 these maps do not display the poles themselves.
 
-## Troubleshooting
+## Next steps
 
-| Symptom | What to check |
-| --- | --- |
-| Every cell has the same color | Counts may all be equal. Try a coarser precision. |
-| Cells appear in the wrong place | Check coordinate order, decimal-degree units, and use Heatfall 1.1.0 or newer for the H3 fixes. |
-| Cells have an unexpected size | Geohash and H3 use different precision scales. |
-| Basemap tiles are missing or rendering stalls | Check network access and tile-provider availability. Cached tiles can avoid later requests. |
-| Colors differ between maps | Palettes are generated per layer; avoid comparing counts across maps by color alone. |
-| `add_circles()` raises `TypeError` | Pass latitude, longitude, and radii sequences, such as `[1000] * len(lats)` for one-kilometer radii. |
+See [troubleshooting](troubleshooting.md) for input errors, tile access, and
+unexpected cell colors. [Basemaps and output](basemaps.md) explains fixed views
+and SVG export.

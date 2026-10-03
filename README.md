@@ -255,6 +255,21 @@ GeoJSON is outside Heatfall's point API. For polar cells, H3 rendering is clippe
 to the Web Mercator tile latitude limit of approximately ±85.0511°; these maps
 do not display the poles.
 
+## Documentation
+
+The documentation includes a visual example gallery, a heat-colored light/dark
+theme, searchable guides, and an API reference generated from the package.
+Browse the source guides below, or [build the site locally](#build-the-documentation).
+
+| Guide | What you will find |
+| --- | --- |
+| [Getting started](https://github.com/eddiethedean/heatfall/blob/main/docs/installation.md) | Installation, coordinates, and your first image |
+| [Usage and styling](https://github.com/eddiethedean/heatfall/blob/main/docs/usage.md) | Grid choices, palettes, transparency, and layers |
+| [Point data](https://github.com/eddiethedean/heatfall/blob/main/docs/data.md) | CSV input, coordinate pairs, and count semantics |
+| [Basemaps and output](https://github.com/eddiethedean/heatfall/blob/main/docs/basemaps.md) | Providers, fixed views, rendering without tiles, and SVG |
+| [Geography](https://github.com/eddiethedean/heatfall/blob/main/docs/geography.md) | Antimeridian handling and polar limits |
+| [Troubleshooting](https://github.com/eddiethedean/heatfall/blob/main/docs/troubleshooting.md) | Common errors and reproducible bug reports |
+
 ## Troubleshooting
 
 | Symptom | What to check |

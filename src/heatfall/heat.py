@@ -257,6 +257,12 @@ class Context(landfall.Context):
             precision: Geohash precision (1-12)
             color_scheme: Color scheme ("distinct", "random", "wheel")
             opacity: Fill opacity from 0 (invisible) to 1 (solid), default 0.6
+
+        Returns:
+            None. Adds occupied cells to this context.
+
+        Raises:
+            ValueError: If coordinates, precision, or opacity are invalid
         """
         _validate_coordinates(lats, lons)
         _validate_opacity(opacity)
@@ -302,6 +308,12 @@ class Context(landfall.Context):
             precision: H3 resolution (0-15)
             color_scheme: Color scheme ("distinct", "random", "wheel")
             opacity: Fill opacity from 0 (invisible) to 1 (solid), default 0.6
+
+        Returns:
+            None. Adds occupied cells to this context.
+
+        Raises:
+            ValueError: If coordinates, precision, or opacity are invalid
         """
         _validate_opacity(opacity)
         hashes = calculate_h3_hashes(lats, lons, precision)
@@ -343,8 +355,8 @@ def plot_heat_hashes(
     """
     Plot a heatmap of geographic points using geohash binning.
 
-    Creates a static map with colored polygons representing point density
-    in each geohash cell.
+    Creates a static map with occupied geohash rectangles colored by point
+    count. Counts are not normalized by cell area.
 
     Args:
         lats: List of latitude values (decimal degrees, -90 to 90)
@@ -397,8 +409,8 @@ def plot_heat_h3s(
     """
     Plot a heatmap of geographic points using H3 hexagonal binning.
 
-    Creates a static map with colored hexagonal polygons representing
-    point density in each H3 cell.
+    Creates a static map with occupied H3 cells colored by point count. H3 cells
+    are mostly hexagons, with some pentagons; counts are not area-normalized.
 
     Args:
         lats: List of latitude values (decimal degrees, -90 to 90)

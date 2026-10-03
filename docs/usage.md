@@ -1,4 +1,4 @@
-# Usage
+# Usage and styling
 
 ## Create an H3 heatmap
 
@@ -105,3 +105,10 @@ functions, the argument is spelled `tileprovider`, without an underscore.
 `Context` also inherits py-staticmaps' SVG and optional Cairo rendering methods.
 Landfall documents [custom tile services](https://landfall.readthedocs.io/en/latest/custom-tile-service/)
 and [combining shapes and exporting SVG](https://landfall.readthedocs.io/en/latest/shapes-and-styling/#combine-shapes-and-export-svg).
+
+## Next steps
+
+- [Prepare point data](data.md) from a CSV or coordinate pairs.
+- [Choose a basemap or export SVG](basemaps.md), including rendering without tiles.
+- [Check geographic boundaries](geography.md) for antimeridian and polar behavior.
+- [Look up exact signatures](api.rst) or [troubleshoot a map](troubleshooting.md).

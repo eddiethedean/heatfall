@@ -7,6 +7,9 @@
   guides, geographic considerations, and an API reference generated from code.
 - Add pinned documentation dependencies, an isolated tox build, and a strict
   documentation check in GitHub Actions.
+- Add a heat-colored documentation theme with light/dark modes, a visual
+  landing page, copyable examples, and focused data, basemap, and troubleshooting
+  guides.
 
 ## [1.1.0] - 2026-10-02
 

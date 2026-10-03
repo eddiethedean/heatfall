@@ -1,0 +1,109 @@
+# Basemaps and output
+
+Use a plotting function for a single heat layer. Use `heatfall.Context` when you
+need to configure the view, combine layers, or export SVG. Heatfall's context
+inherits ordinary map layers and rendering from
+[Landfall](https://landfall.readthedocs.io/en/latest/api/#context) and py-staticmaps.
+
+## Choose a tile provider
+
+The default basemap is OpenStreetMap. Supply a py-staticmaps tile provider with
+`tileprovider` on either plotting function:
+
+```python
+import heatfall
+import staticmaps
+
+lats = [27.9470, 27.9470, 27.9515]
+lons = [-82.4580, -82.4580, -82.4500]
+
+image = heatfall.plot_heat_h3s(
+    lats, lons, precision=8,
+    tileprovider=staticmaps.tile_provider_OSM,
+    size=(1000, 650),
+)
+image.save("heatmap.png")
+```
+
+For a composed map, call `context.set_tile_provider(provider)` before rendering.
+Landfall's [custom tile service guide](https://landfall.readthedocs.io/en/latest/custom-tile-service/)
+explains URL templates, tile-provider settings, and API keys.
+
+```{note} The argument spelling differs
+Heatfall's plotting functions use `tileprovider`. Landfall's plotting functions
+use `tile_provider`. On a context, use `set_tile_provider()`.
+```
+
+Rendering may download tiles when they are not cached. Provider availability,
+usage limits, and attribution requirements depend on the service you choose.
+Keep the attribution in exported maps.
+
+## Render without a basemap
+
+Use the built-in provider with no tile downloads to inspect your heat cells
+without network access:
+
+```python
+import heatfall
+import staticmaps
+
+context = heatfall.Context()
+context.set_tile_provider(staticmaps.tile_provider_None)
+context.add_heat_h3s([27.9470, 27.9515], [-82.4580, -82.4500], precision=8)
+context.render_pillow(800, 500).save("cells-only.png")
+```
+
+A map without tiles supplies no street or place-name context. Use it to inspect
+cell geometry or as an input to your own composition workflow.
+
+## Control the view
+
+Standalone plotting functions automatically fit the occupied cells. With a
+context, you can set a center and zoom explicitly:
+
+```python
+import heatfall
+import staticmaps
+
+context = heatfall.Context()
+context.add_heat_h3s([27.9470, 27.9515], [-82.4580, -82.4500], precision=8)
+context.set_center(staticmaps.create_latlng(27.9470, -82.4500))
+context.set_zoom(13)
+context.render_pillow(1000, 650).save("fixed-view.png")
+```
+
+Higher zoom brings you closer to the ground. Use the same center, zoom, and
+output dimensions when comparing maps. The image size is in pixels and does not
+change the grid's precision or the number of observations counted.
+
+## Export an image or SVG
+
+`plot_heat_hashes()` and `plot_heat_h3s()` return a Pillow image. Save it as PNG,
+or use it in a notebook by leaving `image` as the last expression in a cell.
+For JPEG, convert away from the image's RGBA mode first:
+
+```python
+image.convert("RGB").save("heatmap.jpg", quality=95)
+```
+
+Use a context for SVG:
+
+```python
+import heatfall
+
+context = heatfall.Context()
+context.add_heat_h3s([27.9470, 27.9515], [-82.4580, -82.4500], precision=8)
+context.render_svg(800, 500).saveas("heatmap.svg")
+```
+
+Heat cell boundaries are vector paths in SVG; basemap tiles remain raster
+imagery. Transparency is retained, including for cells split at the
+[antimeridian](geography.md#crossing-the-antimeridian).
+
+## Combine heat with other shapes
+
+Add heat cells first, then add points, lines, or circles to draw them above the
+heat fill. See the [composed map example](usage.md#compose-other-layers) for
+runnable code and an actual output image. Landfall's
+[shapes and styling guide](https://landfall.readthedocs.io/en/latest/shapes-and-styling/)
+covers inherited layer options and additional exports.

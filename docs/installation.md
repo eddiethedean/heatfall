@@ -26,6 +26,28 @@ The default OpenStreetMap basemap requires network access when tiles are not
 already cached. It needs no API key. Preserve provider attribution when sharing
 images; basemap imagery has its own provider terms.
 
+## Make your first map
+
+Save a small H3 example with the default translucent fill:
+
+```python
+import heatfall
+
+lats = [27.9470, 27.9470, 27.9515, 27.9430]
+lons = [-82.4580, -82.4580, -82.4500, -82.4475]
+
+image = heatfall.plot_heat_h3s(lats, lons, precision=8)
+image.save("first-heatmap.png")
+```
+
+`image` is a Pillow image. In a notebook, put `image` on its own as the last
+expression in a cell to display it. Coordinates are latitude first, longitude
+second, in decimal degrees; repeated locations count as separate observations.
+
+Continue with [usage and styling](usage.md) for the illustrated example,
+[prepare your point data](data.md) to load a CSV, or
+[basemaps and output](basemaps.md) to configure a view and export SVG.
+
 ## Dependencies
 
 Installation brings in [Landfall](https://github.com/eddiethedean/landfall) for map
