@@ -1,0 +1,82 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  version:
+    name: Validate release tag
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.13"
+      - name: Check tag and package versions
+        env:
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: |
+          python - <<'PY'
+          import ast
+          import os
+          import re
+          import tomllib
+          from pathlib import Path
+
+          tag = os.environ["RELEASE_TAG"]
+          if not re.fullmatch(r"v\d+\.\d+\.\d+", tag):
+              raise SystemExit(f"Expected a stable vX.Y.Z tag, got {tag!r}")
+
+          project = tomllib.loads(Path("pyproject.toml").read_text())
+          version = project["project"]["version"]
+          module = ast.parse(Path("src/heatfall/__init__.py").read_text())
+          runtime_version = next(
+              ast.literal_eval(node.value)
+              for node in module.body
+              if isinstance(node, ast.Assign)
+              and any(
+                  isinstance(target, ast.Name) and target.id == "__version__"
+                  for target in node.targets
+              )
+          )
+          if tag != f"v{version}" or runtime_version != version:
+              raise SystemExit(
+                  f"Version mismatch: tag={tag!r}, project={version!r}, "
+                  f"runtime={runtime_version!r}"
+              )
+          print(f"Validated Heatfall {version}")
+          PY
+
+  checks:
+    name: Release checks
+    needs: version
+    uses: ./.github/workflows/tests.yml
+
+  publish:
+    name: Publish to PyPI
+    needs: checks
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment:
+      name: pypi
+      url: https://pypi.org/project/heatfall/
+    permissions:
+      id-token: write
+    steps:
+      - name: Download validated distributions
+        uses: actions/download-artifact@v8
+        with:
+          name: heatfall-distributions
+          path: dist/
+      - name: Publish with trusted publishing
+        uses: pypa/gh-action-pypi-publish@v1.14.2

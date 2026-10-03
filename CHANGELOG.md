@@ -26,6 +26,8 @@
   the README, documentation navigation, and browser icon.
 - Add release instructions and CI validation of the installed wheel, dependency
   consistency, and downloadable distribution artifacts.
+- Publish validated distributions to PyPI through trusted publishing when a
+  matching `vX.Y.Z` tag is pushed; run the full CI suite before publishing.
 
 ### Fixed
 - Composite antimeridian pieces together so translucent H3 cells do not acquire

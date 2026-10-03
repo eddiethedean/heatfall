@@ -341,7 +341,9 @@ run the checks above, and open a pull request. For bug reports, include your Pyt
 and Heatfall versions, a small coordinate sample, the precision, and the traceback.
 
 Maintainers can follow the [release guide](https://github.com/eddiethedean/heatfall/blob/main/docs/releasing.md)
-for compatibility notes, distribution validation, and publishing steps.
+for compatibility notes, distribution validation, and publishing steps. Pushing
+a matching `vX.Y.Z` tag runs the release checks and publishes to PyPI through
+trusted publishing.
 
 ## Dependencies and license
 
