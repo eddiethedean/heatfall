@@ -1,2 +1,4 @@
 include CHANGELOG.md requirements.txt requirements_dev.txt tox.ini
 recursive-include tests *.py
+recursive-include examples *.py
+recursive-include docs *.png

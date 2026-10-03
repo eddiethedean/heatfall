@@ -1,389 +1,277 @@
-![Heatfall Logo](https://raw.githubusercontent.com/eddiethedean/heatfall/main/docs/heatfall_logo.png)
------------------
+<img src="https://raw.githubusercontent.com/eddiethedean/heatfall/main/docs/heatfall_logo.png" alt="Heatfall logo" width="100" align="right">
 
-# Heatfall: Easy to use functions for plotting heat maps of geographic data on static maps
-[![PyPI Latest Release](https://img.shields.io/pypi/v/heatfall.svg)](https://pypi.org/project/heatfall/)
-![Tests](https://github.com/eddiethedean/heatfall/actions/workflows/tests.yml/badge.svg)
-[![Python Support](https://img.shields.io/pypi/pyversions/heatfall.svg)](https://pypi.org/project/heatfall/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+# Heatfall
 
-## Version 1.0.1
+**Turn latitude and longitude lists into static maps colored by point count.**
 
-Version 1.0.1 fixes H3 coordinate ordering, strengthens input validation, and improves packaging and development tooling. See the [changelog](CHANGELOG.md) for details.
+[![PyPI](https://img.shields.io/pypi/v/heatfall.svg)](https://pypi.org/project/heatfall/)
+[![Tests](https://github.com/eddiethedean/heatfall/actions/workflows/tests.yml/badge.svg)](https://github.com/eddiethedean/heatfall/actions/workflows/tests.yml)
+[![Python](https://img.shields.io/badge/python-3.8%E2%80%933.13-blue)](https://github.com/eddiethedean/heatfall/blob/main/pyproject.toml)
+[![License: MIT](https://img.shields.io/badge/license-MIT-green)](https://github.com/eddiethedean/heatfall/blob/main/LICENSE)
 
-## What is it?
+Heatfall groups geographic observations into geohash rectangles or H3 cells,
+counts the points in each cell, and draws the occupied cells over a basemap.
+Save the result as a Pillow image, or combine a heat layer with points, routes,
+and service areas through [Landfall](https://github.com/eddiethedean/landfall).
 
-**Heatfall** is a modern, production-ready Python package with easy to use functions for plotting heat maps of geographic data on static maps. Built with type safety, comprehensive testing, and cross-platform compatibility in mind.
+![H3 cells over downtown Tampa, rendered by Heatfall](https://raw.githubusercontent.com/eddiethedean/heatfall/main/docs/images/h3.png)
 
-## ✨ Features
+*Synthetic observations around downtown Tampa. Each occupied cell is colored by
+its point count; the map tiles and attribution come from OpenStreetMap.*
 
-- 🗺️ **Easy heatmap plotting** - Plot heatmaps using geohash or H3 hexagonal binning
-- 🎨 **Multiple color schemes** - Choose from distinct, random, or wheel color schemes
-- 📍 **Geohash support** - Plot using geohash rectangular cells
-- 🔷 **H3 hexagonal support** - Plot using H3 hexagonal cells for better coverage
-- 🔧 **Built on landfall** - Leverages proven geospatial plotting infrastructure
-- 🔧 **Type-safe** - Full type annotations with mypy support
-- 🧪 **Well-tested** - Comprehensive test suite with 100% coverage across Python 3.8-3.13
-- 🚀 **Modern packaging** - Built with modern `pyproject.toml` standards
-- 🔄 **Cross-platform** - Works on Windows, macOS, and Linux
-- 📦 **Minimal dependencies** - Only essential packages required
+[Install](#install) · [Quick start](#quick-start) · [Choose a grid](#choose-a-grid)
+· [Add other layers](#add-other-layers) · [API](#api) · [Troubleshooting](#troubleshooting)
 
-## 🆕 What's New in 1.0.0
+## Install
 
-### Major Improvements
-- **Complete rewrite** with landfall integration for robust infrastructure
-- **Enhanced color system** with three distinct color schemes
-- **100% test coverage** ensuring reliability and stability
-- **Modern Python packaging** with `pyproject.toml` and proper dependency management
-- **Comprehensive type safety** with full type annotations
-- **Input validation** on all public functions
-- **Better error handling** with clear, descriptive error messages
+Python **3.8–3.13** is supported. Install the latest published release with:
 
-### New Features
-- **Color schemes**: Choose from "distinct", "random", or "wheel" color palettes
-- **Enhanced Context class**: Extends landfall.Context for advanced map composition
-- **Improved documentation**: Comprehensive examples and API reference
-- **Development tools**: Full linting, formatting, and testing infrastructure
-
-### Breaking Changes
-- **API modernization**: Some internal functions removed (not part of public API)
-- **Dependency changes**: Now requires landfall>=0.4.0
-- **Color system**: Custom color schemes replaced with standardized options
-
-## Requirements
-
-- **Python 3.8-3.13** (comprehensive version support)
-- **landfall>=0.4.2** (core geospatial plotting infrastructure)
-- **pygeodesy** (geohash calculations)
-- **geodude>=0.1.1** (geohash utilities)
-- **h3>=4.0.0** (H3 hexagonal indexing)
-
-## Installation
-
-### From PyPI
 ```sh
-pip install heatfall
+python -m pip install heatfall
 ```
 
-### Development Installation
+To install the latest code from `main`, including fixes that may not yet be on PyPI:
+
 ```sh
-pip install -e .[dev]
+python -m pip install "git+https://github.com/eddiethedean/heatfall.git@main"
 ```
 
-This installs the package in editable mode with development dependencies including:
-- `pytest` - Testing framework
-- `pytest-cov` - Coverage reporting
-- `mypy` - Type checking
-- `ruff` - Linting and formatting
-- `tox` - Multi-environment testing
+The examples below target **1.0.1**. If your PyPI installation is older, use the
+GitHub installation above for the H3 coordinate fixes. See the
+[changelog](https://github.com/eddiethedean/heatfall/blob/main/CHANGELOG.md) for
+release details.
 
-## Quick Start
+The default OpenStreetMap basemap needs network access when tiles are not cached.
+No API key is required for that default provider.
 
-### Basic Geohash Heatmap
+## Quick start
+
+Create an H3 map from 15 synthetic observations. Repeated coordinates deliberately
+produce cells with different counts.
+
 ```python
 import heatfall
 
-# Plot heatmap using geohash binning
-lats = [27.88, 27.92, 27.94]
-lons = [-82.49, -82.49, -82.46]
+lats = [27.9470] * 8 + [27.9515] * 4 + [27.9430] * 2 + [27.9475]
+lons = [-82.4580] * 8 + [-82.4500] * 4 + [-82.4475] * 2 + [-82.4400]
 
-# Default distinct colors
-img = heatfall.plot_heat_hashes(lats, lons, precision=4)
-img.save("heatmap.png")
-```
-
-### H3 Hexagonal Heatmap with Color Schemes
-```python
-import heatfall
-
-# Plot heatmap using H3 hexagonal binning
-lats = [27.88, 27.92, 27.94, 27.96, 27.98]
-lons = [-82.49, -82.49, -82.46, -82.44, -82.42]
-
-# Try different color schemes
-img1 = heatfall.plot_heat_h3s(lats, lons, precision=8, color_scheme="distinct")
-img2 = heatfall.plot_heat_h3s(lats, lons, precision=8, color_scheme="wheel")
-img3 = heatfall.plot_heat_h3s(lats, lons, precision=8, color_scheme="random")
-```
-
-### Custom Map Size
-```python
-import heatfall
-
-# Plot with custom output size
-lats = [27.88, 27.92, 27.94]
-lons = [-82.49, -82.49, -82.46]
-
-img = heatfall.plot_heat_hashes(
-    lats, lons, 
-    precision=4, 
-    size=(1024, 768)
+image = heatfall.plot_heat_h3s(
+    lats,
+    lons,
+    precision=8,
+    color_scheme="wheel",
+    size=(800, 500),
 )
-img.save("large_heatmap.png")
+image.save("h3-heatmap.png")
 ```
 
-### Advanced: Using Context with Landfall Integration
+Both plotting functions return a `PIL.Image.Image`. Heatfall fits the map to the
+added cells automatically. `size` is the output width and height in pixels.
+
+For dataframe columns, pass lists such as `df["latitude"].tolist()` and
+`df["longitude"].tolist()`.
+
+## Choose a grid
+
+| | Geohash | H3 |
+| --- | --- | --- |
+| Function | `plot_heat_hashes()` | `plot_heat_h3s()` |
+| Cell shape | Latitude/longitude rectangles | Mostly hexagons, with pentagons in the global grid |
+| `precision` range | 1–12 | 0–15; H3 calls this resolution |
+| Choose it when | Your data or downstream tools already use geohashes | You want hexagonal aggregation or already use H3 |
+| City-scale starting point | Try `precision=6` | Try `precision=8` |
+
+Higher precision means smaller cells. If most occupied cells contain only one
+point, reduce precision to aggregate more observations. Start with a coarser grid
+for data spread over a large region. The two precision scales are independent:
+geohash precision 8 and H3 resolution 8 do not imply the same cell size.
+
+| Geohash, precision 6 | H3, resolution 8 |
+| --- | --- |
+| ![Geohash rectangles over downtown Tampa](https://raw.githubusercontent.com/eddiethedean/heatfall/main/docs/images/geohash.png) | ![H3 cells over downtown Tampa](https://raw.githubusercontent.com/eddiethedean/heatfall/main/docs/images/h3.png) |
+
+*The same observations, aggregated into different grids. Each map fits its own
+cell boundaries, so the basemap extent can differ.*
+
+Create the same map using geohash cells:
+
 ```python
 import heatfall
 
-# Create a context that extends landfall.Context
-context = heatfall.Context()
+lats = [27.9470] * 8 + [27.9515] * 4 + [27.9430] * 2 + [27.9475]
+lons = [-82.4580] * 8 + [-82.4500] * 4 + [-82.4475] * 2 + [-82.4400]
 
-# Add heatmap
-context.add_heat_hashes(lats, lons, precision=4, color_scheme="distinct")
-
-# Add regular points from landfall
-context.add_points([27.9], [-82.5], colors=["red"], point_size=15)
-
-# Add lines
-context.add_line([(27.88, -82.49), (27.92, -82.49)], color="blue", width=3)
-
-# Add polygons
-context.add_polygons([
-    [(27.85, -82.52), (27.95, -82.52), (27.95, -82.42), (27.85, -82.42)]
-], color="green", width=2)
-
-# Add circles
-context.add_circles([27.9], [-82.5], [1000],
-                   color="yellow", fill_transparency=50)
-
-# Render everything together
-image = context.render_pillow(800, 600)
-image.save("combined_map.png")
+image = heatfall.plot_heat_hashes(
+    lats, lons, precision=6, color_scheme="wheel", size=(800, 500)
+)
+image.save("geohash-heatmap.png")
 ```
 
-### Real-World Example: Urban Planning Dashboard
+## Understand the colors
+
+Each observation contributes **one count** to its cell. Only occupied cells are
+drawn. Within a heat layer, cells with the same count share a color; different
+count levels receive different palette colors.
+
+| `color_scheme` | Behavior |
+| --- | --- |
+| `"distinct"` — default | Generates visually distinct colors for the count levels |
+| `"wheel"` | Selects colors from an HSV color wheel |
+| `"random"` | Generates random colors for the count levels |
+
+These palettes distinguish count levels; they do **not** guarantee a sequential
+light-to-dark or cool-to-hot scale. A red cell does not inherently mean a higher
+count. Colors are assigned separately for each layer, and `"distinct"` and
+`"random"` may change between calls. Avoid comparing counts across separate maps
+by color alone.
+
+The result shows raw counts per cell, not counts normalized by cell area. It does
+not apply smoothing, accept observation weights, or add a numeric legend.
+
+## Add other layers
+
+`heatfall.Context` extends `landfall.Context`, so heat cells can share a map with
+ordinary geographic objects. Add the heat layer first, then add the overlays.
+
 ```python
 import heatfall
 
-# Create comprehensive map with multiple data layers
+lats = [27.9470] * 8 + [27.9515] * 4 + [27.9430] * 2 + [27.9475]
+lons = [-82.4580] * 8 + [-82.4500] * 4 + [-82.4475] * 2 + [-82.4400]
+
 context = heatfall.Context()
+context.add_heat_h3s(lats, lons, precision=8, color_scheme="wheel")
 
-# Population density heatmap
-context.add_heat_h3s(population_lats, population_lons, 
-                    precision=7, color_scheme="distinct")
+# A reference location.
+context.add_points([27.9470], [-82.4580], colors=["black"], point_size=10)
 
-# Infrastructure points
-context.add_points(hospital_lats, hospital_lons, 
-                  colors=["red"], point_size=12)
-context.add_points(school_lats, school_lons, 
-                  colors=["blue"], point_size=10)
+# A route in (latitude, longitude) order.
+context.add_line(
+    [(27.9430, -82.4475), (27.9475, -82.4400)], color="black", width=3
+)
 
-# Service area circles
-context.add_circles(hospital_lats, hospital_lons,
-                   [2000] * len(hospital_lats), color="red", fill_transparency=80)
+# One circle per center, with radii in meters.
+context.add_circles(
+    [27.9515], [-82.4500], [300],
+    color="blue", fill_color="transparent", width=2,
+)
 
-# Road network
-for road_segment in road_segments:
-    context.add_line(road_segment, color="#808080", width=2)
-
-# City boundaries
-context.add_polygons(city_boundaries, color="black", width=3)
-
-# Render the complete dashboard
-dashboard = context.render_pillow(1200, 800)
-dashboard.save("urban_planning_dashboard.png")
+context.render_pillow(800, 500).save("layered-heatmap.png")
 ```
 
-### Delivery Route Optimization
+![A Heatfall H3 layer with a point, route, and circle](https://raw.githubusercontent.com/eddiethedean/heatfall/main/docs/images/layers.png)
+
+Landfall also supplies polygons, GeoJSON support, styling, and SVG rendering.
+See its [documentation](https://github.com/eddiethedean/landfall#readme) for the
+inherited methods. For Heatfall's own layer methods, see the API below.
+
+## API
+
+The public package exports two plotting functions and `Context`:
+
+| Entry point | Result |
+| --- | --- |
+| `heatfall.plot_heat_hashes()` | A Pillow image containing a geohash heat layer |
+| `heatfall.plot_heat_h3s()` | A Pillow image containing an H3 heat layer |
+| `heatfall.Context()` | A map context for composing layers |
+
+Both plotting functions accept the same arguments:
+
+| Argument | Default | Meaning |
+| --- | --- | --- |
+| `lats` | Required | List of latitudes in decimal degrees, from −90 to 90 |
+| `lons` | Required | Matching list of longitudes in decimal degrees, from −180 to 180 |
+| `precision` | Required | Geohash length 1–12, or H3 resolution 0–15 |
+| `color_scheme` | `"distinct"` | `"distinct"`, `"random"`, or `"wheel"` |
+| `tileprovider` | OpenStreetMap | A `staticmaps.TileProvider` for the basemap |
+| `size` | `(800, 500)` | Output `(width, height)` in pixels |
+
+The heat layer methods mutate the context and return `None`:
+
 ```python
-import heatfall
-
-# Delivery optimization visualization
-context = heatfall.Context()
-
-# Delivery density heatmap
-context.add_heat_hashes(delivery_lats, delivery_lons, 
-                       precision=5, color_scheme="wheel")
-
-# Optimal routes
-for route in optimal_routes:
-    context.add_line(route, color="blue", width=4)
-
-# Depot locations
-context.add_points(depot_lats, depot_lons, 
-                  colors=["green"], point_size=15)
-
-# Delivery zones
-context.add_polygons(delivery_zones, color="orange", 
-                    width=2, fill_transparency=60)
-
-# Render optimization map
-optimization_map = context.render_pillow(1024, 768)
-optimization_map.save("delivery_optimization.png")
+context.add_heat_hashes(lats, lons, precision, color_scheme="distinct")
+context.add_heat_h3s(lats, lons, precision, color_scheme="distinct")
 ```
 
-## API Reference
+The default provider is `staticmaps.tile_provider_OSM`.
+Configure a context's basemap with `context.set_tile_provider(provider)` and
+render it with `context.render_pillow(width, height)`. The standalone plotting
+keyword is spelled **`tileprovider`**, without an underscore.
 
-### Core Functions
+### Input rules
 
-- `plot_heat_hashes(lats, lons, precision, **kwargs)` - Plot geohash-based heatmap
-- `plot_heat_h3s(lats, lons, precision, **kwargs)` - Plot H3-based heatmap
-- `Context()` - Context class for complex map composition
+- Supply parallel coordinate lists in **latitude, longitude** order, using
+  decimal degrees. GeoJSON positions commonly use the reverse order.
+- Lists must have matching lengths. Out-of-range coordinates and non-finite
+  values such as `NaN` and infinity raise `ValueError`.
+- Use an integer precision in the supported range and one of the named palettes.
+- Standalone plotting functions reject empty lists. Adding an empty heat layer
+  to a `Context` is a no-op; add some content before rendering.
+- Repeated coordinates count as repeated observations. Deduplicate your input
+  first if your analysis should count unique locations instead.
 
-### Parameters
+## Troubleshooting
 
-- `lats`: List of latitude values (decimal degrees, -90 to 90)
-- `lons`: List of longitude values (decimal degrees, -180 to 180)
-- `precision`: 
-  - For geohash: 1-12 (higher = smaller cells)
-  - For H3: 0-15 (higher = smaller cells)
-- `color_scheme`: Color scheme - "distinct" (default), "random", or "wheel"
-- `size`: Output image size as (width, height) tuple
-- `tileprovider`: Map tile provider (default: OpenStreetMap)
+| Symptom | What to check |
+| --- | --- |
+| Every cell has the same color | Counts may all be equal. Use a coarser precision if you want more aggregation. |
+| Cells appear in the wrong place | Check latitude/longitude order and decimal-degree units. For H3, use Heatfall 1.0.1 or newer. |
+| Cells are larger or smaller than expected | Geohash and H3 use different precision scales. Adjust within the range for your chosen grid. |
+| Basemap tiles are missing or rendering stalls | Check network access and tile-provider availability. Cached tiles can avoid later requests. |
+| Colors differ between runs or maps | Palettes are generated per layer. Distinct and random colors can vary, and the number of count levels changes the palette. |
+| `add_circles()` raises `TypeError` | Pass latitude, longitude, and radii sequences; use `[1000] * len(lats)` for equal one-kilometer radii. |
 
-## Color Schemes
+Keep the provider attribution visible when sharing map images. Heatfall's MIT
+license covers the package; basemap imagery has its own provider terms.
 
-- **`distinct`** (default) - Visually distinct colors optimized for differentiation
-- **`random`** - Random colors for each density level
-- **`wheel`** - Colors from HSV color wheel for smooth gradients
+## Develop and contribute
 
-## Development
+Create a virtual environment, then install the package with its development tools:
 
-### Setup Development Environment
 ```sh
 git clone https://github.com/eddiethedean/heatfall.git
 cd heatfall
-pip install -e .[dev]
+python -m venv .venv
 ```
 
-### Running Tests
-
-Rendering tests use mock tiles. Tests explicitly marked `integration` can use real
-tile downloads.
+Activate it with `source .venv/bin/activate` on macOS/Linux, or
+`.venv\Scripts\Activate.ps1` in Windows PowerShell. Then run:
 
 ```sh
-# Run all tests
-pytest
-
-# Run with coverage
-pytest --cov=heatfall
-
-# Run specific test categories
-pytest tests/test_heat.py      # Heat mapping tests
-pytest tests/test_context.py   # Context tests
-pytest tests/test_helpers.py   # Helper function tests
-
-# Run tests across all Python versions
-tox
+python -m pip install -e ".[dev]"
+python -m pytest
+python -m tox -e ruff,mypy
 ```
 
-### Code Quality
+`pytest` generates coverage reports. Ordinary rendering tests use mock tiles;
+tests explicitly marked `integration` may make real tile requests.
+
+To run the complete Python version matrix, install the matching interpreters and
+run `python -m tox`. For a single installed version, use `python -m tox -e py311`.
+CI runs tests on Python 3.8–3.13 on Linux, Python 3.13 on macOS and Windows, and
+checks formatting, linting, types, and package builds.
+
+The README images are actual package output. Reproduce them with:
+
 ```sh
-# Linting
-ruff check src tests
-
-# Type checking
-mypy src
-
-# Formatting
-ruff format src tests
-
-# All quality checks
-tox -e ruff,mypy
+python examples/generate_doc_maps.py
 ```
 
-### Multi-Version Testing
-```sh
-# Test across all supported Python versions (3.8-3.13)
-tox
+The generator uses synthetic data and real OpenStreetMap tiles. It needs network
+access when those tiles are not already cached.
 
-# Test specific Python versions
-tox -e py38,py311,py313
-```
+For changes, include a runnable example or a regression test where appropriate,
+run the checks above, and open a pull request. For bug reports, include your Python
+and Heatfall versions, a small coordinate sample, the precision, and the traceback.
 
-## Dependencies
+## Dependencies and license
 
-- **[landfall](https://github.com/eddiethedean/landfall)** - Core geospatial plotting infrastructure
-- **[pygeodesy](https://github.com/mrJean1/PyGeodesy)** - Geohash calculations and geodesy tools
-- **[geodude](https://github.com/eddiethedean/geodude)** - Geohash utilities
-- **[h3](https://github.com/uber/h3-py)** - H3 hexagonal indexing system
+Heatfall uses [Landfall ≥0.4.2](https://github.com/eddiethedean/landfall) for map
+composition and colors, [Geodude ≥0.1.1](https://github.com/eddiethedean/geodude)
+and [PyGeodesy](https://github.com/mrJean1/PyGeodesy) for geohashes, and
+[H3 ≥4.0.0](https://github.com/uber/h3-py) for H3 cells. Landfall provides the
+underlying py-staticmaps and Pillow rendering dependencies.
 
-## 🔗 Landfall Integration
-
-Heatfall is built on top of **[landfall](https://github.com/eddiethedean/landfall)** for robust geospatial plotting infrastructure. This means you get the best of both worlds:
-
-### Seamless Integration
-```python
-import heatfall
-
-# heatfall.Context IS landfall.Context with extra heatmap methods
-context = heatfall.Context()
-
-# All landfall methods work perfectly
-context.add_points(lats, lons, colors=["red"], point_size=10)
-context.add_lines(route_coords, color="blue", width=3)
-context.add_polygons(boundaries, color="green", width=2)
-context.add_circles(lats, lons, [1000] * len(lats), color="yellow")
-
-# Plus heatmap-specific methods
-context.add_heat_hashes(lats, lons, precision=4, color_scheme="distinct")
-context.add_heat_h3s(lats, lons, precision=8, color_scheme="wheel")
-
-# Render everything together
-img = context.render_pillow(800, 600)
-```
-
-### Why This Integration Matters
-- **Single Context**: One context handles both heatmaps and regular plotting
-- **Consistent API**: Same parameter patterns and styling across both packages
-- **Shared Infrastructure**: Same tile providers, rendering engine, and color systems
-- **Performance**: Single rendering pass for all elements
-- **No Conflicts**: Automatic compatibility and version management
-
-### Available Landfall Features
-- **Points**: `add_points()` with custom colors and sizes
-- **Lines**: `add_line()` and `add_lines()` for routes and boundaries
-- **Polygons**: `add_polygons()` for areas and zones
-- **Circles**: `add_circles()` for service areas and coverage
-- **GeoJSON**: `add_geojson()` for complex geometries
-- **Custom Styling**: Colors, transparency, widths, and more
-
-## Related Projects
-
-- **[landfall](https://github.com/eddiethedean/landfall)** - Sister package for general geospatial plotting on static maps
-
-## Contributing
-
-We welcome contributions! Please see our development guidelines:
-
-1. **Fork the repository**
-2. **Create a feature branch**: `git checkout -b feature-name`
-3. **Make your changes** with tests
-4. **Run quality checks**: `tox -e ruff,mypy`
-5. **Run tests**: `tox`
-6. **Submit a pull request**
-
-## Migration from Previous Versions
-
-### From 0.2.x to 1.0.0
-
-**Breaking Changes:**
-- Now requires `landfall>=0.4.0` as a dependency
-- Custom color schemes are no longer supported
-- Some internal functions have been removed
-
-**Migration Steps:**
-1. Update dependencies: `pip install landfall>=0.4.0`
-2. Replace custom color calls with `color_scheme="distinct"` (or "random"/"wheel")
-3. Update any direct Context usage to leverage new landfall integration
-
-**Backward Compatibility:**
-- Basic function calls remain the same: `plot_heat_hashes(lats, lons, precision)`
-- Default behavior uses "distinct" colors (similar to previous behavior)
-
-## License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## Support
-
-- 📖 **Documentation**: [GitHub README](https://github.com/eddiethedean/heatfall#readme)
-- 🐛 **Issues**: [GitHub Issues](https://github.com/eddiethedean/heatfall/issues)
-- 💬 **Discussions**: [GitHub Discussions](https://github.com/eddiethedean/heatfall/discussions)
-
----
-
-**Made with ❤️ for the geospatial Python community**
-
-*Version 1.0.1 - Geographic heatmap visualization*
+Released under the [MIT license](https://github.com/eddiethedean/heatfall/blob/main/LICENSE).
+Report bugs and request features in
+[GitHub Issues](https://github.com/eddiethedean/heatfall/issues).
