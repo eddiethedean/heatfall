@@ -381,7 +381,7 @@ def _draw_pillow_legend(
         outline=colors["border"] if options.border_width else None,
         width=max(1, int(options.border_width)),
     )
-    from heatfall.legend import _font, _size, _text_height, _weight
+    from heatfall.legend import _font, _size, _text_height, _title_height, _weight
 
     label_size = _size(options, "label")
     title_size = _size(options, "title")
@@ -395,26 +395,30 @@ def _draw_pillow_legend(
     )
     y = y0 + options.padding
     if layout.title:
-        if options.title_align == "center":
-            title_x = (
-                x0 + (layout.width - draw.textlength(layout.title, font=title_font)) / 2
+        line_height = _text_height(title_font, "M")
+        for index, line in enumerate(layout.title_lines):
+            if options.title_align == "center":
+                title_x = (
+                    x0 + (layout.width - draw.textlength(line, font=title_font)) / 2
+                )
+            elif options.title_align == "right":
+                title_x = (
+                    x0
+                    + layout.width
+                    - options.padding
+                    - draw.textlength(line, font=title_font)
+                )
+            else:
+                title_x = x0 + options.padding
+            draw.text(
+                (title_x, y + index * (line_height + options.title_line_spacing)),
+                line,
+                font=title_font,
+                fill=colors["title"],
             )
-        elif options.title_align == "right":
-            title_x = (
-                x0
-                + layout.width
-                - options.padding
-                - draw.textlength(layout.title, font=title_font)
-            )
-        else:
-            title_x = x0 + options.padding
-        draw.text(
-            (title_x, y),
-            layout.title,
-            font=title_font,
-            fill=colors["title"],
+        title_height = _title_height(
+            title_font, layout.title_lines, options.title_line_spacing
         )
-        title_height = _text_height(title_font, layout.title)
         if options.divider_width:
             divider_y = y + title_height + max(1, options.title_spacing / 2)
             draw.line(

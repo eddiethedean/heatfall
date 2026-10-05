@@ -160,6 +160,13 @@ control columns, count order, and exact placement. It lists high-to-low by
 default; set `count_order="ascending"` for low-to-high. A map context also exposes immutable
 `context.heat_layers` metadata and `context.set_legend()` for composed maps.
 
+Use `LegendOptions(background_color="white", background_opacity=0.65)` for a
+translucent card that reveals cells beneath it. Background opacity ranges from
+`0` to `1` and multiplies the color's existing alpha; text and swatches keep
+their own opacity. Set `shadow=False` to remove the shadow as well.
+Titles wrap by default to keep the card compact. Use `title_max_width` to set
+the wrapping width in pixels or `title_wrap=False` to disable automatic wrapping.
+
 ```python
 image = heatfall.plot_heat_h3s(
     lats, lons, precision=8,

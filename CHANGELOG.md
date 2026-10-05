@@ -5,6 +5,8 @@
 ## [1.2.0] - Unreleased
 
 ### Added
+- Add `LegendOptions.background_opacity` (0–1) for translucent legend panels
+  in Pillow, SVG, and Cairo without changing text or swatch opacity.
 - Enable a discrete count legend by default for Pillow, SVG, and Cairo maps;
   allow disabling it or configuring position, anchor, units, offset, clipping,
   labels, columns, typography, panel colors, and spacing.
@@ -15,6 +17,9 @@
 - Add visual examples for the default legend and shared H3/geohash colors.
 
 ### Changed
+- Wrap legend titles by default to reduce unused panel width; expose
+  `title_wrap`, `title_max_width`, and `title_line_spacing` controls and preserve
+  explicit title line breaks across Pillow, SVG, and Cairo.
 - Refine legend typography, spacing, swatch size, and panel styling; bundle
   scalable regular and bold fonts for consistent Pillow output.
 - Align text and swatches across renderers, remove trailing row whitespace,

@@ -65,6 +65,28 @@ def main() -> None:
         y += size[1] + 64
     gallery.save(output / "legend-positions.png")
 
+    transparency = Image.new("RGB", (1500, 360), "#edf1f5")
+    transparency_draw = ImageDraw.Draw(transparency)
+    for column, opacity in enumerate((1.0, 0.65, 0.35)):
+        transparency_draw.text(
+            (column * 500 + 10, 12),
+            "Background opacity: {:.0%}".format(opacity),
+            font=heading,
+            fill="#17212f",
+        )
+        context.set_legend(
+            heatfall.LegendOptions(
+                position="center",
+                background_color="white",
+                background_opacity=opacity,
+                shadow=False,
+            )
+        )
+        transparency.paste(
+            context.render_pillow(480, 300).convert("RGB"), (column * 500 + 10, 50)
+        )
+    transparency.save(output / "legend-opacity.png")
+
     # Also exercise independent heading sizes and multiple labelled layers.
     context.add_heat_hashes(lats, lons, precision=7, legend_label="Geohash cells")
     context.set_legend(

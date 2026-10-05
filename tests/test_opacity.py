@@ -82,6 +82,7 @@ def test_plot_forwards_opacity_and_keeps_positional_arguments(
         staticmaps.tile_provider_None,
         (200, 200),
         opacity=opacity,
+        legend=False,
     )
     assert image.size == (200, 200)
     assert image.getpixel((100, 100)) == pixel

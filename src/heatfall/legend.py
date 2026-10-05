@@ -33,6 +33,8 @@ class LegendOptions:
 
     ``position`` is a named anchor or an ``(x, y)`` coordinate. Coordinates
     use pixels by default; fractions are measured against the output dimensions.
+    ``background_opacity`` scales the panel color's alpha from 0 to 1 without
+    changing text, swatch, border, or shadow opacity.
     """
 
     position: Position = "top-right"
@@ -76,6 +78,10 @@ class LegendOptions:
     column_spacing: int = 20
     columns: int = 1
     count_order: str = "descending"
+    background_opacity: float = 1.0
+    title_wrap: bool = True
+    title_max_width: Optional[int] = None
+    title_line_spacing: int = 3
 
 
 @dataclass(frozen=True)
@@ -113,6 +119,7 @@ class LegendLayout:
     column_widths: Tuple[float, ...]
     title: Optional[str]
     sections: Tuple[Tuple[str, Tuple[Tuple[LegendRow, ...], ...]], ...]
+    title_lines: Tuple[str, ...] = ()
 
 
 def _color_tuple(color: ColorSpec, option: str) -> Tuple[int, int, int, int]:
@@ -187,6 +194,7 @@ def validate_legend_options(options: LegendOptions) -> None:
         "padding",
         "divider_width",
         "title_spacing",
+        "title_line_spacing",
         "section_spacing",
         "label_gap",
         "row_spacing",
@@ -200,13 +208,23 @@ def validate_legend_options(options: LegendOptions) -> None:
         raise ValueError("allow_clipping must be bool")
     if not isinstance(options.shadow, bool):
         raise ValueError("shadow must be bool")
-    if (
-        isinstance(options.shadow_opacity, bool)
-        or not isinstance(options.shadow_opacity, (int, float))
-        or not math.isfinite(options.shadow_opacity)
-        or not 0 <= options.shadow_opacity <= 1
+    if not isinstance(options.title_wrap, bool):
+        raise ValueError("title_wrap must be bool")
+    if options.title_max_width is not None and (
+        isinstance(options.title_max_width, bool)
+        or not isinstance(options.title_max_width, int)
+        or options.title_max_width <= 0
     ):
-        raise ValueError("shadow_opacity must be between 0 and 1")
+        raise ValueError("title_max_width must be a positive integer or None")
+    for name in ("shadow_opacity", "background_opacity"):
+        value = getattr(options, name)
+        if (
+            isinstance(value, bool)
+            or not isinstance(value, (int, float))
+            or not math.isfinite(value)
+            or not 0 <= value <= 1
+        ):
+            raise ValueError("{} must be between 0 and 1".format(name))
     for name in ("title_font_size", "section_font_size", "label_font_size"):
         value = getattr(options, name)
         if value is not None and (
@@ -309,7 +327,6 @@ def layout_legend(
         bold=_weight(options, "section"),
         family=options.font_family,
     )
-    title_height = _text_height(title_font, options.title) if options.title else 0
     column_widths = [0.0] * max(len(columns) for _, columns in sections)
     for _, columns in sections:
         for index, rows in enumerate(columns):
@@ -321,16 +338,27 @@ def layout_legend(
     heading_widths = [
         _text_width(section_font, title) for title, _ in sections if title
     ]
-    if options.title:
-        heading_widths.append(_text_width(title_font, options.title))
     heading_width = max(heading_widths or [0])
     number_of_columns = max(len(columns) for _, columns in sections)
-    panel_width = max(
-        options.padding * 2
-        + sum(column_widths)
-        + options.column_spacing * max(0, number_of_columns - 1),
-        options.padding * 2 + heading_width,
+    content_width = max(
+        sum(column_widths) + options.column_spacing * max(0, number_of_columns - 1),
+        heading_width,
     )
+    title_lines: Tuple[str, ...] = ()
+    if options.title:
+        if options.title_wrap:
+            word_width = max(
+                [_text_width(title_font, word) for word in options.title.split()] or [0]
+            )
+            wrap_width = options.title_max_width or max(content_width, word_width)
+            title_lines = _wrap_title(options.title, title_font, wrap_width)
+        else:
+            title_lines = tuple(options.title.split("\n"))
+    panel_width = options.padding * 2 + max(
+        content_width,
+        max([_text_width(title_font, line) for line in title_lines] or [0]),
+    )
+    title_height = _title_height(title_font, title_lines, options.title_line_spacing)
     section_content_height = 0
     for section_index, (section_title, cols) in enumerate(sections):
         section_rows = max(len(column_rows) for column_rows in cols)
@@ -384,6 +412,7 @@ def layout_legend(
         tuple(column_widths),
         options.title,
         tuple(sections),
+        title_lines,
     )
 
 
@@ -429,18 +458,49 @@ def _text_baseline(font: Any) -> int:
     return int(font.getmetrics()[0])
 
 
+def _wrap_title(title: str, font: Any, width: float) -> Tuple[str, ...]:
+    """Wrap at word boundaries, splitting overlong words for explicit width caps."""
+    lines = []
+    for paragraph in title.split("\n"):
+        line = ""
+        for word in paragraph.split():
+            candidate = "{} {}".format(line, word) if line else word
+            if _text_width(font, candidate) <= width:
+                line = candidate
+                continue
+            if line:
+                lines.append(line)
+            while _text_width(font, word) > width and len(word) > 1:
+                cut = 1
+                while cut < len(word) and _text_width(font, word[: cut + 1]) <= width:
+                    cut += 1
+                lines.append(word[:cut])
+                word = word[cut:]
+            line = word
+        lines.append(line)
+    return tuple(lines)
+
+
+def _title_height(font: Any, lines: Tuple[str, ...], spacing: int) -> int:
+    return _text_height(font, "M") * len(lines) + spacing * max(0, len(lines) - 1)
+
+
 def color_to_rgba(color: ColorSpec) -> Tuple[int, int, int, int]:
     """Return a validated RGBA tuple for a public color specification."""
     return _color_tuple(color, "color")
 
 
 def legend_colors(options: LegendOptions) -> Dict[str, Tuple[int, int, int, int]]:
+    background = _color_tuple(options.background_color, "background_color")
     return {
         "text": _color_tuple(options.text_color, "text_color"),
         "title": _color_tuple(_style_color(options, "title"), "title_color"),
         "section": _color_tuple(_style_color(options, "section"), "section_color"),
         "label": _color_tuple(_style_color(options, "label"), "label_color"),
-        "background": _color_tuple(options.background_color, "background_color"),
+        "background": (
+            *background[:3],
+            round(background[3] * options.background_opacity),
+        ),
         "border": _color_tuple(options.border_color, "border_color"),
         "shadow": _color_tuple(options.shadow_color, "shadow_color"),
         "divider": _color_tuple(
@@ -516,19 +576,28 @@ def draw_svg_legend(
             title_x, text_anchor = layout.x + layout.width - options.padding, "end"
         else:
             title_x, text_anchor = layout.x + options.padding, "start"
-        group.add(
-            drawing.text(
-                layout.title,
-                insert=(title_x, y + _text_baseline(title_font)),
-                text_anchor=text_anchor,
-                fill="#{:02x}{:02x}{:02x}".format(*colors["title"][:3]),
-                fill_opacity=colors["title"][3] / 255,
-                font_size=title_size,
-                font_weight=options.title_weight,
-                font_family=options.font_family,
+        line_height = _text_height(title_font, "M")
+        for index, line in enumerate(layout.title_lines):
+            group.add(
+                drawing.text(
+                    line,
+                    insert=(
+                        title_x,
+                        y
+                        + index * (line_height + options.title_line_spacing)
+                        + _text_baseline(title_font),
+                    ),
+                    text_anchor=text_anchor,
+                    fill="#{:02x}{:02x}{:02x}".format(*colors["title"][:3]),
+                    fill_opacity=colors["title"][3] / 255,
+                    font_size=title_size,
+                    font_weight=options.title_weight,
+                    font_family=options.font_family,
+                )
             )
+        title_height = _title_height(
+            title_font, layout.title_lines, options.title_line_spacing
         )
-        title_height = _text_height(title_font, layout.title)
         if options.divider_width:
             divider_y = y + title_height + max(1, options.title_spacing / 2)
             group.add(
@@ -701,18 +770,27 @@ def draw_cairo_legend(
     y = layout.y + options.padding
     if layout.title:
         select_font(title_size, _weight(options, "title"))
-        title_height = _text_height(title_font, layout.title)
+        line_height = _text_height(title_font, "M")
+        title_height = _title_height(
+            title_font, layout.title_lines, options.title_line_spacing
+        )
         title_color = colors["title"]
         context.set_source_rgba(*rgba(title_color))
-        advance = context.text_extents(layout.title)[4]
-        if options.title_align == "center":
-            title_x = layout.x + (layout.width - advance) / 2
-        elif options.title_align == "right":
-            title_x = layout.x + layout.width - options.padding - advance
-        else:
-            title_x = layout.x + options.padding
-        context.move_to(title_x, baseline(y, title_height))
-        context.show_text(layout.title)
+        for index, line in enumerate(layout.title_lines):
+            advance = context.text_extents(line)[4]
+            if options.title_align == "center":
+                title_x = layout.x + (layout.width - advance) / 2
+            elif options.title_align == "right":
+                title_x = layout.x + layout.width - options.padding - advance
+            else:
+                title_x = layout.x + options.padding
+            context.move_to(
+                title_x,
+                baseline(
+                    y + index * (line_height + options.title_line_spacing), line_height
+                ),
+            )
+            context.show_text(line)
         if options.divider_width:
             divider_y = y + title_height + max(1, options.title_spacing / 2)
             context.set_source_rgba(*rgba(colors["divider"]))

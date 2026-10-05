@@ -16,6 +16,7 @@ from heatfall.legend import (
     _font,
     draw_cairo_legend,
     draw_svg_legend,
+    legend_colors,
     layout_legend,
     validate_legend_options,
 )
@@ -189,6 +190,11 @@ def test_legend_clipping_overflow_and_invalid_options():
         heatfall.LegendOptions(label_font_size=True),
         heatfall.LegendOptions(title_weight="heavy"),
         heatfall.LegendOptions(title_align="justify"),
+        heatfall.LegendOptions(title_wrap="yes"),
+        heatfall.LegendOptions(title_max_width=0),
+        heatfall.LegendOptions(title_max_width=True),
+        heatfall.LegendOptions(title_max_width=80.5),
+        heatfall.LegendOptions(title_line_spacing=-1),
         heatfall.LegendOptions(font_family=" "),
         heatfall.LegendOptions(shadow_opacity=1.1),
         heatfall.LegendOptions(shadow_offset=(0, float("inf"))),
@@ -268,7 +274,7 @@ def test_legend_default_style_uses_card_and_swatch_corners():
     root = ET.fromstring(svg)
     ns = {"svg": "http://www.w3.org/2000/svg"}
     labels = [node.text for node in root.findall(".//svg:text", ns)]
-    assert labels == ["Observations per cell", "2", "1"]
+    assert labels == ["Observations", "per cell", "2", "1"]
 
 
 @pytest.mark.parametrize("align", ["left", "center", "right"])
@@ -516,14 +522,17 @@ def test_range_legend_text_stays_inside_card_at_all_positions_and_sizes(
 
     monkeypatch.setattr(ImageDraw.ImageDraw, "text", record_text)
     _draw_pillow_legend(Image.new("RGBA", size, "black"), (layer,), options)
-    assert len(bounds) == 6
+    title_line_count = len(layout.title_lines)
+    assert len(bounds) == 5 + title_line_count
     for left, top, right, bottom in bounds:
         assert left >= layout.x + options.padding
         assert top >= layout.y + options.padding
         assert right <= layout.x + layout.width - options.padding
         assert bottom <= layout.y + layout.height - options.padding
     # The title's ink must end above the divider and first row's text.
-    assert bounds[0][3] < min(box[1] for box in bounds[1:])
+    assert max(box[3] for box in bounds[:title_line_count]) < min(
+        box[1] for box in bounds[title_line_count:]
+    )
 
 
 def test_translucent_swatches_blend_over_the_panel_instead_of_the_map():
@@ -550,6 +559,161 @@ def test_translucent_swatches_blend_over_the_panel_instead_of_the_map():
         Image.new("RGBA", (1, 1), "white"), Image.new("RGBA", (1, 1), color)
     ).getpixel((0, 0))
     assert image.getpixel(center) == expected
+
+
+@pytest.mark.parametrize("opacity", [0, 0.5, 1])
+@pytest.mark.parametrize("color_alpha", [128, 255])
+def test_background_opacity_preserves_content_and_matches_all_renderers(
+    monkeypatch, opacity, color_alpha
+):
+    from PIL import Image
+    import svgwrite
+
+    options = heatfall.LegendOptions(
+        position="top-left",
+        background_color=(255, 255, 255, color_alpha),
+        background_opacity=opacity,
+        corner_radius=0,
+        shadow=False,
+    )
+    validate_legend_options(options)
+    layer = heatfall.HeatLayerInfo(
+        "h3", 9, None, 1, 1, (1,), ((1, (30, 136, 229, 153)),)
+    )
+    effective_alpha = round(color_alpha * opacity)
+    colors = legend_colors(options)
+    assert colors["background"] == (255, 255, 255, effective_alpha)
+    assert colors["title"] == legend_colors(heatfall.LegendOptions())["title"]
+    assert colors["label"] == legend_colors(heatfall.LegendOptions())["label"]
+
+    image = _draw_pillow_legend(
+        Image.new("RGBA", (300, 240), "black"), (layer,), options
+    )
+    layout = layout_legend((layer,), options, 300, 240)
+    blank_panel_pixel = (
+        int(layout.x + options.padding),
+        int(layout.y + options.padding / 2),
+    )
+    assert image.getpixel(blank_panel_pixel) == (effective_alpha,) * 3 + (255,)
+
+    drawing = svgwrite.Drawing(size=(300, 240))
+    draw_svg_legend(drawing, (layer,), options, 300, 240)
+    root = ET.fromstring(drawing.tostring())
+    ns = {"svg": "http://www.w3.org/2000/svg"}
+    panel = root.find('.//svg:rect[@fill="#ffffff"]', ns)
+    assert float(panel.attrib["fill-opacity"]) == effective_alpha / 255
+    swatch = root.find('.//svg:rect[@fill="#1e88e5"]', ns)
+    assert float(swatch.attrib["fill-opacity"]) == 153 / 255
+
+    canvas = MagicMock()
+    canvas.font_extents.return_value = (13, 4, 17, 0, 0)
+    canvas.text_extents.return_value = (0, 0, 10, 12, 10, 0)
+    cairo = SimpleNamespace(
+        FONT_SLANT_NORMAL=0,
+        FONT_WEIGHT_NORMAL=0,
+        FONT_WEIGHT_BOLD=1,
+        Context=lambda surface: canvas,
+    )
+    monkeypatch.setitem(sys.modules, "cairo", cairo)
+    draw_cairo_legend(object(), (layer,), options, 300, 240)
+    canvas.set_source_rgba.assert_any_call(1, 1, 1, effective_alpha / 255)
+
+
+@pytest.mark.parametrize(
+    "opacity", [-0.1, 1.1, float("nan"), float("inf"), True, "0.5", None]
+)
+def test_background_opacity_rejects_invalid_values(opacity):
+    with pytest.raises(ValueError, match="background_opacity must be between 0 and 1"):
+        heatfall.Context().set_legend(
+            heatfall.LegendOptions(background_opacity=opacity)
+        )
+
+
+def test_title_wrap_compacts_the_card_and_preserves_explicit_newlines():
+    layer = heatfall.HeatLayerInfo(
+        "h3", 9, None, 1, 1, (1,), ((1, (30, 136, 229, 153)),)
+    )
+    wrapped = layout_legend((layer,), heatfall.LegendOptions(), 300, 240)
+    unwrapped = layout_legend(
+        (layer,), heatfall.LegendOptions(title_wrap=False), 300, 240
+    )
+    assert wrapped.title_lines == ("Observations", "per cell")
+    assert unwrapped.title_lines == ("Observations per cell",)
+    assert wrapped.width < unwrapped.width
+    assert wrapped.height > unwrapped.height
+    assert wrapped.sections == unwrapped.sections
+    manual = layout_legend(
+        (layer,),
+        heatfall.LegendOptions(title="Counts\n\nper cell", title_wrap=False),
+        300,
+        240,
+    )
+    assert manual.title_lines == ("Counts", "", "per cell")
+
+
+@pytest.mark.parametrize("align", ["left", "center", "right"])
+def test_wrapped_titles_draw_every_line_before_rows_in_all_renderers(
+    monkeypatch, align
+):
+    from PIL import Image, ImageDraw
+    import svgwrite
+
+    layer = heatfall.HeatLayerInfo(
+        "h3", 9, None, 1, 1, (1,), ((1, (30, 136, 229, 153)),)
+    )
+    title = "Supercalifragilistic activity\n\nper cell"
+    options = heatfall.LegendOptions(
+        title=title,
+        title_max_width=90,
+        title_line_spacing=5,
+        title_align=align,
+    )
+    layout = layout_legend((layer,), options, 400, 400)
+    assert len(layout.title_lines) > 3
+    assert "" in layout.title_lines
+    assert "".join(layout.title_lines).replace(" ", "") == title.replace(
+        "\n", ""
+    ).replace(" ", "")
+    assert all(_font(13, True).getlength(line) <= 90 for line in layout.title_lines)
+
+    recorded = []
+    original = ImageDraw.ImageDraw.text
+
+    def record_text(draw, xy, text, **kwargs):
+        recorded.append(text)
+        return original(draw, xy, text, **kwargs)
+
+    monkeypatch.setattr(ImageDraw.ImageDraw, "text", record_text)
+    _draw_pillow_legend(Image.new("RGBA", (400, 400), "black"), (layer,), options)
+    assert recorded == list(layout.title_lines) + ["1"]
+
+    drawing = svgwrite.Drawing(size=(400, 400))
+    draw_svg_legend(drawing, (layer,), options, 400, 400)
+    root = ET.fromstring(drawing.tostring())
+    texts = root.findall(".//{http://www.w3.org/2000/svg}text")
+    assert [node.text or "" for node in texts] == list(layout.title_lines) + ["1"]
+    assert (
+        float(texts[-1].attrib["y"])
+        > float(texts[-2].attrib["y"]) + options.title_line_spacing
+    )
+
+    canvas = MagicMock()
+    canvas.font_extents.return_value = (13, 4, 17, 0, 0)
+    canvas.text_extents.return_value = (0, 0, 10, 12, 10, 0)
+    monkeypatch.setitem(
+        sys.modules,
+        "cairo",
+        SimpleNamespace(
+            FONT_SLANT_NORMAL=0,
+            FONT_WEIGHT_NORMAL=0,
+            FONT_WEIGHT_BOLD=1,
+            Context=lambda surface: canvas,
+        ),
+    )
+    draw_cairo_legend(object(), (layer,), options, 400, 400)
+    assert [call.args[0] for call in canvas.show_text.call_args_list] == list(
+        layout.title_lines
+    ) + ["1"]
 
 
 def landfall_context_base():

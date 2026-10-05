@@ -140,9 +140,9 @@ independent options:
 | Part | `LegendOptions` parameters |
 | --- | --- |
 | Placement | `position`, `units`, `anchor`, `offset`, `margin`, `allow_clipping` |
-| Title and labels | `title`, `label_format`, `font_family`, `font_size`, `title_font_size`, `section_font_size`, `label_font_size`, `title_weight`, `section_weight`, `label_weight`, `title_align` |
+| Title and labels | `title`, `title_wrap`, `title_max_width`, `title_line_spacing`, `label_format`, `font_family`, `font_size`, `title_font_size`, `section_font_size`, `label_font_size`, `title_weight`, `section_weight`, `label_weight`, `title_align` |
 | Text colors | `text_color`, `title_color`, `section_color`, `label_color` |
-| Panel | `background_color`, `border_color`, `border_width`, `corner_radius`, `padding` |
+| Panel | `background_color`, `background_opacity`, `border_color`, `border_width`, `corner_radius`, `padding` |
 | Shadow | `shadow`, `shadow_color`, `shadow_opacity`, `shadow_offset` |
 | Divider | `divider_color`, `divider_width`, `title_spacing` |
 | Count order | `count_order` (`"descending"` by default or `"ascending"`) |
@@ -152,6 +152,29 @@ Colors accept names, hexadecimal strings, `staticmaps.Color` values, and
 RGB/RGBA tuples. Shadow opacity ranges from 0 (transparent) to 1 (full color).
 Weights accept `"normal"` or `"bold"`; title alignment accepts `"left"`,
 `"center"`, or `"right"`.
+
+Titles wrap by default to the width needed by entries and layer headings,
+with enough room for the longest title word. This keeps a vertical legend
+compact. Set `title_max_width=120` to choose the wrapping width in pixels;
+long words split when necessary to honor that limit. Set `title_wrap=False`
+to disable automatic wrapping. Explicit `\n` line breaks are always preserved,
+and `title_line_spacing` controls the gap between title lines. Entry columns
+and layer headings still determine the minimum panel width.
+
+Set `background_opacity` from `0` (transparent) to `1` (full color opacity) to
+reveal heat cells underneath the card. It defaults to `1` and multiplies any
+alpha already present in `background_color`. Text, swatches, border, and shadow
+retain their independent styling. For example:
+
+```python
+context.set_legend(heatfall.LegendOptions(
+    background_color="white",
+    background_opacity=0.65,
+    shadow=False,
+))
+```
+
+![Legend backgrounds at three opacity levels](images/legend-opacity.png)
 
 Each heat layer uses its own palette. A composed map displays separately titled
 sections in layer order; set `legend_label` on a heat method to name a section.
