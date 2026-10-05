@@ -261,15 +261,34 @@ def _make_count_colors(
                 "count_colors is missing observed counts: {}".format(missing)
             )
         return {count: _with_opacity(normalized[count], opacity) for count in counts}
-    if color_scheme == "sequential":
+    if color_scheme in ("sequential", "heatmap"):
         low = min(counts)
         high = max(counts)
-        start = (222, 235, 247)
-        end = (8, 81, 156)
+        if color_scheme == "sequential":
+            stops: Tuple[Tuple[int, int, int], ...] = (
+                (222, 235, 247),
+                (8, 81, 156),
+            )
+        else:
+            # A familiar cool-to-hot count ramp, with blue for the lowest
+            # counts and red for the highest.
+            stops = (
+                (30, 136, 229),
+                (67, 160, 71),
+                (253, 216, 53),
+                (251, 140, 0),
+                (229, 57, 53),
+            )
         colors = {}
         for count in counts:
             ratio = 0.5 if low == high else (count - low) / (high - low)
-            rgb = tuple(round(a + (b - a) * ratio) for a, b in zip(start, end))
+            scaled = ratio * (len(stops) - 1)
+            index = min(int(scaled), len(stops) - 2)
+            local_ratio = scaled - index
+            rgb = tuple(
+                round(a + (b - a) * local_ratio)
+                for a, b in zip(stops[index], stops[index + 1])
+            )
             colors[count] = staticmaps.Color(*rgb)
         return {count: _with_opacity(colors[count], opacity) for count in counts}
     palette = process_colors(color_scheme, len(counts))
@@ -493,7 +512,7 @@ class Context(landfall.Context):
         lats: List[float],
         lons: List[float],
         precision: int,
-        color_scheme: str = "distinct",
+        color_scheme: str = "heatmap",
         *,
         opacity: float = 0.6,
         legend_label: Optional[str] = None,
@@ -506,7 +525,8 @@ class Context(landfall.Context):
             lats: List of latitude values
             lons: List of longitude values
             precision: Geohash precision (1-12)
-            color_scheme: "distinct", "random", "wheel", or "sequential"
+            color_scheme: "heatmap" (default), "distinct", "random", "wheel",
+                or "sequential"
             opacity: Fill opacity from 0 (invisible) to 1 (solid), default 0.6
             legend_label: Optional section title when this context has multiple heat layers
             count_colors: Optional fixed colors keyed by positive observed counts
@@ -551,7 +571,7 @@ class Context(landfall.Context):
         lats: List[float],
         lons: List[float],
         precision: int,
-        color_scheme: str = "distinct",
+        color_scheme: str = "heatmap",
         *,
         opacity: float = 0.6,
         legend_label: Optional[str] = None,
@@ -564,7 +584,8 @@ class Context(landfall.Context):
             lats: List of latitude values
             lons: List of longitude values
             precision: H3 resolution (0-15)
-            color_scheme: "distinct", "random", "wheel", or "sequential"
+            color_scheme: "heatmap" (default), "distinct", "random", "wheel",
+                or "sequential"
             opacity: Fill opacity from 0 (invisible) to 1 (solid), default 0.6
             legend_label: Optional section title when this context has multiple heat layers
             count_colors: Optional fixed colors keyed by positive observed counts
@@ -607,7 +628,7 @@ def plot_heat_hashes(
     lats: List[float],
     lons: List[float],
     precision: int,
-    color_scheme: str = "distinct",
+    color_scheme: str = "heatmap",
     tileprovider: staticmaps.TileProvider = tp,
     size: Tuple[int, int] = (800, 500),
     *,
@@ -625,7 +646,8 @@ def plot_heat_hashes(
         lats: List of latitude values (decimal degrees, -90 to 90)
         lons: List of longitude values (decimal degrees, -180 to 180)
         precision: Geohash precision level (1-12, higher = smaller cells)
-        color_scheme: "distinct", "random", "wheel", or "sequential"
+        color_scheme: "heatmap" (default), "distinct", "random", "wheel",
+            or "sequential"
         tileprovider: Tile provider for the base map (default: OpenStreetMap)
         size: Output image size in pixels as (width, height)
         opacity: Fill opacity from 0 (invisible) to 1 (solid), default 0.6
@@ -668,7 +690,7 @@ def plot_heat_h3s(
     lats: List[float],
     lons: List[float],
     precision: int,
-    color_scheme: str = "distinct",
+    color_scheme: str = "heatmap",
     tileprovider: staticmaps.TileProvider = tp,
     size: Tuple[int, int] = (800, 500),
     *,
@@ -686,7 +708,8 @@ def plot_heat_h3s(
         lats: List of latitude values (decimal degrees, -90 to 90)
         lons: List of longitude values (decimal degrees, -180 to 180)
         precision: H3 resolution level (0-15, higher = smaller cells)
-        color_scheme: "distinct", "random", "wheel", or "sequential"
+        color_scheme: "heatmap" (default), "distinct", "random", "wheel",
+            or "sequential"
         tileprovider: Tile provider for the base map (default: OpenStreetMap)
         size: Output image size in pixels as (width, height)
         opacity: Fill opacity from 0 (invisible) to 1 (solid), default 0.6

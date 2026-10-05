@@ -232,12 +232,16 @@ def test_svg_renders_panel_text_and_opacity():
 def test_legend_default_style_uses_card_and_swatch_corners():
     context = heatfall.Context()
     context.set_tile_provider(staticmaps.tile_provider_None)
-    context.add_heat_h3s([27.947, 27.947], [-82.458, -82.458], 8)
+    context.add_heat_h3s([27.947, 27.947, 27.951], [-82.458, -82.458, -82.450], 8)
     image = context.render_pillow(400, 300).convert("RGBA")
     svg = context.render_svg(400, 300).tostring()
     assert image.size == (400, 300)
     assert 'rx="9"' in svg
     assert 'font-weight="bold"' in svg
+    root = ET.fromstring(svg)
+    ns = {"svg": "http://www.w3.org/2000/svg"}
+    labels = [node.text for node in root.findall(".//svg:text", ns)]
+    assert labels == ["Observations per cell", "1", "2"]
 
 
 @pytest.mark.parametrize("align", ["left", "center", "right"])

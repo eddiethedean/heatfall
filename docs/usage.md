@@ -52,14 +52,17 @@ levels receive different palette colors.
 
 | `color_scheme` | Behavior |
 | --- | --- |
-| `"distinct"` (default) | Generates distinct colors for the count levels |
+| `"heatmap"` (default) | Interpolates from blue through green, yellow, and orange to red by count |
+| `"distinct"` | Generates distinct colors for the count levels |
 | `"wheel"` | Selects colors from an HSV color wheel |
 | `"random"` | Generates random colors for the count levels |
 | `"sequential"` | Uses a fixed light-to-dark blue scale by numeric count |
 
-The palettes do not guarantee a sequential light-to-dark or cool-to-hot scale.
-A red cell does not inherently indicate a higher count. Palettes are assigned
-per layer, and distinct/random colors may vary between calls.
+`"heatmap"` and `"sequential"` order colors by numeric count. In the default
+heatmap, blue marks the low end and red the high end; the scale is fitted
+separately to each layer. `"distinct"`, `"wheel"`, and `"random"` distinguish
+count levels without implying an order. Distinct/random colors may vary between
+calls.
 
 Use `count_colors` to fix colors to specific count values across maps or grids.
 Provide every count present in the data; extra entries are allowed. Colors accept
@@ -84,7 +87,8 @@ Both palettes receive a discrete legend with one entry per exact count.
 
 Plotting functions and new contexts show a legend by default. It uses the
 layer's exact final colors and alpha and labels the raw observation count per
-occupied cell. Hide it with `legend=False`, or toggle a context legend with
+occupied cell. The unit appears once in the heading and each swatch label is
+just the numeric count. Hide it with `legend=False`, or toggle a context legend with
 `context.set_legend(False)`. Empty heat additions have no legend entries.
 
 ```python
@@ -97,7 +101,7 @@ image = heatfall.plot_heat_h3s(
         units="fraction",
         anchor="top-right",
         offset=(-8, 0),
-        title="Observations per cell",
+        title="Points per cell",
         columns=2,
         label_format="{count} points",
     ),

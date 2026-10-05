@@ -99,7 +99,9 @@ def test_split_pieces_keep_original_observation_count(monkeypatch):
         lambda scheme, n: [staticmaps.BLUE, staticmaps.RED],
     )
     context = Context()
-    context.add_heat_h3s([0, 0, 35.68], [180, -180, 139.69], precision=5)
+    context.add_heat_h3s(
+        [0, 0, 35.68], [180, -180, 139.69], precision=5, color_scheme="distinct"
+    )
     assert len(context._objects) == 2
     assert len(context._objects[0]._parts) == 2
     assert [obj.fill_color().int_rgba() for obj in context._objects] == [
@@ -113,7 +115,7 @@ def test_split_pieces_keep_original_observation_count(monkeypatch):
 @pytest.mark.parametrize("resolution", [0, 5, 8])
 def test_automatic_center_stays_at_dateline(monkeypatch, size, resolution, longitudes):
     context = red_context(monkeypatch)
-    context.add_heat_h3s([0, 0], longitudes, resolution)
+    context.add_heat_h3s([0, 0], longitudes, resolution, color_scheme="distinct")
     center, zoom = context.determine_center_zoom(*size)
     assert abs(center.lng().degrees) > 170
     assert zoom >= 3
@@ -122,7 +124,9 @@ def test_automatic_center_stays_at_dateline(monkeypatch, size, resolution, longi
 
 def test_seam_has_no_gap_or_world_spanning_fill(monkeypatch):
     context = red_context(monkeypatch)
-    context.add_heat_h3s([0, 0], [180, -180], precision=5, opacity=1)
+    context.add_heat_h3s(
+        [0, 0], [180, -180], precision=5, color_scheme="distinct", opacity=1
+    )
     image = context.render_pillow(800, 500)
     filled = [
         (x, y)
@@ -139,7 +143,7 @@ def test_seam_has_no_gap_or_world_spanning_fill(monkeypatch):
 
 def test_fixed_world_view_fills_only_dateline_edges(monkeypatch):
     context = red_context(monkeypatch)
-    context.add_heat_h3s([0], [180], precision=2, opacity=1)
+    context.add_heat_h3s([0], [180], precision=2, color_scheme="distinct", opacity=1)
     context.set_center(staticmaps.create_latlng(0, 0))
     context.set_zoom(2)
     image = context.render_pillow(1024, 300)
@@ -150,7 +154,7 @@ def test_fixed_world_view_fills_only_dateline_edges(monkeypatch):
 
 def test_svg_pieces_do_not_span_the_world(monkeypatch):
     context = red_context(monkeypatch)
-    context.add_heat_h3s([0], [180], precision=5)
+    context.add_heat_h3s([0], [180], precision=5, color_scheme="distinct")
     center, zoom = context.determine_center_zoom(800, 500)
     world_width = 256 * 2**zoom
     svg = ET.fromstring(context.render_svg(800, 500).tostring())
@@ -176,7 +180,7 @@ def test_polar_cells_render_without_invalid_mercator_coordinates(latitude, resol
     )
     context = Context()
     context.set_tile_provider(staticmaps.tile_provider_None)
-    context.add_heat_h3s([latitude], [180], resolution)
+    context.add_heat_h3s([latitude], [180], resolution, color_scheme="distinct")
     for obj in context._objects:
         for part in obj._parts:
             assert all(

@@ -41,7 +41,7 @@ class LegendOptions:
     margin: float = 12
     allow_clipping: bool = False
     title: Optional[str] = "Observations per cell"
-    label_format: str = "{count} observation"
+    label_format: str = "{count}"
     font_size: int = 13
     title_font_size: Optional[int] = None
     section_font_size: Optional[int] = None
@@ -264,14 +264,7 @@ def layout_legend(
     multiple = len(layers) > 1
     for index, layer in enumerate(layers):
         rows = tuple(
-            LegendRow(
-                "1 observation"
-                if options.label_format == "{count} observation" and count == 1
-                else "{} observations".format(count)
-                if options.label_format == "{count} observation"
-                else options.label_format.format(count=count),
-                color,
-            )
+            LegendRow(options.label_format.format(count=count), color)
             for count, color in layer.count_colors
         )
         if rows:

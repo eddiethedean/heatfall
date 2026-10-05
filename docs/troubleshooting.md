@@ -10,7 +10,7 @@ connects common symptoms to a concrete next step.
 | Cells look too large or small | Geohash precision and H3 resolution use different scales. See [grid choices](usage.md#choose-a-grid). |
 | The basemap is missing or slow | Check network connectivity, provider availability, and usage limits. Try [rendering without tiles](basemaps.md#render-without-a-basemap) to inspect the heat layer. |
 | Colors differ between maps | Colors are assigned per layer. Distinct and random palettes may vary; color alone cannot establish equal counts across maps. |
-| Red cells do not correspond to the largest count | Palettes are categorical, not sequential. See [colors and opacity](usage.md#colors-and-opacity). |
+| Blue cells have low counts | The default heatmap maps low counts to blue and high counts to red. See [colors and opacity](usage.md#colors-and-opacity). |
 | The map spans the world near ±180° | Use Heatfall 1.1.0 or newer for H3 splitting and extent fixes. See [antimeridian behavior](geography.md#crossing-the-antimeridian). |
 | Cells are invisible | Check whether `opacity=0` was supplied. The default is `0.6`; use `1.0` for solid fills. |
 | The poles are missing | Web Mercator basemaps end at approximately ±85.0511°. See [polar limits](geography.md#polar-limits). |
@@ -43,7 +43,7 @@ development changes from source.
 - Keep latitude and longitude lists the same length and preserve their pairing.
 - Use finite numeric values: latitude −90…90, longitude −180…180.
 - Use an integer precision: geohash 1–12, H3 0–15.
-- Use one of `"distinct"`, `"random"`, `"wheel"`, or `"sequential"` for `color_scheme`.
+- Use one of `"heatmap"`, `"distinct"`, `"random"`, `"wheel"`, or `"sequential"` for `color_scheme`.
 - Pass `opacity` as a keyword, between 0 and 1 inclusive.
 - Give plotting functions at least one observation. An empty context heat layer
   is a no-op; the context still needs content before rendering.

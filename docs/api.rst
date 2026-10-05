@@ -23,7 +23,7 @@ Choosing an entry point
      - :class:`heatfall.Context`
 
 Both plotting functions require ``lats``, ``lons``, and ``precision``. Defaults
-are ``color_scheme="distinct"``, OpenStreetMap tiles, ``size=(800, 500)``,
+are ``color_scheme="heatmap"``, OpenStreetMap tiles, ``size=(800, 500)``,
 ``opacity=0.6``, and ``legend=True``. The context heat methods share the
 coordinates, precision, palette, and opacity arguments; they also accept
 ``legend_label`` and ``count_colors``. Configure tiles and dimensions when
@@ -31,8 +31,10 @@ rendering.
 
 See :doc:`usage` for legend placement and fixed color examples,
 :doc:`data` for count semantics, and :doc:`basemaps` for image and SVG output.
-The ``sequential`` color scheme runs light to dark blue. Other schemes
-represent distinct count levels without implying an order.
+The default ``heatmap`` color scheme runs from blue through green, yellow, and
+orange to red as counts increase. The ``sequential`` scheme runs light to dark
+blue. ``distinct``, ``wheel``, and ``random`` represent count levels without
+implying an order.
 
 Legends use nine named positions or arbitrary pixel/fraction coordinates,
 anchors, signed offsets, and styling controls through

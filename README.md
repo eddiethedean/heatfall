@@ -131,24 +131,26 @@ the palette colors.
 
 | `color_scheme` | Behavior |
 | --- | --- |
-| `"distinct"` — default | Generates visually distinct colors for the count levels |
+| `"heatmap"` — default | Maps low-to-high counts through blue, green, yellow, orange, and red |
+| `"distinct"` | Generates visually distinct colors for the count levels |
 | `"wheel"` | Selects colors from an HSV color wheel |
 | `"random"` | Generates random colors for the count levels |
 | `"sequential"` | Maps lower counts to light blue and higher counts to dark blue |
 
-The first three palettes distinguish count levels; they do **not** guarantee a
-sequential light-to-dark or cool-to-hot scale. A red cell does not inherently
-mean a higher count. Colors are assigned separately for each layer, and
-`"distinct"` and `"random"` may change between calls. Avoid comparing counts
-across separate maps by color alone. Use `count_colors` to assign fixed colors
-to count values when comparing maps.
+The `"heatmap"` and `"sequential"` palettes interpolate by numeric count; the
+heatmap runs blue at the low end through green, yellow, and orange to red at the
+high end. Colors are scaled separately for each layer. `"distinct"`, `"wheel"`,
+and `"random"` distinguish count levels without implying an order, and
+`"distinct"` and `"random"` may change between calls. Use `count_colors` to
+assign fixed colors to count values when comparing maps.
 
 The legend below uses a sequential palette. For direct geohash/H3 comparisons,
 the [shared color example](docs/images/shared-counts.png) fixes colors by count.
 
 Legends are enabled by default and show every distinct raw count using the exact
-colors assigned to cells. They are discrete, not a continuous gradient. Set
-`legend=False` to hide one. Use `heatfall.LegendOptions` to style the title,
+colors assigned to cells. The title states the unit once; each swatch is labeled
+with its numeric count. The entries are discrete, not a continuous gradient.
+Set `legend=False` to hide one. Use `heatfall.LegendOptions` to style the title,
 layer headings, labels, swatches, panel, and shadow independently, and to
 control columns and exact placement. A map context also exposes immutable
 `context.heat_layers` metadata and `context.set_legend()` for composed maps.
@@ -236,7 +238,7 @@ Both plotting functions accept the same arguments:
 | `lats` | Required | List of latitudes in decimal degrees, from −90 to 90 |
 | `lons` | Required | Matching list of longitudes in decimal degrees, from −180 to 180 |
 | `precision` | Required | Geohash length 1–12, or H3 resolution 0–15 |
-| `color_scheme` | `"distinct"` | `"distinct"`, `"random"`, `"wheel"`, or `"sequential"` |
+| `color_scheme` | `"heatmap"` | `"heatmap"`, `"distinct"`, `"random"`, `"wheel"`, or `"sequential"` |
 | `tileprovider` | OpenStreetMap | A `staticmaps.TileProvider` for the basemap |
 | `size` | `(800, 500)` | Output `(width, height)` in pixels |
 | `opacity` | `0.6` | Keyword-only fill opacity from `0.0` to `1.0` |
@@ -248,8 +250,8 @@ keyword-only `legend_label` and `count_colors`. The context legend is enabled
 by default, and `set_legend(False)` disables it:
 
 ```python
-context.add_heat_hashes(lats, lons, precision, color_scheme="distinct", opacity=0.6)
-context.add_heat_h3s(lats, lons, precision, color_scheme="distinct", opacity=0.6)
+context.add_heat_hashes(lats, lons, precision, color_scheme="heatmap", opacity=0.6)
+context.add_heat_h3s(lats, lons, precision, color_scheme="heatmap", opacity=0.6)
 context.set_legend(False)
 ```
 

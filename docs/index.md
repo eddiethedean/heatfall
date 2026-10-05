@@ -109,7 +109,8 @@ heatfall.plot_heat_h3s(
 ```
 
 Each occupied cell is colored by its point count. Palettes assign colors to
-count levels; they do not provide a sequential cool-to-hot scale. The heat
+count levels; the default heatmap instead orders counts from blue (low) through
+green, yellow, and orange to red (high). The heat
 colors in this documentation's theme are independent of your map palette.
 
 ## Keep exploring

@@ -39,9 +39,11 @@ in the [changelog](changelog.md).
 - The optional documentation extra requires Python 3.12 or newer. Documentation
   CI, tox, and Read the Docs use Python 3.13.
 
-Color palettes continue to represent count levels within each layer. The
-``sequential`` palette orders colors by count; other palettes remain
-categorical. None of the palettes normalizes counts by cell area.
+Color palettes represent count levels within each layer. The default
+``heatmap`` palette runs from blue at the low end through green, yellow, and
+orange to red at the high end; ``sequential`` uses a light-to-dark blue ramp.
+The other palettes distinguish levels without implying order. None of the
+palettes normalizes counts by cell area.
 
 ## Validate the release candidate
 

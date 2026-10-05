@@ -17,6 +17,7 @@
 ### Changed
 - Set the package version to 1.2.0 for the prepared release candidate.
 - Document the legend's default-on behavior and the `legend=False` opt-out.
+- Use concise numeric count labels by default; the legend title states the unit.
 
 ## [1.1.0] - 2026-10-03
 

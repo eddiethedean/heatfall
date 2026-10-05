@@ -51,7 +51,8 @@ Adding ordinary map objects does not create heat layer records.
   New contexts start with legends enabled; contexts without nonempty heat
   layers render no legend.
 - [x] Show one swatch for every distinct occupied-cell count, sorted ascending,
-  with default labels such as "1 observation" and "8 observations".
+  with numeric default labels such as "1" and "8"; the legend title supplies
+  the unit once ("Observations per cell").
 - [x] Use the stored colors, including fill opacity. Do not infer meaning from
   palette order, merge different count values, or substitute a gradient.
 - [x] Support nine named positions: `top-left`, `top-center`, `top-right`,
@@ -122,6 +123,8 @@ counts easier to see, and explicit mappings make comparisons reproducible.
   Store resulting RGBA values in metadata and use them unchanged for legends.
 - [x] Document that automatic sequential scales remain relative to each layer;
   use a shared explicit mapping for matching counts across maps.
+- [x] Add a red/orange/yellow/green/blue heatmap gradient and make it the
+  default color scheme; retain the blue sequential scale as an alternative.
 
 **Acceptance:** Equal counts have identical colors under a shared mapping,
 regardless of grid, input ordering, or other counts present. Sequential colors

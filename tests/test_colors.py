@@ -1,8 +1,44 @@
-"""Sequential heat colors and fixed count-to-color mappings."""
+"""Heat color scales and fixed count-to-color mappings."""
+
+from inspect import signature
 
 import pytest
 
 import heatfall
+from heatfall.heat import _make_count_colors
+
+
+def test_heatmap_gradient_uses_blue_to_red_stops_and_center_for_one_count():
+    colors = _make_count_colors((1, 2, 3, 4, 5), "heatmap", None, 1)
+    assert [colors[count].int_rgba()[:3] for count in range(1, 6)] == [
+        (30, 136, 229),
+        (67, 160, 71),
+        (253, 216, 53),
+        (251, 140, 0),
+        (229, 57, 53),
+    ]
+    single = _make_count_colors((7,), "heatmap", None, 1)
+    assert single[7].int_rgba()[:3] == (253, 216, 53)
+
+
+def test_all_public_heat_apis_default_to_heatmap():
+    for function in (
+        heatfall.Context.add_heat_hashes,
+        heatfall.Context.add_heat_h3s,
+        heatfall.plot_heat_hashes,
+        heatfall.plot_heat_h3s,
+    ):
+        assert signature(function).parameters["color_scheme"].default == "heatmap"
+
+
+@pytest.mark.parametrize("method", ["add_heat_hashes", "add_heat_h3s"])
+def test_heatmap_is_the_default_color_scheme(method):
+    args = ([27.947, 27.947, 27.951], [-82.458, -82.458, -82.450], 8)
+    default = heatfall.Context()
+    explicit = heatfall.Context()
+    getattr(default, method)(*args, opacity=1)
+    getattr(explicit, method)(*args, color_scheme="heatmap", opacity=1)
+    assert default.heat_layers[0].count_colors == explicit.heat_layers[0].count_colors
 
 
 @pytest.mark.parametrize("method", ["add_heat_hashes", "add_heat_h3s"])

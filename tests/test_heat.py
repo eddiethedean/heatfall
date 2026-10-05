@@ -40,7 +40,7 @@ class TestPlotHeatHashes:
 
     def test_heat_hashes_color_schemes(self, sample_coordinates):
         """Test different color schemes."""
-        for scheme in ["distinct", "random", "wheel"]:
+        for scheme in ["heatmap", "sequential", "distinct", "random", "wheel"]:
             img = heatfall.plot_heat_hashes(
                 sample_coordinates["lats"],
                 sample_coordinates["lons"],
@@ -122,7 +122,7 @@ class TestPlotHeatH3s:
 
     def test_heat_h3s_color_schemes(self, sample_coordinates):
         """Test H3 with different color schemes."""
-        for scheme in ["distinct", "random", "wheel"]:
+        for scheme in ["heatmap", "sequential", "distinct", "random", "wheel"]:
             img = heatfall.plot_heat_h3s(
                 sample_coordinates["lats"],
                 sample_coordinates["lons"],

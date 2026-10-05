@@ -28,7 +28,7 @@ def main() -> None:
     ).save(output / "geohash.png")
 
     heatfall.plot_heat_h3s(
-        lats, lons, precision=8, color_scheme="sequential", size=(800, 500)
+        lats, lons, precision=8, color_scheme="heatmap", size=(800, 500)
     ).save(output / "h3-legend.png")
 
     shared_colors = {

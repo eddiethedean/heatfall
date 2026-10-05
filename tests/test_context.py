@@ -91,7 +91,7 @@ class TestContext:
     def test_add_heat_hashes_color_schemes(self, sample_coordinates):
         """Test different color schemes with heat hashes."""
         context = Context()
-        for scheme in ["distinct", "random", "wheel"]:
+        for scheme in ["heatmap", "sequential", "distinct", "random", "wheel"]:
             context.add_heat_hashes(
                 sample_coordinates["lats"],
                 sample_coordinates["lons"],
@@ -104,7 +104,7 @@ class TestContext:
     def test_add_heat_h3s_color_schemes(self, sample_coordinates):
         """Test different color schemes with H3 heatmaps."""
         context = Context()
-        for scheme in ["distinct", "random", "wheel"]:
+        for scheme in ["heatmap", "sequential", "distinct", "random", "wheel"]:
             context.add_heat_h3s(
                 sample_coordinates["lats"],
                 sample_coordinates["lons"],

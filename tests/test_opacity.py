@@ -16,7 +16,9 @@ def test_context_opacity_overrides(monkeypatch, method, opacity, alpha):
     source = staticmaps.Color(20, 40, 60)
     monkeypatch.setattr("heatfall.heat.process_colors", lambda scheme, n: [source] * n)
     context = heatfall.Context()
-    getattr(context, method)([27.947], [-82.458], precision=6, opacity=opacity)
+    getattr(context, method)(
+        [27.947], [-82.458], precision=6, color_scheme="distinct", opacity=opacity
+    )
     assert len(context._objects) == 1
     assert context._objects[0].fill_color().int_rgba() == (20, 40, 60, alpha)
     assert source.int_rgba() == (20, 40, 60, 255)
@@ -28,7 +30,7 @@ def test_default_is_sixty_percent_opaque(monkeypatch, method):
         "heatfall.heat.process_colors", lambda scheme, n: [staticmaps.RED] * n
     )
     context = heatfall.Context()
-    getattr(context, method)([27.947], [-82.458], precision=6)
+    getattr(context, method)([27.947], [-82.458], precision=6, color_scheme="distinct")
     assert context._objects[0].fill_color().int_rgba() == (255, 0, 0, 153)
 
 
@@ -37,7 +39,9 @@ def test_existing_palette_alpha_is_preserved(monkeypatch, method):
     color = staticmaps.Color(20, 40, 60, 128)
     monkeypatch.setattr("heatfall.heat.process_colors", lambda scheme, n: [color] * n)
     context = heatfall.Context()
-    getattr(context, method)([27.947], [-82.458], precision=6, opacity=0.5)
+    getattr(context, method)(
+        [27.947], [-82.458], precision=6, color_scheme="distinct", opacity=0.5
+    )
     assert context._objects[0].fill_color().int_rgba() == (20, 40, 60, 64)
     assert color.int_rgba() == (20, 40, 60, 128)
 
@@ -91,7 +95,7 @@ def test_transparent_cell_has_uniform_alpha_at_seam(monkeypatch, center):
     context = heatfall.Context()
     context.set_tile_provider(staticmaps.tile_provider_None)
     context.set_background_color(staticmaps.BLACK)
-    context.add_heat_h3s([0, 0], [180, -180], precision=5)
+    context.add_heat_h3s([0, 0], [180, -180], precision=5, color_scheme="distinct")
     context.set_legend(False)
     if center is not None:
         context.set_center(staticmaps.create_latlng(0, center))
@@ -107,7 +111,7 @@ def test_svg_uses_one_opacity_for_both_pieces(monkeypatch):
     )
     context = heatfall.Context()
     context.set_tile_provider(staticmaps.tile_provider_None)
-    context.add_heat_h3s([0], [180], precision=5)
+    context.add_heat_h3s([0], [180], precision=5, color_scheme="distinct")
     context.set_legend(False)
     svg = ET.fromstring(context.render_svg(800, 500).tostring())
     paths = svg.findall(".//{http://www.w3.org/2000/svg}path")
@@ -121,7 +125,7 @@ def test_cairo_fills_both_pieces_once(monkeypatch):
         "heatfall.heat.process_colors", lambda scheme, n: [staticmaps.RED] * n
     )
     context = heatfall.Context()
-    context.add_heat_h3s([0], [180], precision=5)
+    context.add_heat_h3s([0], [180], precision=5, color_scheme="distinct")
     center, zoom = context.determine_center_zoom(800, 500)
     trans = staticmaps.Transformer(800, 500, zoom, center, 256)
     canvas = MagicMock()
@@ -144,7 +148,7 @@ def test_repeated_world_copies_do_not_darken_polar_cap_edges(
     context = heatfall.Context()
     context.set_tile_provider(staticmaps.tile_provider_None)
     context.set_background_color(staticmaps.BLACK)
-    context.add_heat_h3s([latitude], [180], resolution)
+    context.add_heat_h3s([latitude], [180], resolution, color_scheme="distinct")
     context.set_legend(False)
     image = context.render_pillow(800, 500)
     assert {r for r, g, b, a in image.getdata()} == {0, 153}
