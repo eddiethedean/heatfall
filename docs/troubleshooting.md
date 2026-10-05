@@ -15,7 +15,8 @@ small coordinate sample. Each check links to the relevant guide.
 | The basemap is missing or slow | Check network connectivity, provider availability, and usage limits. Try [rendering without tiles](basemaps.md#render-without-a-basemap) to inspect the heat layer. |
 | Colors differ between maps | Colors are assigned per layer. Distinct and random palettes may vary; color alone cannot establish equal counts across maps. |
 | Blue cells have low counts | The default heatmap maps low counts to blue and high counts to red. See [colors and opacity](usage.md#colors-and-opacity). |
-| The map spans the world near ±180° | Upgrade to Heatfall 1.2.0 for the current H3 boundary fixes. See [antimeridian behavior](geography.md#crossing-the-antimeridian). |
+| Colors changed after upgrading from 1.1.0 | Version 1.2.0 changed the default from `"distinct"` to `"heatmap"` and added a legend. Use `color_scheme="distinct", legend=False` for the old default appearance. |
+| The map spans the world near ±180° | H3 antimeridian rendering was fixed in 1.1.0. Check the installed version and see [antimeridian behavior](geography.md#crossing-the-antimeridian). |
 | Cells are invisible | Check whether `opacity=0` was supplied. The default is `0.6`; use `1.0` for solid fills. |
 | The poles are missing | Web Mercator basemaps end at approximately ±85.0511°. See [polar limits](geography.md#polar-limits). |
 

@@ -86,13 +86,47 @@ Choose the counting unit before plotting:
 | Where did events happen most often? | Keep one row per event, including repeated locations. |
 | Where are unique locations concentrated? | Deduplicate coordinate pairs first. |
 | Where did events occur in one time period? | Filter the rows to that period first. |
-| How do two periods compare? | Use the same precision and view, and inspect counts separately; palette colors are assigned independently per layer. |
+| How do two periods compare? | Use the same precision and map view, then pass the same explicit `count_colors` mapping to both periods. |
 
 Heatfall does not accept observation weights, normalize counts by area, or smooth
-neighboring cells. The default legend shows raw observation counts per cell.
+neighboring cells. The default heatmap palette groups raw counts into up to five
+inclusive ranges; its legend labels those ranges. Each cell still has one raw
+observation count. Use `"sequential"`, `"distinct"`, `"wheel"`, `"random"`, or
+an explicit `count_colors` mapping for one legend entry per observed count.
 Geohash cells vary in physical area
 with latitude, and H3 cells also vary in area. Interpret the result as **counts
 per cell**, rather than a calibrated density surface.
+
+For example, these two contexts use the same H3 resolution, center, zoom, image
+size, and colors. The examples use a no-tile provider so the comparison runs
+without network access; choose a basemap when geographic context is needed.
+
+```python
+import heatfall
+import staticmaps
+
+morning_lats = [27.9470, 27.9470, 27.9515]
+morning_lons = [-82.4580, -82.4580, -82.4500]
+afternoon_lats = [27.9470, 27.9515, 27.9515]
+afternoon_lons = [-82.4580, -82.4500, -82.4500]
+colors = {1: "#deebf7", 2: "#3182bd"}
+
+for name, lats, lons in (
+    ("morning", morning_lats, morning_lons),
+    ("afternoon", afternoon_lats, afternoon_lons),
+):
+    context = heatfall.Context()
+    context.set_tile_provider(staticmaps.tile_provider_None)
+    context.set_center(staticmaps.create_latlng(27.9470, -82.4540))
+    context.set_zoom(13)
+    context.add_heat_h3s(lats, lons, precision=8, count_colors=colors)
+    context.render_pillow(600, 400).save(f"{name}.png")
+```
+
+The mapping must include every count present in each period. Explicit colors
+keep equal counts visually consistent; identical map bounds make the geographic
+patterns comparable. See [colors and opacity](usage.md#colors-and-opacity) for
+more on fixed palettes.
 
 ## Choose precision deliberately
 

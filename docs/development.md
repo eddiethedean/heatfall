@@ -41,6 +41,11 @@ references and missing pages are caught before publishing. The API reference
 imports the installed package; its displayed version comes from
 `heatfall.__version__`.
 
+For the supported contributor workflow, including tests and pull request
+expectations, see [Contributing](contributing.md). The public support route is
+documented in [Support](support.md); report security issues privately as
+described in [Security](security.md).
+
 The Furo theme supplies responsive navigation, search, and light/dark modes.
 Heatfall's ember and amber palette is configured in `docs/conf.py`, with landing
 page, card, and content styles in `docs/_static/heatfall.css`. Code examples have
@@ -59,17 +64,21 @@ python -m tox -e docs
 ```
 
 The checked-in map images are reused during documentation builds. To regenerate
-them from synthetic observations and real OpenStreetMap tiles:
+them from synthetic observations and OpenStreetMap tiles:
 
 ```sh
 python examples/generate_doc_maps.py
 python examples/generate_legend_previews.py
 ```
 
-The generators need network access when tiles are not cached. They include the
-exact quick-start outputs, shared-color comparisons, individual legend placement
-and opacity images, and their overview sheets. Building the HTML documentation
-does not render maps or download tiles.
+The generators need network access when tiles are not cached. Tile imagery can
+change over time, so regenerated files may differ even when the Python examples
+do not. Review `git diff -- docs/images` and preserve provider attribution before
+committing changed images. The generators include the quick-start outputs,
+shared-color comparisons, legend placement and opacity previews, and their
+overview sheets. Building the HTML documentation does not render maps or
+download tiles. The automated tests smoke-test representative examples with
+tiles disabled.
 
 The workflow illustration has desktop and mobile SVG layouts in `docs/images/`.
 Edit both together so its labels remain readable on a phone. Galleries use the
@@ -100,9 +109,7 @@ the repository configuration.
 
 ## Prepare a release
 
-Phase 1.2 implements default legends with precise placement, sequential and
-explicit count colors, and inspectable heat layer metadata. The
-[roadmap](roadmap.md) records the completed scope.
-
-See the [release guide](releasing.md) for 1.2.0 compatibility notes, package
-validation, and the tag, upload, and verification steps.
+See the [release guide](releasing.md) for 1.2.0 compatibility notes and the
+version-neutral process for validating a package, tagging a release, and
+verifying publication. The [roadmap](roadmap.md) describes current scope and
+how future proposals are tracked.

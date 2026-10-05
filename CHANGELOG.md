@@ -2,7 +2,19 @@
 
 ## [Unreleased]
 
+### Documentation
+- Clarify the 1.2.0 palette migration, binned legend labels, and minimum
+  version for antimeridian fixes.
+- Add architecture, data-flow, performance, privacy, contributor, and support
+  guidance; add private vulnerability reporting instructions, smoke-test
+  representative examples, and check external documentation links in CI.
+- Replace release-candidate instructions with a version-neutral release guide.
+
 ## [1.2.0] - 2026-10-05
+
+Published to [PyPI](https://pypi.org/project/heatfall/1.2.0/) from
+[tag `v1.2.0`](https://github.com/eddiethedean/heatfall/tree/v1.2.0) and the
+[GitHub release](https://github.com/eddiethedean/heatfall/releases/tag/v1.2.0).
 
 ### Added
 - Add `LegendOptions.background_opacity` (0–1) for translucent legend panels
@@ -18,6 +30,9 @@
 - Add visual examples for the default legend and shared H3/geohash colors.
 
 ### Changed
+- Change the default palette from `"distinct"` to the ordered five-step
+  `"heatmap"` palette. Set `color_scheme="distinct"` to retain the 1.1.0
+  palette; this is independent of the new default-on legend.
 - Refresh the README and documentation with responsive diagrams, readable map
   galleries, matching example outputs, and consistent light/dark styling.
 - Wrap legend titles by default to reduce unused panel width; expose

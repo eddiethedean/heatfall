@@ -138,6 +138,42 @@ measured layout, position, anchor, and clipping checks. A legend does not affect
 map bounds or zoom. Its default top-right placement leaves bottom tile
 attribution clear; keep attribution visible when choosing a custom location.
 
+## Optional Cairo rendering
+
+Cairo output is optional and is provided by py-staticmaps. Install its Cairo
+extra in the same environment as Heatfall:
+
+```sh
+python -m pip install "heatfall" "py-staticmaps[cairo]"
+```
+
+The `pycairo` extension may need native Cairo development libraries to build.
+On Ubuntu, install `libcairo2-dev` before the Python extra. See the
+[pycairo installation guide](https://pycairo.readthedocs.io/en/latest/getting_started.html)
+for platform-specific requirements. Pillow and SVG rendering do not require
+this extra.
+
+```python
+import heatfall
+import staticmaps
+
+context = heatfall.Context()
+context.set_tile_provider(staticmaps.tile_provider_None)
+context.add_heat_h3s([27.9470, 27.9515], [-82.4580, -82.4500], precision=8)
+surface = context.render_cairo(800, 500)
+surface.write_to_png("heatmap-cairo.png")
+```
+
+## Tile requests and data
+
+Heatfall processes the coordinate lists locally; it has no Heatfall-hosted
+mapping service. With the default OpenStreetMap provider, the map renderer
+requests tiles for the visible map area. The tile provider can infer which
+geographic area is being rendered from those requests, but the observation
+lists are not sent to it by Heatfall. Use `staticmaps.tile_provider_None` to
+render without map-tile network requests. The resulting image has no street or
+place-name basemap.
+
 ## Combine heat with other shapes
 
 Add heat cells first, then add points, lines, or circles to draw them above the

@@ -1,9 +1,9 @@
 <div align="center">
   <img src="https://raw.githubusercontent.com/eddiethedean/heatfall/main/docs/heatfall_logo.png" alt="Heatfall logo" width="76">
   <h1>Heatfall</h1>
-  <p><strong>Turn coordinate lists into clear maps colored by count.</strong></p>
-  <p>Geohash rectangles or H3 cells · Legends built in · Pillow images and SVG maps</p>
-  <p><a href="#quick-start">Quick start</a> · <a href="#choose-a-grid">Choose a grid</a> · <a href="#understand-the-colors">Color guide</a> · <a href="https://heatfall.readthedocs.io/en/latest/">Full documentation</a></p>
+  <p><strong>Turn latitude and longitude observations into count maps.</strong></p>
+  <p>Geohash rectangles or H3 cells · Discrete count legends · Pillow and SVG output</p>
+  <p><a href="#quick-start">Quick start</a> · <a href="#choose-a-grid">Choose a grid</a> · <a href="#colors-and-legends">Colors and legends</a> · <a href="https://heatfall.readthedocs.io/en/latest/">Full documentation</a></p>
 </div>
 
 <p align="center">
@@ -14,424 +14,118 @@
   <a href="https://github.com/eddiethedean/heatfall/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-MIT-green" alt="MIT license"></a>
 </p>
 
-Heatfall groups geographic observations into geohash rectangles or H3 cells,
-counts the points in each cell, and draws the occupied cells over a basemap.
-Save the result as a Pillow image, or combine a heat layer with points, routes,
-and service areas through [Landfall](https://landfall.readthedocs.io/en/latest/).
+Heatfall groups geographic observations into geohash or H3 cells, counts the
+observations in each occupied cell, and draws the cells over a basemap. Use it
+for a single heat layer or combine heat with points and routes through
+[Landfall](https://landfall.readthedocs.io/en/latest/).
 
-![A clustered H3 heatmap of synthetic activity across downtown Tampa, rendered by Heatfall](https://raw.githubusercontent.com/eddiethedean/heatfall/main/docs/images/h3-legend.png)
+![H3 heatmap of synthetic observations across downtown Tampa, rendered by Heatfall](https://raw.githubusercontent.com/eddiethedean/heatfall/main/docs/images/first-map.png)
 
-*A seeded set of 1,040 synthetic observations, clustered around five Tampa
-neighborhoods with scattered background activity. The default legend labels
-each cell color with the point-count range it represents. Regenerate it with
-[`examples/generate_doc_maps.py`](examples/generate_doc_maps.py).*
-
-| Two grid systems | Counts stay explicit | Compose and export |
-| --- | --- | --- |
-| Geohash rectangles or mostly-hexagonal H3 cells. | Raw counts named in built-in legends. | Add points and routes; export images or SVG. |
+*Four synthetic observations, three occupied cells. The map uses the default
+heatmap palette and count legend.*
 
 ## Install
 
-Python **3.8–3.13** is supported. Install the latest published release with:
+Python **3.8–3.13** is supported.
 
 ```sh
 python -m pip install heatfall
 ```
 
-> **New in 1.2.0:** Translucent count legends are enabled by default. Place and
-> style them precisely, use a sequential palette, or share explicit count colors
-> across maps. See the [release notes](https://heatfall.readthedocs.io/en/latest/changelog.html).
-
-To install this release exactly:
-
-```sh
-python -m pip install "heatfall==1.2.0"
-```
-
-The examples below use Heatfall **1.2.0 or newer**. Check your version with
-`python -m pip show heatfall`.
-
-The default OpenStreetMap basemap needs network access when tiles are not cached.
-No API key is required for that default provider.
+The default OpenStreetMap basemap downloads map tiles when they are not cached.
+It needs network access and no API key. To render without tile requests, use
+`staticmaps.tile_provider_None`; the [basemap guide](https://heatfall.readthedocs.io/en/latest/basemaps.html#render-without-a-basemap)
+shows how.
 
 ## Quick start
 
-Create an H3 map from 15 synthetic observations. Repeated coordinates deliberately
-produce cells with different counts.
+Pass matching latitude and longitude lists in decimal degrees. Latitude comes
+first; repeated rows count as repeated observations.
 
 ```python
 import heatfall
 
-lats = [27.9470] * 8 + [27.9515] * 4 + [27.9430] * 2 + [27.9475]
-lons = [-82.4580] * 8 + [-82.4500] * 4 + [-82.4475] * 2 + [-82.4400]
+lats = [27.9470, 27.9470, 27.9515, 27.9430]
+lons = [-82.4580, -82.4580, -82.4500, -82.4475]
 
-image = heatfall.plot_heat_h3s(
-    lats,
-    lons,
-    precision=8,
-    color_scheme="wheel",
-    size=(800, 500),
-)
-image.save("h3-heatmap.png")
+image = heatfall.plot_heat_h3s(lats, lons, precision=8)
+image.save("heatmap.png")
 ```
 
-Both plotting functions return a `PIL.Image.Image`. Heatfall fits the map to the
-added cells automatically. `size` is the output width and height in pixels.
-
-For dataframe columns, pass lists such as `df["latitude"].tolist()` and
-`df["longitude"].tolist()`. See the
-[point data guide](https://heatfall.readthedocs.io/en/latest/data.html) for CSV
-input and coordinate conversion.
+Both plotting functions return a Pillow image. The default map uses a five-step
+blue-to-red heatmap palette and a discrete legend. See the
+[installation guide](https://heatfall.readthedocs.io/en/latest/installation.html)
+for the first-map walkthrough, or the [point-data guide](https://heatfall.readthedocs.io/en/latest/data.html)
+to load a CSV.
 
 ## Choose a grid
 
 | | Geohash | H3 |
 | --- | --- | --- |
 | Function | `plot_heat_hashes()` | `plot_heat_h3s()` |
-| Cell shape | Latitude/longitude rectangles | Mostly hexagons, with pentagons in the global grid |
-| `precision` range | 1–12 | 0–15; H3 calls this resolution |
-| Choose it when | Your data or downstream tools already use geohashes | You want hexagonal aggregation or already use H3 |
-| City-scale starting point | Try `precision=6` | Try `precision=8` |
+| Cell shape | Latitude/longitude rectangles | Mostly hexagons; pentagons also occur |
+| Precision | 1–12 | 0–15 (H3 calls this resolution) |
+| City-scale starting point | 6 | 8 |
 
-Higher precision means smaller cells. If most occupied cells contain only one
-point, reduce precision to aggregate more observations. Start with a coarser grid
-for data spread over a large region. The two precision scales are independent:
-geohash precision 8 and H3 resolution 8 do not imply the same cell size.
+Higher precision means smaller cells. The precision scales differ between grids;
+geohash precision 8 and H3 resolution 8 do not imply equal cell sizes. The
+[usage guide](https://heatfall.readthedocs.io/en/latest/usage.html#choose-a-grid)
+compares both outputs.
 
-<p>
-  <img src="https://raw.githubusercontent.com/eddiethedean/heatfall/main/docs/images/quickstart-geohash.png" alt="Geohash at precision 6: the 15 quick-start observations in rectangular cells with a count legend" width="400">
-  <img src="https://raw.githubusercontent.com/eddiethedean/heatfall/main/docs/images/quickstart-h3.png" alt="H3 at resolution 8: the same observations in hexagonal cells with a count legend" width="400">
-</p>
+## Colors and legends
 
-*Geohash at precision 6, then H3 at resolution 8. The same 15 observations from
-the quick start appear in both grids. Each map fits its own cell boundaries,
-so the basemap extent can differ.*
+`color_scheme="heatmap"` is the default. It maps low-to-high counts to up to
+five ordered color steps. Its legend labels each step with an inclusive count
+range; a cell still contains its raw count. The `"sequential"` palette uses a
+light-to-dark blue ramp and shows one entry per observed count. `"distinct"`,
+`"wheel"`, and `"random"` distinguish count levels without implying an order.
 
-Create the same map using geohash cells:
+Legends are on by default, with a translucent panel. Hide one with
+`legend=False`, or pass `heatfall.LegendOptions` to adjust its position, labels,
+columns, colors, and typography. The [legend guide](https://heatfall.readthedocs.io/en/latest/usage.html#legends)
+includes a placement gallery.
+
+Use fixed colors when maps need to be compared by count. Supply a color for
+every observed count in each map; a shared mapping can include extra counts:
 
 ```python
-import heatfall
-
-lats = [27.9470] * 8 + [27.9515] * 4 + [27.9430] * 2 + [27.9475]
-lons = [-82.4580] * 8 + [-82.4500] * 4 + [-82.4475] * 2 + [-82.4400]
-
-image = heatfall.plot_heat_hashes(
-    lats, lons, precision=6, color_scheme="wheel", size=(800, 500)
-)
-image.save("geohash-heatmap.png")
+count_colors = {1: "#deebf7", 2: "#9ecae1", 3: "#4292c6"}
+image = heatfall.plot_heat_h3s(lats, lons, precision=8, count_colors=count_colors)
 ```
 
-## Understand the colors
+Heatfall 1.2.0 changed the default palette from `"distinct"` to `"heatmap"` and
+added a legend by default. To keep the 1.1.0 appearance, set both
+`color_scheme="distinct"` and `legend=False`. See the
+[release notes](https://github.com/eddiethedean/heatfall/releases/tag/v1.2.0)
+for upgrade details.
 
-Each observation contributes **one count** to its cell. Only occupied cells are
-drawn. Within a heat layer, cells with the same count share a color; different
-count levels receive different palette colors.
+## Compose other layers
 
-Heat fills default to **60% opacity (40% transparent)**, keeping streets and
-labels visible beneath the cells. Set `opacity` on either plotting function or
-heat layer method to control the fill: `0.4` is lighter, `1.0` is solid, and `0.0`
-is invisible. Opacity applies uniformly to the layer; counts still determine
-the palette colors.
-
-| `color_scheme` | Behavior |
-| --- | --- |
-| `"heatmap"` — default | Maps low-to-high counts to five steps from blue, green, yellow, orange, to red |
-| `"distinct"` | Generates visually distinct colors for the count levels |
-| `"wheel"` | Selects colors from an HSV color wheel |
-| `"random"` | Generates random colors for the count levels |
-| `"sequential"` | Maps lower counts to light blue and higher counts to dark blue |
-
-The `"heatmap"` and `"sequential"` palettes order colors by numeric count; the
-heatmap uses five color steps from blue at the low end through green, yellow,
-and orange to red at the high end. Colors are scaled separately for each layer.
-`"distinct"`, `"wheel"`,
-and `"random"` distinguish count levels without implying an order, and
-`"distinct"` and `"random"` may change between calls. Use `count_colors` to
-assign fixed colors to count values when comparing maps.
-
-The example below uses a sequential palette. For direct geohash/H3 comparisons,
-the [shared color example](docs/images/shared-counts.png) fixes colors by count.
-
-Legends are enabled by default. Their softly translucent panel lets heat cells
-remain visible beneath the labels. The default heatmap legend has at most five
-swatches, one for each palette color, labeled with the count range that color
-represents. Other color schemes show each distinct count. Entries are discrete,
-not a continuous gradient. Set `legend=False` to hide the legend. Use
-`heatfall.LegendOptions` to style the title,
-layer headings, labels, swatches, panel, and shadow independently, and to
-control columns, count order, and exact placement. It lists high-to-low by
-default; set `count_order="ascending"` for low-to-high. A map context also exposes immutable
-`context.heat_layers` metadata and `context.set_legend()` for composed maps.
-
-Use `LegendOptions(background_color="white", background_opacity=0.65)` for a
-more transparent card. Background opacity ranges from `0` to `1` and multiplies
-the color's existing alpha; text and swatches keep their own opacity. Set
-`shadow=False` to remove the shadow as well.
-Titles wrap by default to keep the card compact. Use `title_max_width` to set
-the wrapping width in pixels, `title_line_spacing` to adjust wrapped line
-spacing, or `title_wrap=False` to disable automatic wrapping. See the
-[placement and sizing gallery](docs/images/legend-positions.png) and
-[background opacity preview](docs/images/legend-opacity.png).
+Use `heatfall.Context` to add a heat layer and ordinary map shapes. Heat cells
+are added first so points, routes, and circles draw above them:
 
 ```python
-image = heatfall.plot_heat_h3s(
-    lats, lons, precision=8,
-    color_scheme="sequential",
-    legend=heatfall.LegendOptions(
-        position=(0.96, 0.08),
-        units="fraction",
-        anchor="top-right",
-        offset=(-8, 8),
-        title="Observations per cell",
-    ),
-)
-```
-
-Positions can use nine named anchors or any `(x, y)` coordinate in pixels or
-fractions of the output dimensions. Placement is checked against the output
-canvas; use `allow_clipping=True` only when intentional. The result shows raw
-counts per cell, not counts normalized by cell area. It does not apply smoothing
-or accept observation weights.
-
-![The 15-observation example with a sequential blue palette and a translucent legend](https://raw.githubusercontent.com/eddiethedean/heatfall/main/docs/images/sequential.png)
-
-*A sequential palette makes increasing counts read from light to dark blue.
-The legend's background is translucent; text and swatches retain their own opacity.*
-
-## Add other layers
-
-`heatfall.Context` extends `landfall.Context`, so heat cells can share a map with
-ordinary geographic objects. Add the heat layer first, then add the overlays.
-
-Landfall's [Context API](https://landfall.readthedocs.io/en/latest/api/#context)
-documents the inherited methods; its
-[shapes and styling guide](https://landfall.readthedocs.io/en/latest/shapes-and-styling/)
-explains point sizes, line widths, circle radii, and overlay colors.
-
-```python
-import heatfall
-
-lats = [27.9470] * 8 + [27.9515] * 4 + [27.9430] * 2 + [27.9475]
-lons = [-82.4580] * 8 + [-82.4500] * 4 + [-82.4475] * 2 + [-82.4400]
-
 context = heatfall.Context()
-context.add_heat_h3s(lats, lons, precision=8, color_scheme="wheel")
-
-# A reference location.
+context.add_heat_h3s(lats, lons, precision=8)
 context.add_points([27.9470], [-82.4580], colors=["black"], point_size=10)
-
-# A route in (latitude, longitude) order.
-context.add_line(
-    [(27.9430, -82.4475), (27.9475, -82.4400)], color="black", width=3
-)
-
-# One circle per center, with radii in meters.
-context.add_circles(
-    [27.9515], [-82.4500], [300],
-    color="blue", fill_color="transparent", width=2,
-)
-
-context.render_pillow(800, 500).save("layered-heatmap.png")
+context.render_pillow(800, 500).save("layered-map.png")
 ```
 
-![A Heatfall H3 layer with a point, route, and circle](https://raw.githubusercontent.com/eddiethedean/heatfall/main/docs/images/quickstart-layers.png)
+Heatfall is built on [Landfall](https://landfall.readthedocs.io/en/latest/) for
+map composition. The [basemaps and output guide](https://heatfall.readthedocs.io/en/latest/basemaps.html)
+covers fixed views, offline rendering, SVG, tile providers, and attribution.
 
-Landfall also supplies polygons, GeoJSON support, styling, and SVG rendering.
-See its [documentation](https://landfall.readthedocs.io/en/latest/) for the
-inherited methods. For Heatfall's own layer methods, see the API below. The image shows the
-15-observation example above, including its default count legend.
+## Learn and contribute
 
-## API
+- [Usage and styling](https://heatfall.readthedocs.io/en/latest/usage.html)
+- [Geographic considerations](https://heatfall.readthedocs.io/en/latest/geography.html)
+- [API reference](https://heatfall.readthedocs.io/en/latest/api.html)
+- [Troubleshooting](https://heatfall.readthedocs.io/en/latest/troubleshooting.html)
+- [Architecture](https://heatfall.readthedocs.io/en/latest/architecture.html)
+- [Performance guidance](https://heatfall.readthedocs.io/en/latest/performance.html)
+- [Contributing](https://github.com/eddiethedean/heatfall/blob/main/CONTRIBUTING.md)
+- [Support](https://github.com/eddiethedean/heatfall/blob/main/SUPPORT.md)
+- [Security policy](https://github.com/eddiethedean/heatfall/blob/main/SECURITY.md)
 
-The [full API reference](https://heatfall.readthedocs.io/en/latest/api.html)
-documents signatures, defaults, return values, and context heat methods.
-
-The public package exports two plotting functions, `Context`, and the
-`LegendOptions` and `HeatLayerInfo` types for configuring and inspecting legends:
-
-| Entry point | Result |
-| --- | --- |
-| `heatfall.plot_heat_hashes()` | A Pillow image containing a geohash heat layer |
-| `heatfall.plot_heat_h3s()` | A Pillow image containing an H3 heat layer |
-| `heatfall.Context()` | A map context for composing layers |
-
-Both plotting functions accept the same arguments:
-
-| Argument | Default | Meaning |
-| --- | --- | --- |
-| `lats` | Required | List of latitudes in decimal degrees, from −90 to 90 |
-| `lons` | Required | Matching list of longitudes in decimal degrees, from −180 to 180 |
-| `precision` | Required | Geohash length 1–12, or H3 resolution 0–15 |
-| `color_scheme` | `"heatmap"` | `"heatmap"`, `"distinct"`, `"random"`, `"wheel"`, or `"sequential"` |
-| `tileprovider` | OpenStreetMap | A `staticmaps.TileProvider` for the basemap |
-| `size` | `(800, 500)` | Output `(width, height)` in pixels |
-| `opacity` | `0.6` | Keyword-only fill opacity from `0.0` to `1.0` |
-| `legend` | `True` | Keyword-only; `False`, `True`, or `LegendOptions` |
-| `count_colors` | `None` | Keyword-only mapping of positive counts to fixed colors |
-
-The heat layer methods mutate the context and return `None`; they also accept
-keyword-only `legend_label` and `count_colors`. The context legend is enabled
-by default, and `set_legend(False)` disables it:
-
-```python
-context.add_heat_hashes(lats, lons, precision, color_scheme="heatmap", opacity=0.6)
-context.add_heat_h3s(lats, lons, precision, color_scheme="heatmap", opacity=0.6)
-context.set_legend(False)
-```
-
-The default provider is `staticmaps.tile_provider_OSM`.
-Configure a context's basemap with `context.set_tile_provider(provider)` and
-render it with `context.render_pillow(width, height)`. The standalone plotting
-keyword is spelled **`tileprovider`**, without an underscore.
-See Landfall's [custom tile service guide](https://landfall.readthedocs.io/en/latest/custom-tile-service/)
-for basemap configuration and its
-[SVG example](https://landfall.readthedocs.io/en/latest/shapes-and-styling/#combine-shapes-and-export-svg)
-for exporting a composed map.
-
-### Input rules
-
-- Supply parallel coordinate lists in **latitude, longitude** order, using
-  decimal degrees. GeoJSON positions commonly use the reverse order.
-- Lists must have matching lengths. Out-of-range coordinates and non-finite
-  values such as `NaN` and infinity raise `ValueError`.
-- Use an integer precision in the supported range and one of the named palettes.
-- Opacity must be finite and between `0.0` and `1.0`, inclusive.
-- Standalone plotting functions reject empty lists. Adding an empty heat layer
-  to a `Context` is a no-op; add some content before rendering.
-- Repeated coordinates count as repeated observations. Deduplicate your input
-  first if your analysis should count unique locations instead.
-
-### Crossing the antimeridian
-
-H3 maps can contain points on both sides of ±180° longitude:
-
-```python
-import heatfall
-
-image = heatfall.plot_heat_h3s(
-    lats=[10.0, 10.0, 10.0],
-    lons=[179.5, -179.5, 179.5],
-    precision=3,
-)
-image.save("antimeridian.png")
-```
-
-Heatfall splits crossing H3 cell boundaries into closed polygons at the
-antimeridian, with intersections calculated along spherical edges. Both pieces
-keep the original cell's observation count and color, and the automatic map
-extent follows the short span across the seam. Exact `180` and `-180` longitude
-are accepted. These fixes require Heatfall 1.1.0 or newer.
-
-This handling applies to rendered H3 cells. Polygon-to-cell filling of external
-GeoJSON is outside Heatfall's point API. For polar cells, H3 rendering is clipped
-to the Web Mercator tile latitude limit of approximately ±85.0511°; these maps
-do not display the poles.
-
-See [geographic considerations](https://heatfall.readthedocs.io/en/latest/geography.html)
-for coordinate rules, antimeridian behavior, and polar limits.
-
-## Documentation
-
-Read the [full documentation on Read the Docs](https://heatfall.readthedocs.io/en/latest/index.html).
-It includes a visual example gallery, a heat-colored light/dark theme, searchable
-guides, and an API reference generated from the package.
-
-| Guide | What you will find |
-| --- | --- |
-| [Getting started](https://heatfall.readthedocs.io/en/latest/installation.html) | Installation, coordinates, and your first image |
-| [Usage and styling](https://heatfall.readthedocs.io/en/latest/usage.html) | Grid choices, palettes, transparency, and layers |
-| [Point data](https://heatfall.readthedocs.io/en/latest/data.html) | CSV input, coordinate pairs, and count semantics |
-| [Basemaps and output](https://heatfall.readthedocs.io/en/latest/basemaps.html) | Providers, fixed views, rendering without tiles, and SVG |
-| [Geography](https://heatfall.readthedocs.io/en/latest/geography.html) | Antimeridian handling and polar limits |
-| [Troubleshooting](https://heatfall.readthedocs.io/en/latest/troubleshooting.html) | Common errors and reproducible bug reports |
-| [API reference](https://heatfall.readthedocs.io/en/latest/api.html) | Function signatures, defaults, and context heat methods |
-| [Development](https://heatfall.readthedocs.io/en/latest/development.html) | Local checks, documentation builds, and contributing |
-| [Releasing](https://heatfall.readthedocs.io/en/latest/releasing.html) | Compatibility notes and trusted publishing |
-
-## Troubleshooting
-
-| Symptom | What to check |
-| --- | --- |
-| Every cell has the same color | Counts may all be equal. Use a coarser precision if you want more aggregation. |
-| Cells appear in the wrong place | Check latitude/longitude order and decimal-degree units. For H3, use Heatfall 1.1.0 or newer. |
-| Cells are larger or smaller than expected | Geohash and H3 use different precision scales. Adjust within the range for your chosen grid. |
-| Basemap tiles are missing or rendering stalls | Check network access and tile-provider availability. Cached tiles can avoid later requests. |
-| Colors differ between runs or maps | Palettes are generated per layer. Distinct and random colors can vary, and the number of count levels changes the palette. |
-| `add_circles()` raises `TypeError` | Pass latitude, longitude, and radii sequences; use `[1000] * len(lats)` for equal one-kilometer radii. |
-
-Keep the provider attribution visible when sharing map images. Heatfall's MIT
-license covers the package; basemap imagery has its own provider terms.
-
-## Develop and contribute
-
-Create a virtual environment, then install the package with its development tools:
-
-```sh
-git clone https://github.com/eddiethedean/heatfall.git
-cd heatfall
-python -m venv .venv
-```
-
-Activate it with `source .venv/bin/activate` on macOS/Linux, or
-`.venv\Scripts\Activate.ps1` in Windows PowerShell. Then run:
-
-```sh
-python -m pip install -e ".[dev]"
-python -m pytest
-python -m tox -e ruff,mypy
-```
-
-`pytest` generates coverage reports. Ordinary rendering tests use mock tiles;
-tests explicitly marked `integration` may make real tile requests.
-
-To run the complete Python version matrix, install the matching interpreters and
-run `python -m tox`. For a single installed version, use `python -m tox -e py311`.
-CI runs tests on Python 3.8–3.13 on Linux, Python 3.13 on macOS and Windows, and
-checks formatting, linting, types, and package builds.
-
-### Build the documentation
-
-Use Python 3.12 or newer for Sphinx and the documentation dependencies:
-
-```sh
-python -m pip install -e ".[docs]"
-python -m sphinx -b html -W --keep-going docs docs/_build/html
-```
-
-Open `docs/_build/html/index.html` to view the site. With Python 3.13 available,
-`python -m tox -e docs` builds it in an isolated environment. CI also builds the
-documentation and fails on warnings.
-
-The published documentation builds through `.readthedocs.yaml`. See the
-[documentation development guide](https://heatfall.readthedocs.io/en/latest/development.html#build-the-documentation)
-for build tools and theme customization.
-
-The README images are actual package output. Reproduce them with:
-
-```sh
-python examples/generate_doc_maps.py
-```
-
-The generator uses synthetic data and real OpenStreetMap tiles. It needs network
-access when those tiles are not already cached.
-
-For changes, include a runnable example or a regression test where appropriate,
-run the checks above, and open a pull request. For bug reports, include your Python
-and Heatfall versions, a small coordinate sample, the precision, and the traceback.
-
-Maintainers can follow the [release guide](https://heatfall.readthedocs.io/en/latest/releasing.html)
-for compatibility notes, distribution validation, and publishing steps. Pushing
-a matching `vX.Y.Z` tag runs the release checks and publishes to PyPI through
-trusted publishing.
-
-## Dependencies and license
-
-Heatfall uses [Landfall ≥0.4.2](https://github.com/eddiethedean/landfall) for map
-composition and colors, [Geodude ≥0.1.1](https://github.com/eddiethedean/geodude)
-and [PyGeodesy](https://github.com/mrJean1/PyGeodesy) for geohashes, and
-[H3 ≥4.0.0](https://github.com/uber/h3-py) for H3 cells. Landfall provides the
-underlying py-staticmaps and Pillow rendering dependencies.
-
-Released under the [MIT license](https://github.com/eddiethedean/heatfall/blob/main/LICENSE).
-Report bugs and request features in
-[GitHub Issues](https://github.com/eddiethedean/heatfall/issues).
+Heatfall is released under the [MIT license](https://github.com/eddiethedean/heatfall/blob/main/LICENSE). Report bugs and request
+features in [GitHub Issues](https://github.com/eddiethedean/heatfall/issues).

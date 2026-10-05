@@ -132,10 +132,13 @@ colors in this documentation's theme are independent of your map palette.
 | --- | --- |
 | Choose cells, colors, and transparency | [Usage and styling](usage.md) |
 | Plot across ±180° longitude | [Geographic considerations](geography.md) |
+| Understand local processing and map tile requests | [Architecture](architecture.md) |
+| Plan around input and rendering size | [Performance](performance.md) |
 | Look up arguments and defaults | [API reference](api.rst) |
 | Diagnose an unexpected map | [Troubleshooting](troubleshooting.md) |
+| Get help or report a vulnerability | [Support](support.md) · [Security](security.md) |
 | Add ordinary map shapes | [Landfall's shapes guide](https://landfall.readthedocs.io/en/latest/shapes-and-styling/) |
-| Build docs or contribute a fix | [Development](development.md) |
+| Contribute a fix | [Contributing](contributing.md) |
 
 ```{toctree}
 :hidden:
@@ -148,6 +151,8 @@ data
 basemaps
 geography
 troubleshooting
+architecture
+performance
 ```
 
 ```{toctree}
@@ -156,10 +161,20 @@ troubleshooting
 :caption: Reference
 
 api
+changelog
+```
+
+```{toctree}
+:hidden:
+:maxdepth: 1
+:caption: Project
+
+contributing
+support
+security
 development
 roadmap
 releasing
-changelog
 ```
 
 Heatfall {{release}} · [GitHub](https://github.com/eddiethedean/heatfall) ·

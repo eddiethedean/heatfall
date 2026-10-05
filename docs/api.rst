@@ -47,14 +47,68 @@ anchors, signed offsets, and styling controls through
 sequence of :class:`heatfall.HeatLayerInfo` records with each layer's exact
 count-to-RGBA palette.
 
+Important input and validation details
+---------------------------------------
+
+* All coordinate lists must have matching lengths and contain finite decimal
+  degree values. The plotting functions require at least one coordinate and
+  raise ``ValueError`` for empty lists; context heat methods accept empty lists
+  as a no-op. Heatfall also raises ``ValueError`` for invalid coordinates,
+  unsupported precision, invalid colors, and opacity outside 0–1 inclusive.
+* ``count_colors`` is a mapping of positive integer observation counts to
+  color values. Every count in the input must have an entry; extra entries are
+  allowed so a mapping can be shared across datasets. Values may be color
+  names, hexadecimal strings, ``staticmaps.Color`` objects, or RGB/RGBA tuples.
+  When supplied, this mapping takes precedence over ``color_scheme``.
+* ``LegendOptions.label_format`` must be a Python format string containing
+  ``{count}``. Only that field is supported; a numeric format such as
+  ``"{count:,} observations"`` is valid. For the default heatmap palette, the
+  format is applied to both endpoints of each inclusive range.
+* Legend ``position`` accepts a named anchor or a finite ``(x, y)`` pair.
+  Named positions use ``margin`` in pixels. Custom positions use ``units``
+  (``"pixels"`` or ``"fraction"``); ``anchor`` selects the point of the panel
+  aligned to that position and ``offset`` remains in pixels. Layout that
+  extends past the image raises ``ValueError`` unless ``allow_clipping=True``.
+* ``background_opacity`` and ``shadow_opacity`` are finite values from 0 to 1.
+  Font sizes, columns, and swatch size must be positive integers. See the
+  :class:`heatfall.LegendOptions` members below for defaults and other fields.
+
+``HeatLayerInfo`` fields
+------------------------
+
+.. list-table::
+   :header-rows: 1
+   :widths: 25 75
+
+   * - Field
+     - Meaning
+   * - ``grid``
+     - ``"geohash"`` or ``"h3"``.
+   * - ``precision``
+     - Geohash precision or H3 resolution used for this layer.
+   * - ``label``
+     - Optional section label supplied with ``legend_label``.
+   * - ``observation_count``
+     - Number of input observations, including repeated coordinates.
+   * - ``cell_count``
+     - Number of occupied grid cells. Antimeridian display fragments count as
+       their original cell, not as additional cells.
+   * - ``counts``
+     - Sorted distinct raw observation counts in occupied cells.
+   * - ``count_colors``
+     - Immutable ``(count, RGBA)`` pairs using the final colors and alpha.
+   * - ``legend_ranges``
+     - Immutable inclusive count ranges used by the default five-step
+       ``"heatmap"`` palette; empty for other palettes and explicit mappings.
+
 Legend titles wrap automatically to fit the entry width, keeping single-column
 legends compact. Set ``title_wrap=False`` to keep each title paragraph on one
 line, or ``title_max_width`` to choose a wrapping width in pixels. Long words
 split if needed to meet an explicit width. Newline characters create deliberate
 line breaks, and ``title_line_spacing`` sets the gap between wrapped lines.
 
-``background_opacity`` ranges from 0 (transparent) to 1 (full color opacity). It multiplies
-the alpha of ``background_color`` so heat cells show through the legend panel;
+``background_opacity`` ranges from 0 (transparent) to 1 (full color opacity).
+It multiplies the alpha of ``background_color`` so heat cells show through the legend panel;
 text, swatches, borders, and shadows keep their own colors and opacity. For
 example, the default white panel is translucent; use a more transparent panel
 and a narrower title like this:
