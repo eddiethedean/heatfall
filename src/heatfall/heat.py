@@ -5,7 +5,7 @@ This module provides functions for creating heatmaps of geographic points
 using either geohash binning or H3 hexagonal binning.
 """
 
-from typing import List, Tuple, Any, Optional, cast
+from typing import List, Tuple, Any, Optional, Mapping, Dict, Union, cast
 from collections import Counter
 import math
 from PIL import Image, ImageDraw
@@ -18,6 +18,16 @@ from geodude import calculate_geohashes
 # Import from landfall
 import landfall
 from landfall.color import process_colors
+from heatfall.legend import (
+    HeatLayerInfo,
+    LegendOptions,
+    color_to_rgba,
+    draw_cairo_legend,
+    draw_svg_legend,
+    layout_legend,
+    legend_colors,
+    validate_legend_options,
+)
 
 
 _MERCATOR_MAX_LAT = math.degrees(math.atan(math.sinh(math.pi)))
@@ -218,10 +228,203 @@ def _validate_opacity(opacity: float) -> None:
         raise ValueError("opacity must be between 0 and 1")
 
 
+def _validate_legend_label(label: Optional[str]) -> None:
+    if label is not None and (not isinstance(label, str) or not label.strip()):
+        raise ValueError("legend_label must be a non-empty string or None")
+
+
 def _with_opacity(color: Any, opacity: float) -> Any:
     """Copy a palette color, preserving any existing transparency."""
     red, green, blue, alpha = color.int_rgba()
     return staticmaps.Color(red, green, blue, round(alpha * opacity))
+
+
+def _make_count_colors(
+    counts: Tuple[int, ...],
+    color_scheme: str,
+    count_colors: Optional[Mapping[int, Any]],
+    opacity: float,
+) -> Mapping[int, Any]:
+    """Build one final immutable-by-convention palette for occupied counts."""
+    if count_colors is not None:
+        if not isinstance(count_colors, Mapping):
+            raise ValueError("count_colors must be a mapping of counts to colors")
+        normalized: Dict[int, Any] = {}
+        for count, color in count_colors.items():
+            if isinstance(count, bool) or not isinstance(count, int) or count <= 0:
+                raise ValueError("count_colors keys must be positive integers")
+            rgba = color_to_rgba(color)
+            normalized[count] = staticmaps.Color(*rgba)
+        missing = sorted(set(counts) - set(normalized))
+        if missing:
+            raise ValueError(
+                "count_colors is missing observed counts: {}".format(missing)
+            )
+        return {count: _with_opacity(normalized[count], opacity) for count in counts}
+    if color_scheme == "sequential":
+        low = min(counts)
+        high = max(counts)
+        start = (222, 235, 247)
+        end = (8, 81, 156)
+        colors = {}
+        for count in counts:
+            ratio = 0.5 if low == high else (count - low) / (high - low)
+            rgb = tuple(round(a + (b - a) * ratio) for a, b in zip(start, end))
+            colors[count] = staticmaps.Color(*rgb)
+        return {count: _with_opacity(colors[count], opacity) for count in counts}
+    palette = process_colors(color_scheme, len(counts))
+    return {
+        count: _with_opacity(color, opacity) for count, color in zip(counts, palette)
+    }
+
+
+def _heat_layer_info(
+    grid: str,
+    precision: int,
+    label: Optional[str],
+    counts: Mapping[str, int],
+    count_to_color: Mapping[int, Any],
+) -> HeatLayerInfo:
+    return HeatLayerInfo(
+        grid=grid,
+        precision=precision,
+        label=label,
+        observation_count=sum(counts.values()),
+        cell_count=len(counts),
+        counts=tuple(sorted(set(counts.values()))),
+        count_colors=tuple(
+            (count, count_to_color[count].int_rgba())
+            for count in sorted(set(counts.values()))
+        ),
+    )
+
+
+def _draw_pillow_legend(
+    image: Image.Image, layers: Tuple[HeatLayerInfo, ...], options: LegendOptions
+) -> Image.Image:
+    layout = layout_legend(layers, options, *image.size)
+    if layout is None:
+        return image
+    colors = legend_colors(options)
+    overlay = Image.new("RGBA", image.size, (0, 0, 0, 0))
+    draw = ImageDraw.Draw(overlay)
+    x0, y0 = layout.x, layout.y
+    if options.shadow:
+        shadow = colors["shadow"]
+        shadow_x, shadow_y = options.shadow_offset
+        draw.rounded_rectangle(
+            (
+                x0 + shadow_x,
+                y0 + shadow_y,
+                x0 + layout.width - 1 + shadow_x,
+                y0 + layout.height - 1 + shadow_y,
+            ),
+            radius=options.corner_radius,
+            fill=(
+                shadow[0],
+                shadow[1],
+                shadow[2],
+                int(shadow[3] * options.shadow_opacity),
+            ),
+        )
+    draw.rounded_rectangle(
+        (x0, y0, x0 + layout.width - 1, y0 + layout.height - 1),
+        radius=options.corner_radius,
+        fill=colors["background"],
+        outline=colors["border"] if options.border_width else None,
+        width=max(1, int(options.border_width)),
+    )
+    from heatfall.legend import _font, _size, _text_height, _weight
+
+    label_size = _size(options, "label")
+    title_size = _size(options, "title")
+    section_size = _size(options, "section")
+    font = _font(label_size, bold=_weight(options, "label"), family=options.font_family)
+    title_font = _font(
+        title_size, bold=_weight(options, "title"), family=options.font_family
+    )
+    section_font = _font(
+        section_size, bold=_weight(options, "section"), family=options.font_family
+    )
+    y = y0 + options.padding
+    if layout.title:
+        if options.title_align == "center":
+            title_x = (
+                x0 + (layout.width - draw.textlength(layout.title, font=title_font)) / 2
+            )
+        elif options.title_align == "right":
+            title_x = (
+                x0
+                + layout.width
+                - options.padding
+                - draw.textlength(layout.title, font=title_font)
+            )
+        else:
+            title_x = x0 + options.padding
+        draw.text(
+            (title_x, y),
+            layout.title,
+            font=title_font,
+            fill=colors["title"],
+        )
+        title_height = _text_height(title_font, layout.title)
+        if options.divider_width:
+            divider_y = y + title_height + max(1, options.title_spacing / 2)
+            draw.line(
+                (
+                    x0 + options.padding,
+                    divider_y,
+                    x0 + layout.width - options.padding,
+                    divider_y,
+                ),
+                fill=colors["divider"],
+                width=max(1, int(options.divider_width)),
+            )
+        y += title_height + options.title_spacing
+    row_height = max(_text_height(font, "M"), options.swatch_size)
+    for section_title, columns in layout.sections:
+        if section_title:
+            draw.text(
+                (x0 + options.padding, y),
+                section_title,
+                font=section_font,
+                fill=colors["section"],
+            )
+            y += _text_height(section_font, section_title) + options.section_spacing
+        max_rows = max(len(column) for column in columns)
+        for column_index, column in enumerate(columns):
+            x = (
+                x0
+                + options.padding
+                + sum(layout.column_widths[:column_index])
+                + options.column_spacing * column_index
+            )
+            for row_index, row in enumerate(column):
+                top = y + row_index * (row_height + options.row_spacing)
+                swatch_y = top + max(0, (row_height - options.swatch_size) / 2)
+                draw.rounded_rectangle(
+                    (
+                        x,
+                        swatch_y,
+                        x + options.swatch_size - 1,
+                        swatch_y + options.swatch_size - 1,
+                    ),
+                    radius=min(options.swatch_radius, options.swatch_size / 2),
+                    fill=row.color,
+                )
+                draw.text(
+                    (x + options.swatch_size + options.label_gap, top),
+                    row.label,
+                    font=font,
+                    fill=colors["label"],
+                )
+        y += (
+            max_rows * (row_height + options.row_spacing)
+            - options.row_spacing
+            + options.row_spacing
+        )
+    composited = Image.alpha_composite(image.convert("RGBA"), overlay)
+    return composited if image.mode == "RGBA" else composited.convert(image.mode)
 
 
 def _validate_coordinates(lats: List[float], lons: List[float]) -> None:
@@ -239,6 +442,52 @@ def _validate_coordinates(lats: List[float], lons: List[float]) -> None:
 class Context(landfall.Context):
     """Extended Context with heatmap-specific methods."""
 
+    def __init__(self) -> None:
+        super().__init__()
+        self._heat_layers: List[HeatLayerInfo] = []
+        self._legend: Union[bool, LegendOptions] = True
+
+    @property
+    def heat_layers(self) -> Tuple[HeatLayerInfo, ...]:
+        """Read-only metadata for nonempty heat layers, in addition order."""
+        return tuple(self._heat_layers)
+
+    def set_legend(self, legend: Union[bool, LegendOptions]) -> None:
+        """Enable, disable, or configure the legend for subsequent renders."""
+        if isinstance(legend, bool):
+            self._legend = legend
+            return
+        validate_legend_options(legend)
+        self._legend = legend
+
+    def _legend_options(self) -> Optional[LegendOptions]:
+        if self._legend is False:
+            return None
+        if self._legend is True:
+            return LegendOptions()
+        return self._legend
+
+    def render_pillow(self, width: int, height: int) -> Image.Image:
+        image = super().render_pillow(width, height)
+        options = self._legend_options()
+        if options is None or not self._heat_layers:
+            return cast(Image.Image, image)
+        return _draw_pillow_legend(image, self.heat_layers, options)
+
+    def render_svg(self, width: int, height: int) -> Any:
+        drawing = super().render_svg(width, height)
+        options = self._legend_options()
+        if options is not None and self._heat_layers:
+            draw_svg_legend(drawing, self.heat_layers, options, width, height)
+        return drawing
+
+    def render_cairo(self, width: int, height: int) -> Any:
+        surface = super().render_cairo(width, height)
+        options = self._legend_options()
+        if options is not None and self._heat_layers:
+            draw_cairo_legend(surface, self.heat_layers, options, width, height)
+        return surface
+
     def add_heat_hashes(
         self,
         lats: List[float],
@@ -247,6 +496,8 @@ class Context(landfall.Context):
         color_scheme: str = "distinct",
         *,
         opacity: float = 0.6,
+        legend_label: Optional[str] = None,
+        count_colors: Optional[Mapping[int, Any]] = None,
     ) -> None:
         """
         Add geohash-based heatmap to the map.
@@ -255,40 +506,45 @@ class Context(landfall.Context):
             lats: List of latitude values
             lons: List of longitude values
             precision: Geohash precision (1-12)
-            color_scheme: Color scheme ("distinct", "random", "wheel")
+            color_scheme: "distinct", "random", "wheel", or "sequential"
             opacity: Fill opacity from 0 (invisible) to 1 (solid), default 0.6
+            legend_label: Optional section title when this context has multiple heat layers
+            count_colors: Optional fixed colors keyed by positive observed counts
 
         Returns:
             None. Adds occupied cells to this context.
 
         Raises:
-            ValueError: If coordinates, precision, or opacity are invalid
+            ValueError: If coordinates, colors, precision, or opacity are invalid
         """
         _validate_coordinates(lats, lons)
+        _validate_legend_label(legend_label)
+        if not (1 <= precision <= 12):
+            raise ValueError(
+                "Geohash precision must be 1-12 (got {})".format(precision)
+            )
         _validate_opacity(opacity)
         hashes = calculate_geohashes(lats, lons, precision)
         counts = Counter(hashes)
-
-        # Use landfall's color system instead of custom density_colors
-        unique_counts = sorted(set(counts.values()))
-        colors_list = process_colors(color_scheme, len(unique_counts))
-
-        # Map counts to colors
-        count_to_color = {
-            count: _with_opacity(color, opacity)
-            for count, color in zip(unique_counts, colors_list)
-        }
-
-        for h, count in counts.items():
-            color = count_to_color[count]
-            self.add_object(
-                staticmaps.Area(
-                    make_hash_poly_points(h),
-                    fill_color=color,
-                    width=0,
-                    color=staticmaps.TRANSPARENT,
-                )
+        if not counts:
+            return
+        unique_counts = tuple(sorted(set(counts.values())))
+        count_to_color = _make_count_colors(
+            unique_counts, color_scheme, count_colors, opacity
+        )
+        objects = [
+            staticmaps.Area(
+                make_hash_poly_points(h),
+                fill_color=count_to_color[count],
+                width=0,
+                color=staticmaps.TRANSPARENT,
             )
+            for h, count in counts.items()
+        ]
+        self._objects.extend(objects)
+        self._heat_layers.append(
+            _heat_layer_info("geohash", precision, legend_label, counts, count_to_color)
+        )
 
     def add_heat_h3s(
         self,
@@ -298,6 +554,8 @@ class Context(landfall.Context):
         color_scheme: str = "distinct",
         *,
         opacity: float = 0.6,
+        legend_label: Optional[str] = None,
+        count_colors: Optional[Mapping[int, Any]] = None,
     ) -> None:
         """
         Add H3-based heatmap to the map.
@@ -306,37 +564,40 @@ class Context(landfall.Context):
             lats: List of latitude values
             lons: List of longitude values
             precision: H3 resolution (0-15)
-            color_scheme: Color scheme ("distinct", "random", "wheel")
+            color_scheme: "distinct", "random", "wheel", or "sequential"
             opacity: Fill opacity from 0 (invisible) to 1 (solid), default 0.6
+            legend_label: Optional section title when this context has multiple heat layers
+            count_colors: Optional fixed colors keyed by positive observed counts
 
         Returns:
             None. Adds occupied cells to this context.
 
         Raises:
-            ValueError: If coordinates, precision, or opacity are invalid
+            ValueError: If coordinates, colors, precision, or opacity are invalid
         """
+        _validate_coordinates(lats, lons)
+        _validate_legend_label(legend_label)
         _validate_opacity(opacity)
         hashes = calculate_h3_hashes(lats, lons, precision)
         counts = Counter(hashes)
-
-        # Use landfall's color system
-        unique_counts = sorted(set(counts.values()))
-        colors_list = process_colors(color_scheme, len(unique_counts))
-
-        # Map counts to colors
-        count_to_color = {
-            count: _with_opacity(color, opacity)
-            for count, color in zip(unique_counts, colors_list)
-        }
-
-        for h, count in counts.items():
-            self.add_object(
-                _H3Cell(
-                    _make_h3_polygons(h),
-                    count_to_color[count],
-                    h3.cell_to_latlng(h)[1],
-                )
+        if not counts:
+            return
+        unique_counts = tuple(sorted(set(counts.values())))
+        count_to_color = _make_count_colors(
+            unique_counts, color_scheme, count_colors, opacity
+        )
+        objects = [
+            _H3Cell(
+                _make_h3_polygons(h),
+                count_to_color[count],
+                h3.cell_to_latlng(h)[1],
             )
+            for h, count in counts.items()
+        ]
+        self._objects.extend(objects)
+        self._heat_layers.append(
+            _heat_layer_info("h3", precision, legend_label, counts, count_to_color)
+        )
 
 
 tp = staticmaps.tile_provider_OSM
@@ -351,6 +612,8 @@ def plot_heat_hashes(
     size: Tuple[int, int] = (800, 500),
     *,
     opacity: float = 0.6,
+    legend: Union[bool, LegendOptions] = True,
+    count_colors: Optional[Mapping[int, Any]] = None,
 ) -> Image.Image:
     """
     Plot a heatmap of geographic points using geohash binning.
@@ -362,16 +625,18 @@ def plot_heat_hashes(
         lats: List of latitude values (decimal degrees, -90 to 90)
         lons: List of longitude values (decimal degrees, -180 to 180)
         precision: Geohash precision level (1-12, higher = smaller cells)
-        color_scheme: Color scheme - "distinct" (default), "random", or "wheel"
+        color_scheme: "distinct", "random", "wheel", or "sequential"
         tileprovider: Tile provider for the base map (default: OpenStreetMap)
         size: Output image size in pixels as (width, height)
         opacity: Fill opacity from 0 (invisible) to 1 (solid), default 0.6
+        legend: Show a heat legend (default True), or configure it with LegendOptions
+        count_colors: Optional fixed mapping from observed count levels to colors
 
     Returns:
         PIL Image object containing the rendered heatmap
 
     Raises:
-        ValueError: If coordinates, precision, or opacity are invalid
+        ValueError: If coordinates, colors, precision, or opacity are invalid
 
     Example:
         >>> import heatfall
@@ -392,8 +657,11 @@ def plot_heat_hashes(
     # Create context and add heatmap
     context = Context()
     context.set_tile_provider(tileprovider)
-    context.add_heat_hashes(lats, lons, precision, color_scheme, opacity=opacity)
-    return cast(Image.Image, context.render_pillow(*size))
+    context.add_heat_hashes(
+        lats, lons, precision, color_scheme, opacity=opacity, count_colors=count_colors
+    )
+    context.set_legend(legend)
+    return context.render_pillow(*size)
 
 
 def plot_heat_h3s(
@@ -405,6 +673,8 @@ def plot_heat_h3s(
     size: Tuple[int, int] = (800, 500),
     *,
     opacity: float = 0.6,
+    legend: Union[bool, LegendOptions] = True,
+    count_colors: Optional[Mapping[int, Any]] = None,
 ) -> Image.Image:
     """
     Plot a heatmap of geographic points using H3 hexagonal binning.
@@ -416,16 +686,18 @@ def plot_heat_h3s(
         lats: List of latitude values (decimal degrees, -90 to 90)
         lons: List of longitude values (decimal degrees, -180 to 180)
         precision: H3 resolution level (0-15, higher = smaller cells)
-        color_scheme: Color scheme - "distinct" (default), "random", or "wheel"
+        color_scheme: "distinct", "random", "wheel", or "sequential"
         tileprovider: Tile provider for the base map (default: OpenStreetMap)
         size: Output image size in pixels as (width, height)
         opacity: Fill opacity from 0 (invisible) to 1 (solid), default 0.6
+        legend: Show a heat legend (default True), or configure it with LegendOptions
+        count_colors: Optional fixed mapping from observed count levels to colors
 
     Returns:
         PIL Image object containing the rendered heatmap
 
     Raises:
-        ValueError: If coordinates, precision, or opacity are invalid
+        ValueError: If coordinates, colors, precision, or opacity are invalid
 
     Example:
         >>> import heatfall
@@ -446,8 +718,11 @@ def plot_heat_h3s(
     # Create context and add heatmap
     context = Context()
     context.set_tile_provider(tileprovider)
-    context.add_heat_h3s(lats, lons, precision, color_scheme, opacity=opacity)
-    return cast(Image.Image, context.render_pillow(*size))
+    context.add_heat_h3s(
+        lats, lons, precision, color_scheme, opacity=opacity, count_colors=count_colors
+    )
+    context.set_legend(legend)
+    return context.render_pillow(*size)
 
 
 # Keep helper functions for geohash/H3 polygon generation

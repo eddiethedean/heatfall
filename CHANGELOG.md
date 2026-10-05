@@ -2,6 +2,22 @@
 
 ## [Unreleased]
 
+## [1.2.0] - Unreleased
+
+### Added
+- Enable a discrete count legend by default for Pillow, SVG, and Cairo maps;
+  allow disabling it or configuring position, anchor, units, offset, clipping,
+  labels, columns, typography, panel colors, and spacing.
+- Retain immutable per-layer metadata, including grid, precision, observation
+  and cell totals, count levels, and the final count-to-RGBA mapping.
+- Add a light-to-dark blue sequential palette and explicit shared
+  `count_colors` mappings for comparable maps.
+- Add visual examples for the default legend and shared H3/geohash colors.
+
+### Changed
+- Set the package version to 1.2.0 for the prepared release candidate.
+- Document the legend's default-on behavior and the `legend=False` opt-out.
+
 ## [1.1.0] - 2026-10-03
 
 Published to [PyPI](https://pypi.org/project/heatfall/1.1.0/) from

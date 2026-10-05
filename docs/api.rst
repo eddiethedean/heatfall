@@ -3,7 +3,8 @@ API reference
 
 Plotting functions return Pillow images. Heat layer methods mutate a context and
 return ``None``. Coordinate lists use latitude, longitude order in decimal
-degrees. ``opacity`` is keyword-only and defaults to 0.6.
+degrees. ``opacity`` is keyword-only and defaults to 0.6. Legends are enabled
+by default; set ``legend=False`` to disable a legend.
 
 Choosing an entry point
 -----------------------
@@ -22,13 +23,22 @@ Choosing an entry point
      - :class:`heatfall.Context`
 
 Both plotting functions require ``lats``, ``lons``, and ``precision``. Defaults
-are ``color_scheme="distinct"``, OpenStreetMap tiles, ``size=(800, 500)``, and
-``opacity=0.6``. The context heat methods share the coordinates, precision,
-palette, and opacity arguments; configure tiles and dimensions when rendering.
+are ``color_scheme="distinct"``, OpenStreetMap tiles, ``size=(800, 500)``,
+``opacity=0.6``, and ``legend=True``. The context heat methods share the
+coordinates, precision, palette, and opacity arguments; they also accept
+``legend_label`` and ``count_colors``. Configure tiles and dimensions when
+rendering.
 
-See :doc:`usage` for examples, :doc:`data` for count semantics, and
-:doc:`basemaps` for image and SVG output. Colors represent distinct count levels
-within one layer; they do not form a guaranteed sequential scale.
+See :doc:`usage` for legend placement and fixed color examples,
+:doc:`data` for count semantics, and :doc:`basemaps` for image and SVG output.
+The ``sequential`` color scheme runs light to dark blue. Other schemes
+represent distinct count levels without implying an order.
+
+Legends use nine named positions or arbitrary pixel/fraction coordinates,
+anchors, signed offsets, and styling controls through
+:class:`heatfall.LegendOptions`. ``context.heat_layers`` returns an immutable
+sequence of :class:`heatfall.HeatLayerInfo` records with each layer's exact
+count-to-RGBA palette.
 
 Plotting functions
 ------------------
@@ -41,7 +51,19 @@ Map context
 -----------
 
 .. autoclass:: heatfall.Context
-   :members: add_heat_hashes, add_heat_h3s
+   :members: add_heat_hashes, add_heat_h3s, set_legend, heat_layers
+
+Legend configuration
+--------------------
+
+.. autoclass:: heatfall.LegendOptions
+   :members:
+
+Heat layer metadata
+-------------------
+
+.. autoclass:: heatfall.HeatLayerInfo
+   :members:
 
 Rendering and ordinary map layers are inherited from
 `Landfall's Context <https://landfall.readthedocs.io/en/latest/api/#context>`_

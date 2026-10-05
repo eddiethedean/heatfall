@@ -17,6 +17,9 @@ connects common symptoms to a concrete next step.
 | `add_circles()` raises `TypeError` | Supply latitude, longitude, and radii sequences; for one circle use `[latitude]`, `[longitude]`, and `[radius]`. |
 | `tile_provider` raises an unexpected keyword error | Heatfall's plotting argument is `tileprovider`; a context uses `set_tile_provider()`. |
 | `opacity` raises an unexpected keyword error | Check the installed version and interpreter; this option requires Heatfall 1.1.0 or newer. |
+| A legend does not fit | Add columns, reduce font size or padding, enlarge the image, or set `allow_clipping=True` when partial placement is intentional. |
+| A legend covers tile attribution | Choose another `LegendOptions.position` and keep the provider attribution visible. |
+| Equal counts have different colors across maps | Supply the same `count_colors` mapping to both maps. Automatic palettes are assigned per layer. |
 
 ## Check the running version
 
@@ -40,7 +43,7 @@ development changes from source.
 - Keep latitude and longitude lists the same length and preserve their pairing.
 - Use finite numeric values: latitude −90…90, longitude −180…180.
 - Use an integer precision: geohash 1–12, H3 0–15.
-- Use one of `"distinct"`, `"random"`, or `"wheel"` for `color_scheme`.
+- Use one of `"distinct"`, `"random"`, `"wheel"`, or `"sequential"` for `color_scheme`.
 - Pass `opacity` as a keyword, between 0 and 1 inclusive.
 - Give plotting functions at least one observation. An empty context heat layer
   is a no-op; the context still needs content before rendering.

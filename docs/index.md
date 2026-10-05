@@ -68,14 +68,19 @@ tiles and attribution.
 
 ::::{container} hf-gallery
 :::{container}
-![H3 heat cells over Tampa](images/h3.png)
+![H3 heat cells over Tampa, with a legend](images/h3-legend.png)
 
-*H3 · Mostly hexagonal cells, with resolution from 0 to 15.*
+*H3 · The default legend shows the observation count for each color.*
 :::
 :::{container}
 ![Geohash heat rectangles over Tampa](images/geohash.png)
 
 *Geohash · Latitude/longitude rectangles, with precision from 1 to 12.*
+:::
+:::{container}
+![H3 and geohash maps using one shared count-to-color mapping](images/shared-counts.png)
+
+*Comparison · Fixed colors make equal counts match across both grids.*
 :::
 :::{container}
 ![Heat cells with a point, route, and circle](images/layers.png)
@@ -85,8 +90,9 @@ tiles and attribution.
 ::::
 
 ```{tip} Readable by default
-Heat fills use **60% opacity**, leaving streets and labels visible. Set
-`opacity=0.4` for a softer overlay or `opacity=1.0` for solid fills.
+Heat fills use **60% opacity**, leaving streets and labels visible. Legends are
+enabled by default and use the exact fill colors. Set `opacity=0.4` for a softer
+overlay or `opacity=1.0` for solid fills.
 ```
 
 ## From a few points to a finished image

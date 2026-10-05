@@ -87,9 +87,9 @@ the repository configuration.
 
 ## Prepare a release
 
-The [roadmap](roadmap.md) tracks Phase 1.2: map legends enabled by default with
-an opt-out, precise placement, sequential and explicit count colors, and heat
-layer metadata.
+Phase 1.2 implements default legends with precise placement, sequential and
+explicit count colors, and inspectable heat layer metadata. The
+[roadmap](roadmap.md) records the completed scope.
 
 See the [release guide](releasing.md) for 1.1.0 compatibility notes, package
 validation, and the tag, upload, and verification steps.

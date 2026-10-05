@@ -39,8 +39,9 @@ in the [changelog](changelog.md).
 - The optional documentation extra requires Python 3.12 or newer. Documentation
   CI, tox, and Read the Docs use Python 3.13.
 
-Color palettes continue to represent distinct count levels within a layer;
-this release does not introduce a sequential heat scale or density normalization.
+Color palettes continue to represent count levels within each layer. The
+``sequential`` palette orders colors by count; other palettes remain
+categorical. None of the palettes normalizes counts by cell area.
 
 ## Validate the release candidate
 

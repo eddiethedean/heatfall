@@ -4,6 +4,8 @@ Use a plotting function for a single heat layer. Use `heatfall.Context` when you
 need to configure the view, combine layers, or export SVG. Heatfall's context
 inherits ordinary map layers and rendering from
 [Landfall](https://landfall.readthedocs.io/en/latest/api/#context) and py-staticmaps.
+Heat maps include a legend by default; legends are rendered in image coordinates
+after the geographic layers and basemap attribution.
 
 ## Choose a tile provider
 
@@ -99,6 +101,11 @@ context.render_svg(800, 500).saveas("heatmap.svg")
 Heat cell boundaries are vector paths in SVG; basemap tiles remain raster
 imagery. Transparency is retained, including for cells split at the
 [antimeridian](geography.md#crossing-the-antimeridian).
+
+The legend is also included in SVG output. Pillow, SVG, and Cairo use the same
+measured layout, position, anchor, and clipping checks. A legend does not affect
+map bounds or zoom. Its default top-right placement leaves bottom tile
+attribution clear; keep attribution visible when choosing a custom location.
 
 ## Combine heat with other shapes
 

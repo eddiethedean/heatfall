@@ -80,7 +80,8 @@ Choose the counting unit before plotting:
 | How do two periods compare? | Use the same precision and view, and inspect counts separately; palette colors are assigned independently per layer. |
 
 Heatfall does not accept observation weights, normalize counts by area, smooth
-neighboring cells, or add a numeric legend. Geohash cells vary in physical area
+neighboring cells. The default legend shows raw observation counts per cell.
+Geohash cells vary in physical area
 with latitude, and H3 cells also vary in area. Interpret the result as **counts
 per cell**, rather than a calibrated density surface.
 

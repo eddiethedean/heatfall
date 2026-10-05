@@ -15,10 +15,10 @@ counts the points in each cell, and draws the occupied cells over a basemap.
 Save the result as a Pillow image, or combine a heat layer with points, routes,
 and service areas through [Landfall](https://landfall.readthedocs.io/en/latest/).
 
-![H3 cells over downtown Tampa, rendered by Heatfall](https://raw.githubusercontent.com/eddiethedean/heatfall/main/docs/images/h3.png)
+![H3 cells over downtown Tampa, rendered by Heatfall](https://raw.githubusercontent.com/eddiethedean/heatfall/main/docs/images/h3-legend.png)
 
-*Synthetic observations around downtown Tampa. Each occupied cell is colored by
-its point count; the map tiles and attribution come from OpenStreetMap.*
+*Synthetic observations around downtown Tampa. The default legend labels each
+cell color with its point count; map tiles and attribution come from OpenStreetMap.*
 
 [Install](#install) · [Quick start](#quick-start) · [Choose a grid](#choose-a-grid)
 · [Add other layers](#add-other-layers) · [API](#api) · [Troubleshooting](#troubleshooting)
@@ -134,15 +134,44 @@ the palette colors.
 | `"distinct"` — default | Generates visually distinct colors for the count levels |
 | `"wheel"` | Selects colors from an HSV color wheel |
 | `"random"` | Generates random colors for the count levels |
+| `"sequential"` | Maps lower counts to light blue and higher counts to dark blue |
 
-These palettes distinguish count levels; they do **not** guarantee a sequential
-light-to-dark or cool-to-hot scale. A red cell does not inherently mean a higher
-count. Colors are assigned separately for each layer, and `"distinct"` and
-`"random"` may change between calls. Avoid comparing counts across separate maps
-by color alone.
+The first three palettes distinguish count levels; they do **not** guarantee a
+sequential light-to-dark or cool-to-hot scale. A red cell does not inherently
+mean a higher count. Colors are assigned separately for each layer, and
+`"distinct"` and `"random"` may change between calls. Avoid comparing counts
+across separate maps by color alone. Use `count_colors` to assign fixed colors
+to count values when comparing maps.
 
-The result shows raw counts per cell, not counts normalized by cell area. It does
-not apply smoothing, accept observation weights, or add a numeric legend.
+The legend below uses a sequential palette. For direct geohash/H3 comparisons,
+the [shared color example](docs/images/shared-counts.png) fixes colors by count.
+
+Legends are enabled by default and show every distinct raw count using the exact
+colors assigned to cells. They are discrete, not a continuous gradient. Set
+`legend=False` to hide one. Use `heatfall.LegendOptions` to style the title,
+layer headings, labels, swatches, panel, and shadow independently, and to
+control columns and exact placement. A map context also exposes immutable
+`context.heat_layers` metadata and `context.set_legend()` for composed maps.
+
+```python
+image = heatfall.plot_heat_h3s(
+    lats, lons, precision=8,
+    color_scheme="sequential",
+    legend=heatfall.LegendOptions(
+        position=(0.96, 0.08),
+        units="fraction",
+        anchor="top-right",
+        offset=(-8, 8),
+        title="Observations per cell",
+    ),
+)
+```
+
+Positions can use nine named anchors or any `(x, y)` coordinate in pixels or
+fractions of the output dimensions. Placement is checked against the output
+canvas; use `allow_clipping=True` only when intentional. The result shows raw
+counts per cell, not counts normalized by cell area. It does not apply smoothing
+or accept observation weights.
 
 ## Add other layers
 
@@ -191,7 +220,8 @@ inherited methods. For Heatfall's own layer methods, see the API below.
 The [full API reference](https://heatfall.readthedocs.io/en/latest/api.html)
 documents signatures, defaults, return values, and context heat methods.
 
-The public package exports two plotting functions and `Context`:
+The public package exports two plotting functions, `Context`, and the
+`LegendOptions` and `HeatLayerInfo` types for configuring and inspecting legends:
 
 | Entry point | Result |
 | --- | --- |
@@ -206,16 +236,21 @@ Both plotting functions accept the same arguments:
 | `lats` | Required | List of latitudes in decimal degrees, from −90 to 90 |
 | `lons` | Required | Matching list of longitudes in decimal degrees, from −180 to 180 |
 | `precision` | Required | Geohash length 1–12, or H3 resolution 0–15 |
-| `color_scheme` | `"distinct"` | `"distinct"`, `"random"`, or `"wheel"` |
+| `color_scheme` | `"distinct"` | `"distinct"`, `"random"`, `"wheel"`, or `"sequential"` |
 | `tileprovider` | OpenStreetMap | A `staticmaps.TileProvider` for the basemap |
 | `size` | `(800, 500)` | Output `(width, height)` in pixels |
 | `opacity` | `0.6` | Keyword-only fill opacity from `0.0` to `1.0` |
+| `legend` | `True` | Keyword-only; `False`, `True`, or `LegendOptions` |
+| `count_colors` | `None` | Keyword-only mapping of positive counts to fixed colors |
 
-The heat layer methods mutate the context and return `None`:
+The heat layer methods mutate the context and return `None`; they also accept
+keyword-only `legend_label` and `count_colors`. The context legend is enabled
+by default, and `set_legend(False)` disables it:
 
 ```python
 context.add_heat_hashes(lats, lons, precision, color_scheme="distinct", opacity=0.6)
 context.add_heat_h3s(lats, lons, precision, color_scheme="distinct", opacity=0.6)
+context.set_legend(False)
 ```
 
 The default provider is `staticmaps.tile_provider_OSM`.
@@ -302,10 +337,6 @@ Keep the provider attribution visible when sharing map images. Heatfall's MIT
 license covers the package; basemap imagery has its own provider terms.
 
 ## Develop and contribute
-
-See the [roadmap](docs/roadmap.md) for the planned **1.2 phase**: map legends
-enabled by default with an opt-out and full placement controls, sequential and
-explicit count colors, and inspectable heat layer metadata.
 
 Create a virtual environment, then install the package with its development tools:
 

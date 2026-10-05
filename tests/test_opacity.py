@@ -92,6 +92,7 @@ def test_transparent_cell_has_uniform_alpha_at_seam(monkeypatch, center):
     context.set_tile_provider(staticmaps.tile_provider_None)
     context.set_background_color(staticmaps.BLACK)
     context.add_heat_h3s([0, 0], [180, -180], precision=5)
+    context.set_legend(False)
     if center is not None:
         context.set_center(staticmaps.create_latlng(0, center))
         context.set_zoom(5)
@@ -107,6 +108,7 @@ def test_svg_uses_one_opacity_for_both_pieces(monkeypatch):
     context = heatfall.Context()
     context.set_tile_provider(staticmaps.tile_provider_None)
     context.add_heat_h3s([0], [180], precision=5)
+    context.set_legend(False)
     svg = ET.fromstring(context.render_svg(800, 500).tostring())
     paths = svg.findall(".//{http://www.w3.org/2000/svg}path")
     assert len(paths) == 3
@@ -143,5 +145,6 @@ def test_repeated_world_copies_do_not_darken_polar_cap_edges(
     context.set_tile_provider(staticmaps.tile_provider_None)
     context.set_background_color(staticmaps.BLACK)
     context.add_heat_h3s([latitude], [180], resolution)
+    context.set_legend(False)
     image = context.render_pillow(800, 500)
     assert {r for r, g, b, a in image.getdata()} == {0, 153}
