@@ -195,6 +195,7 @@ def test_legend_clipping_overflow_and_invalid_options():
         heatfall.LegendOptions(label_format=1),
         heatfall.LegendOptions(label_format="{unknown}"),
         heatfall.LegendOptions(label_format="count"),
+        heatfall.LegendOptions(count_order="sideways"),
         heatfall.LegendOptions(text_color="#zzzzzz"),
         heatfall.LegendOptions(position=[1, 2]),
     ):
@@ -204,6 +205,31 @@ def test_legend_clipping_overflow_and_invalid_options():
         validate_legend_options(True)
     with pytest.raises(TypeError):
         heatfall.Context().set_legend("yes")
+
+
+def test_exact_count_legend_defaults_high_to_low_and_supports_low_to_high():
+    layer = heatfall.HeatLayerInfo(
+        "h3",
+        8,
+        None,
+        6,
+        3,
+        (1, 2, 3),
+        (
+            (1, (30, 136, 229, 255)),
+            (2, (253, 216, 53, 255)),
+            (3, (229, 57, 53, 255)),
+        ),
+    )
+
+    def labels(count_order):
+        layout = layout_legend(
+            (layer,), heatfall.LegendOptions(count_order=count_order), 300, 240
+        )
+        return [row.label for rows in layout.sections[0][1] for row in rows]
+
+    assert labels("descending") == ["3", "2", "1"]
+    assert labels("ascending") == ["1", "2", "3"]
 
 
 def test_named_preset_accepts_an_explicit_alignment_anchor():
@@ -241,7 +267,7 @@ def test_legend_default_style_uses_card_and_swatch_corners():
     root = ET.fromstring(svg)
     ns = {"svg": "http://www.w3.org/2000/svg"}
     labels = [node.text for node in root.findall(".//svg:text", ns)]
-    assert labels == ["Observations per cell", "1", "2"]
+    assert labels == ["Observations per cell", "2", "1"]
 
 
 @pytest.mark.parametrize("align", ["left", "center", "right"])

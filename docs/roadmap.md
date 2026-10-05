@@ -50,7 +50,8 @@ Adding ordinary map objects does not create heat layer records.
   reposition, or disable a legend after adding layers and between renders.
   New contexts start with legends enabled; contexts without nonempty heat
   layers render no legend.
-- [x] Show one swatch for every distinct occupied-cell count, sorted ascending,
+- [x] Show one swatch for every distinct occupied-cell count, in configurable
+  count order (high-to-low by default),
   with numeric default labels such as "1" and "8"; the legend title supplies
   the unit once ("Observations per cell").
 - [x] Use the stored colors, including fill opacity. Do not infer meaning from
@@ -126,6 +127,8 @@ counts easier to see, and explicit mappings make comparisons reproducible.
 - [x] Add a default heatmap scale with five fixed blue/green/yellow/orange/red
   colors and finite inclusive count ranges in its legend; retain the blue
   sequential scale as an alternative.
+- [x] Order legend ranges high-to-low by default and allow low-to-high ordering
+  with `LegendOptions(count_order="ascending")`.
 
 **Acceptance:** Equal counts have identical colors under a shared mapping,
 regardless of grid, input ordering, or other counts present. Sequential colors

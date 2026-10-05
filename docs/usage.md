@@ -52,7 +52,7 @@ levels receive different palette colors.
 
 | `color_scheme` | Behavior |
 | --- | --- |
-| `"heatmap"` (default) | Interpolates from blue through green, yellow, and orange to red by count |
+| `"heatmap"` (default) | Uses five ordered color steps from blue through green, yellow, and orange to red |
 | `"distinct"` | Generates distinct colors for the count levels |
 | `"wheel"` | Selects colors from an HSV color wheel |
 | `"random"` | Generates random colors for the count levels |
@@ -124,6 +124,8 @@ it extend beyond the canvas. `LegendOptions` also configures title, labels,
 font size, colors, border, corner radius, shadow, padding, swatches, row
 spacing, and columns. The default panel uses a bold heading, a subtle divider
 and shadow, rounded corners, and larger color chips for quicker scanning.
+Legend counts run high-to-low by default; set `count_order="ascending"` for
+low-to-high order.
 
 Every visual part can be styled independently. Set a role-specific font size,
 weight, or color for the title, layer headings, and count labels; omitted role
@@ -141,6 +143,7 @@ independent options:
 | Panel | `background_color`, `border_color`, `border_width`, `corner_radius`, `padding` |
 | Shadow | `shadow`, `shadow_color`, `shadow_opacity`, `shadow_offset` |
 | Divider | `divider_color`, `divider_width`, `title_spacing` |
+| Count order | `count_order` (`"descending"` by default or `"ascending"`) |
 | Rows and swatches | `swatch_size`, `swatch_radius`, `label_gap`, `row_spacing`, `section_spacing`, `columns`, `column_spacing` |
 
 Colors accept names, hexadecimal strings, `staticmaps.Color` values, and

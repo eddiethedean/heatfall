@@ -74,6 +74,7 @@ class LegendOptions:
     row_spacing: int = 7
     column_spacing: int = 12
     columns: int = 1
+    count_order: str = "descending"
 
 
 @dataclass(frozen=True)
@@ -231,6 +232,8 @@ def validate_legend_options(options: LegendOptions) -> None:
         raise ValueError("title must be a string or None")
     if not isinstance(options.label_format, str):
         raise ValueError("label_format must be a string")
+    if options.count_order not in ("descending", "ascending"):
+        raise ValueError("count_order must be 'descending' or 'ascending'")
     try:
         options.label_format.format(count=1)
         if not any(
@@ -265,7 +268,7 @@ def layout_legend(
     multiple = len(layers) > 1
     for index, layer in enumerate(layers):
         if layer.legend_ranges:
-            rows = tuple(
+            values = tuple(
                 LegendRow(
                     options.label_format.format(
                         count=(str(low) if low == high else "{}–{}".format(low, high))
@@ -275,10 +278,11 @@ def layout_legend(
                 for low, high, color in layer.legend_ranges
             )
         else:
-            rows = tuple(
+            values = tuple(
                 LegendRow(options.label_format.format(count=count), color)
                 for count, color in layer.count_colors
             )
+        rows = values if options.count_order == "ascending" else tuple(reversed(values))
         if rows:
             section_title = layer.label or "{} layer {}".format(
                 layer.grid.upper(), index + 1

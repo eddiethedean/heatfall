@@ -156,7 +156,8 @@ represents. Other color schemes show each distinct count. Entries are discrete,
 not a continuous gradient. Set `legend=False` to hide the legend. Use
 `heatfall.LegendOptions` to style the title,
 layer headings, labels, swatches, panel, and shadow independently, and to
-control columns and exact placement. A map context also exposes immutable
+control columns, count order, and exact placement. It lists high-to-low by
+default; set `count_order="ascending"` for low-to-high. A map context also exposes immutable
 `context.heat_layers` metadata and `context.set_legend()` for composed maps.
 
 ```python

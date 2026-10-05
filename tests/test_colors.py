@@ -35,9 +35,14 @@ def test_heatmap_legend_groups_counts_into_color_ranges():
     )
     assert len({color for _, color in layer.count_colors}) == 5
     assert len(layer.legend_ranges) == 5
-    layout = layout_legend((layer,), heatfall.LegendOptions(), 800, 500)
-    labels = [row.label for col in layout.sections[0][1] for row in col]
-    assert labels == ["1–3", "4–8", "9–13", "14–18", "19–21"]
+    descending = layout_legend((layer,), heatfall.LegendOptions(), 800, 500)
+    descending_labels = [row.label for col in descending.sections[0][1] for row in col]
+    assert descending_labels == ["19–21", "14–18", "9–13", "4–8", "1–3"]
+    ascending = layout_legend(
+        (layer,), heatfall.LegendOptions(count_order="ascending"), 800, 500
+    )
+    ascending_labels = [row.label for col in ascending.sections[0][1] for row in col]
+    assert ascending_labels == ["1–3", "4–8", "9–13", "14–18", "19–21"]
 
 
 def test_all_public_heat_apis_default_to_heatmap():
