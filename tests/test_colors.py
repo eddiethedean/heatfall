@@ -5,10 +5,11 @@ from inspect import signature
 import pytest
 
 import heatfall
-from heatfall.heat import _make_count_colors
+from heatfall.heat import _heat_layer_info, _make_count_colors
+from heatfall.legend import layout_legend
 
 
-def test_heatmap_gradient_uses_blue_to_red_stops_and_center_for_one_count():
+def test_heatmap_uses_five_blue_to_red_colors_and_center_for_one_count():
     colors = _make_count_colors((1, 2, 3, 4, 5), "heatmap", None, 1)
     assert [colors[count].int_rgba()[:3] for count in range(1, 6)] == [
         (30, 136, 229),
@@ -19,6 +20,24 @@ def test_heatmap_gradient_uses_blue_to_red_stops_and_center_for_one_count():
     ]
     single = _make_count_colors((7,), "heatmap", None, 1)
     assert single[7].int_rgba()[:3] == (253, 216, 53)
+
+
+def test_heatmap_legend_groups_counts_into_color_ranges():
+    counts = tuple(range(1, 22))
+    count_colors = _make_count_colors(counts, "heatmap", None, 1)
+    layer = _heat_layer_info(
+        "h3",
+        9,
+        None,
+        {"cell-{}".format(count): count for count in counts},
+        count_colors,
+        binned_heatmap=True,
+    )
+    assert len({color for _, color in layer.count_colors}) == 5
+    assert len(layer.legend_ranges) == 5
+    layout = layout_legend((layer,), heatfall.LegendOptions(), 800, 500)
+    labels = [row.label for col in layout.sections[0][1] for row in col]
+    assert labels == ["1–3", "4–8", "9–13", "14–18", "19–21"]
 
 
 def test_all_public_heat_apis_default_to_heatmap():

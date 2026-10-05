@@ -123,8 +123,9 @@ counts easier to see, and explicit mappings make comparisons reproducible.
   Store resulting RGBA values in metadata and use them unchanged for legends.
 - [x] Document that automatic sequential scales remain relative to each layer;
   use a shared explicit mapping for matching counts across maps.
-- [x] Add a red/orange/yellow/green/blue heatmap gradient and make it the
-  default color scheme; retain the blue sequential scale as an alternative.
+- [x] Add a default heatmap scale with five fixed blue/green/yellow/orange/red
+  colors and finite inclusive count ranges in its legend; retain the blue
+  sequential scale as an alternative.
 
 **Acceptance:** Equal counts have identical colors under a shared mapping,
 regardless of grid, input ordering, or other counts present. Sequential colors

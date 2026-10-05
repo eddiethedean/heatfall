@@ -70,7 +70,8 @@ tiles and attribution.
 :::{container}
 ![H3 heat cells over Tampa, with a legend](images/h3-legend.png)
 
-*H3 · The default legend shows the observation count for each color.*
+*H3 · 1,040 seeded synthetic observations form several neighborhood hotspots
+with scattered background activity; the legend gives each color's count range.*
 :::
 :::{container}
 ![Geohash heat rectangles over Tampa](images/geohash.png)

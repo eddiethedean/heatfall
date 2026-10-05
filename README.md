@@ -15,10 +15,12 @@ counts the points in each cell, and draws the occupied cells over a basemap.
 Save the result as a Pillow image, or combine a heat layer with points, routes,
 and service areas through [Landfall](https://landfall.readthedocs.io/en/latest/).
 
-![H3 cells over downtown Tampa, rendered by Heatfall](https://raw.githubusercontent.com/eddiethedean/heatfall/main/docs/images/h3-legend.png)
+![A clustered H3 heatmap of synthetic activity across downtown Tampa, rendered by Heatfall](https://raw.githubusercontent.com/eddiethedean/heatfall/main/docs/images/h3-legend.png)
 
-*Synthetic observations around downtown Tampa. The default legend labels each
-cell color with its point count; map tiles and attribution come from OpenStreetMap.*
+*A seeded set of 1,040 synthetic observations, clustered around five Tampa
+neighborhoods with scattered background activity. The default legend labels
+each cell color with the point-count range it represents. Regenerate it with
+[`examples/generate_doc_maps.py`](examples/generate_doc_maps.py).*
 
 [Install](#install) · [Quick start](#quick-start) · [Choose a grid](#choose-a-grid)
 · [Add other layers](#add-other-layers) · [API](#api) · [Troubleshooting](#troubleshooting)
@@ -131,15 +133,16 @@ the palette colors.
 
 | `color_scheme` | Behavior |
 | --- | --- |
-| `"heatmap"` — default | Maps low-to-high counts through blue, green, yellow, orange, and red |
+| `"heatmap"` — default | Maps low-to-high counts to five steps from blue, green, yellow, orange, to red |
 | `"distinct"` | Generates visually distinct colors for the count levels |
 | `"wheel"` | Selects colors from an HSV color wheel |
 | `"random"` | Generates random colors for the count levels |
 | `"sequential"` | Maps lower counts to light blue and higher counts to dark blue |
 
-The `"heatmap"` and `"sequential"` palettes interpolate by numeric count; the
-heatmap runs blue at the low end through green, yellow, and orange to red at the
-high end. Colors are scaled separately for each layer. `"distinct"`, `"wheel"`,
+The `"heatmap"` and `"sequential"` palettes order colors by numeric count; the
+heatmap uses five color steps from blue at the low end through green, yellow,
+and orange to red at the high end. Colors are scaled separately for each layer.
+`"distinct"`, `"wheel"`,
 and `"random"` distinguish count levels without implying an order, and
 `"distinct"` and `"random"` may change between calls. Use `count_colors` to
 assign fixed colors to count values when comparing maps.
@@ -147,10 +150,11 @@ assign fixed colors to count values when comparing maps.
 The legend below uses a sequential palette. For direct geohash/H3 comparisons,
 the [shared color example](docs/images/shared-counts.png) fixes colors by count.
 
-Legends are enabled by default and show every distinct raw count using the exact
-colors assigned to cells. The title states the unit once; each swatch is labeled
-with its numeric count. The entries are discrete, not a continuous gradient.
-Set `legend=False` to hide one. Use `heatfall.LegendOptions` to style the title,
+Legends are enabled by default. The default heatmap legend has at most five
+swatches, one for each palette color, labeled with the count range that color
+represents. Other color schemes show each distinct count. Entries are discrete,
+not a continuous gradient. Set `legend=False` to hide the legend. Use
+`heatfall.LegendOptions` to style the title,
 layer headings, labels, swatches, panel, and shadow independently, and to
 control columns and exact placement. A map context also exposes immutable
 `context.heat_layers` metadata and `context.set_legend()` for composed maps.

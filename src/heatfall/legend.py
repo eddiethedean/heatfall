@@ -87,6 +87,7 @@ class HeatLayerInfo:
     cell_count: int
     counts: Tuple[int, ...]
     count_colors: Tuple[Tuple[int, Tuple[int, int, int, int]], ...]
+    legend_ranges: Tuple[Tuple[int, int, Tuple[int, int, int, int]], ...] = ()
 
 
 @dataclass(frozen=True)
@@ -263,10 +264,21 @@ def layout_legend(
     sections = []
     multiple = len(layers) > 1
     for index, layer in enumerate(layers):
-        rows = tuple(
-            LegendRow(options.label_format.format(count=count), color)
-            for count, color in layer.count_colors
-        )
+        if layer.legend_ranges:
+            rows = tuple(
+                LegendRow(
+                    options.label_format.format(
+                        count=(str(low) if low == high else "{}–{}".format(low, high))
+                    ),
+                    color,
+                )
+                for low, high, color in layer.legend_ranges
+            )
+        else:
+            rows = tuple(
+                LegendRow(options.label_format.format(count=count), color)
+                for count, color in layer.count_colors
+            )
         if rows:
             section_title = layer.label or "{} layer {}".format(
                 layer.grid.upper(), index + 1

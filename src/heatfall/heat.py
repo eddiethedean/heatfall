@@ -31,6 +31,30 @@ from heatfall.legend import (
 
 
 _MERCATOR_MAX_LAT = math.degrees(math.atan(math.sinh(math.pi)))
+_HEATMAP_STOPS = (
+    (30, 136, 229),
+    (67, 160, 71),
+    (253, 216, 53),
+    (251, 140, 0),
+    (229, 57, 53),
+)
+
+
+def _heatmap_color_index(count: int, low: int, high: int) -> int:
+    """Map a count to its nearest fixed heatmap color stop."""
+    if low == high:
+        return 2
+    return min(4, int((count - low) * 4 / (high - low) + 0.5))
+
+
+def _heatmap_bin_range(index: int, low: int, high: int) -> Tuple[int, int]:
+    """Return inclusive integer bounds represented by a heatmap color stop."""
+    if low == high:
+        return low, high
+    span = high - low
+    minimum = low if index == 0 else math.ceil(low + (index - 0.5) * span / 4)
+    maximum = high if index == 4 else math.ceil(low + (index + 0.5) * span / 4) - 1
+    return minimum, maximum
 
 
 def _clip_longitude(
@@ -270,25 +294,14 @@ def _make_count_colors(
                 (8, 81, 156),
             )
         else:
-            # A familiar cool-to-hot count ramp, with blue for the lowest
-            # counts and red for the highest.
-            stops = (
-                (30, 136, 229),
-                (67, 160, 71),
-                (253, 216, 53),
-                (251, 140, 0),
-                (229, 57, 53),
-            )
+            stops = _HEATMAP_STOPS
         colors = {}
         for count in counts:
-            ratio = 0.5 if low == high else (count - low) / (high - low)
-            scaled = ratio * (len(stops) - 1)
-            index = min(int(scaled), len(stops) - 2)
-            local_ratio = scaled - index
-            rgb = tuple(
-                round(a + (b - a) * local_ratio)
-                for a, b in zip(stops[index], stops[index + 1])
-            )
+            if color_scheme == "heatmap":
+                rgb = stops[_heatmap_color_index(count, low, high)]
+            else:
+                ratio = 0.5 if low == high else (count - low) / (high - low)
+                rgb = tuple(round(a + (b - a) * ratio) for a, b in zip(*stops))
             colors[count] = staticmaps.Color(*rgb)
         return {count: _with_opacity(colors[count], opacity) for count in counts}
     palette = process_colors(color_scheme, len(counts))
@@ -303,18 +316,31 @@ def _heat_layer_info(
     label: Optional[str],
     counts: Mapping[str, int],
     count_to_color: Mapping[int, Any],
+    binned_heatmap: bool = False,
 ) -> HeatLayerInfo:
+    unique_counts = tuple(sorted(set(counts.values())))
+    legend_ranges: Tuple[Tuple[int, int, Tuple[int, int, int, int]], ...] = ()
+    if binned_heatmap and unique_counts:
+        low, high = min(unique_counts), max(unique_counts)
+        bins: Dict[int, Tuple[int, int, int, int]] = {}
+        for count in unique_counts:
+            color_index = _heatmap_color_index(count, low, high)
+            bins[color_index] = count_to_color[count].int_rgba()
+        legend_ranges = tuple(
+            (*_heatmap_bin_range(index, low, high), bins[index])
+            for index in sorted(bins)
+        )
     return HeatLayerInfo(
         grid=grid,
         precision=precision,
         label=label,
         observation_count=sum(counts.values()),
         cell_count=len(counts),
-        counts=tuple(sorted(set(counts.values()))),
+        counts=unique_counts,
         count_colors=tuple(
-            (count, count_to_color[count].int_rgba())
-            for count in sorted(set(counts.values()))
+            (count, count_to_color[count].int_rgba()) for count in unique_counts
         ),
+        legend_ranges=legend_ranges,
     )
 
 
@@ -563,7 +589,14 @@ class Context(landfall.Context):
         ]
         self._objects.extend(objects)
         self._heat_layers.append(
-            _heat_layer_info("geohash", precision, legend_label, counts, count_to_color)
+            _heat_layer_info(
+                "geohash",
+                precision,
+                legend_label,
+                counts,
+                count_to_color,
+                binned_heatmap=color_scheme == "heatmap" and count_colors is None,
+            )
         )
 
     def add_heat_h3s(
@@ -617,7 +650,14 @@ class Context(landfall.Context):
         ]
         self._objects.extend(objects)
         self._heat_layers.append(
-            _heat_layer_info("h3", precision, legend_label, counts, count_to_color)
+            _heat_layer_info(
+                "h3",
+                precision,
+                legend_label,
+                counts,
+                count_to_color,
+                binned_heatmap=color_scheme == "heatmap" and count_colors is None,
+            )
         )
 
 

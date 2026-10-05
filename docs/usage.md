@@ -77,18 +77,20 @@ image = heatfall.plot_heat_h3s(
 )
 ```
 
-Sequential colors interpolate from light blue (`#deebf7`) to dark blue
-(`#08519c`) using the observed numeric count range; a layer with one count
-level uses the midpoint. Each layer scales to its own range. Use a shared
-`count_colors` mapping when equal counts should have equal colors across maps.
-Both palettes receive a discrete legend with one entry per exact count.
+Heatmap colors use five fixed steps across the observed count range, from blue
+for the lowest counts to red for the highest. Its legend has one item for each
+color in use and labels the inclusive count range represented by that color.
+The blue `"sequential"` palette interpolates from light blue (`#deebf7`) to
+dark blue (`#08519c`) for every count. Other schemes and explicit
+`count_colors` use one legend entry per distinct count.
 
 ### Legends
 
 Plotting functions and new contexts show a legend by default. It uses the
 layer's exact final colors and alpha and labels the raw observation count per
-occupied cell. The unit appears once in the heading and each swatch label is
-just the numeric count. Hide it with `legend=False`, or toggle a context legend with
+occupied cell. For the default heatmap, each swatch label is a count range; for
+other schemes it is the exact count. Hide it with `legend=False`, or toggle a
+context legend with
 `context.set_legend(False)`. Empty heat additions have no legend entries.
 
 ```python
