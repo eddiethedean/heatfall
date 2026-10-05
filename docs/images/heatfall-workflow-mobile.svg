@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 364 500" role="img" aria-labelledby="title desc">
+  <title id="title">Heatfall mapping workflow</title>
+  <desc id="desc">Pair coordinates, group observations into cells, then map their counts with colors and a translucent legend.</desc>
+  <defs>
+    <!-- Regular flat-top hexagon: radius 13, height 13 * sqrt(3). -->
+    <polygon id="map-cell" points="13,0 6.5,11.25833 -6.5,11.25833 -13,0 -6.5,-11.25833 6.5,-11.25833"/>
+  </defs>
+  <rect width="364" height="500" rx="20" fill="#fff8f1"/>
+  <g font-family="ui-sans-serif, system-ui, sans-serif" fill="#30211e">
+    <g transform="translate(12 12)">
+      <rect width="340" height="148" rx="15" fill="#fffdfb" stroke="#ead7c8"/>
+      <circle cx="32" cy="32" r="17" fill="#a63416"/><text x="32" y="38" font-size="17" font-weight="750" text-anchor="middle" fill="#fff">1</text>
+      <text x="60" y="38" font-size="21" font-weight="750">Paired coordinates</text>
+      <text x="20" y="72" font-size="15" fill="#80675d">One row per observation</text>
+      <rect x="20" y="88" width="300" height="40" rx="8" fill="#f8eee5"/>
+      <text x="32" y="114" font-size="17" font-weight="600">27.9470</text><text x="174" y="114" font-size="17" font-weight="600">−82.4580</text>
+    </g>
+    <g transform="translate(12 176)">
+      <rect width="340" height="148" rx="15" fill="#fffdfb" stroke="#ead7c8"/>
+      <circle cx="32" cy="32" r="17" fill="#a63416"/><text x="32" y="38" font-size="17" font-weight="750" text-anchor="middle" fill="#fff">2</text>
+      <text x="60" y="38" font-size="21" font-weight="750">Aggregate by cell</text>
+      <text x="20" y="72" font-size="15" fill="#80675d">Choose geohash rectangles or H3</text>
+      <g font-size="20" font-weight="750" text-anchor="middle">
+        <rect x="20" y="89" width="70" height="40" rx="7" fill="#80b9ed"/><text x="55" y="116">1</text>
+        <rect x="97" y="89" width="70" height="40" rx="7" fill="#f7dc72"/><text x="132" y="116">2</text>
+        <rect x="174" y="89" width="70" height="40" rx="7" fill="#f4a266"/><text x="209" y="116">4</text>
+        <rect x="251" y="89" width="70" height="40" rx="7" fill="#e67a70"/><text x="286" y="116">8</text>
+      </g>
+    </g>
+    <g transform="translate(12 340)">
+      <rect width="340" height="148" rx="15" fill="#fffdfb" stroke="#ead7c8"/>
+      <circle cx="32" cy="32" r="17" fill="#a63416"/><text x="32" y="38" font-size="17" font-weight="750" text-anchor="middle" fill="#fff">3</text>
+      <text x="60" y="38" font-size="21" font-weight="750">Map and explain</text>
+      <text x="20" y="72" font-size="15" fill="#80675d">Match cell colors to raw counts</text>
+      <rect x="20" y="86" width="300" height="54" rx="8" fill="#e9f1f1"/>
+      <path d="M26 101h288M26 125h288M70 90v46M170 90v46M275 90v46" fill="none" stroke="#fff" stroke-width="5"/>
+      <g fill-opacity=".6" stroke="#fff" stroke-width="1" stroke-linejoin="miter">
+        <use href="#map-cell" transform="translate(61 113)" fill="#1e88e5"/>
+        <use href="#map-cell" transform="translate(80.5 101.74167)" fill="#1e88e5"/>
+        <use href="#map-cell" transform="translate(80.5 124.25833)" fill="#fdd835"/>
+        <use href="#map-cell" transform="translate(100 113)" fill="#fb8c00"/>
+        <use href="#map-cell" transform="translate(119.5 101.74167)" fill="#e53935"/>
+        <use href="#map-cell" transform="translate(119.5 124.25833)" fill="#fb8c00"/>
+        <use href="#map-cell" transform="translate(139 113)" fill="#1e88e5"/>
+      </g>
+      <rect x="205" y="94" width="108" height="30" rx="5" fill="#fff" fill-opacity=".72" stroke="#d8dee8"/>
+      <rect x="214" y="102" width="13" height="13" rx="3" fill="#fb8c00" fill-opacity=".6"/>
+      <text x="237" y="114" font-size="14" font-weight="650">4 / cell</text>
+    </g>
+  </g>
+</svg>

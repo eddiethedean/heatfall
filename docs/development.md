@@ -1,5 +1,10 @@
 # Development and documentation
 
+::::{container} hf-section-intro
+Build a checkout, regenerate the visual examples, and keep the package and
+documentation ready for the next release.
+::::
+
 ## Set up a checkout
 
 ```sh
@@ -58,10 +63,18 @@ them from synthetic observations and real OpenStreetMap tiles:
 
 ```sh
 python examples/generate_doc_maps.py
+python examples/generate_legend_previews.py
 ```
 
-The image generator needs network access when tiles are not cached. Building the
-HTML documentation does not render maps or download tiles.
+The generators need network access when tiles are not cached. They include the
+exact quick-start outputs, shared-color comparisons, individual legend placement
+and opacity images, and their overview sheets. Building the HTML documentation
+does not render maps or download tiles.
+
+The workflow illustration has desktop and mobile SVG layouts in `docs/images/`.
+Edit both together so its labels remain readable on a phone. Galleries use the
+individual map images on small screens; keep count labels and tile attribution
+visible when changing them.
 
 ## Connect Read the Docs
 
@@ -91,5 +104,5 @@ Phase 1.2 implements default legends with precise placement, sequential and
 explicit count colors, and inspectable heat layer metadata. The
 [roadmap](roadmap.md) records the completed scope.
 
-See the [release guide](releasing.md) for 1.1.0 compatibility notes, package
+See the [release guide](releasing.md) for 1.2.0 compatibility notes, package
 validation, and the tag, upload, and verification steps.

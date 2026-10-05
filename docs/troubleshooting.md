@@ -1,7 +1,11 @@
 # Troubleshooting
 
-Start with coordinate order, grid precision, and tile access. The table below
-connects common symptoms to a concrete next step.
+::::{container} hf-section-intro
+Find the symptom below, check the running version, then reduce the map to a
+small coordinate sample. Each check links to the relevant guide.
+::::
+
+## Map appearance
 
 | Symptom | Next check |
 | --- | --- |
@@ -11,15 +15,27 @@ connects common symptoms to a concrete next step.
 | The basemap is missing or slow | Check network connectivity, provider availability, and usage limits. Try [rendering without tiles](basemaps.md#render-without-a-basemap) to inspect the heat layer. |
 | Colors differ between maps | Colors are assigned per layer. Distinct and random palettes may vary; color alone cannot establish equal counts across maps. |
 | Blue cells have low counts | The default heatmap maps low counts to blue and high counts to red. See [colors and opacity](usage.md#colors-and-opacity). |
-| The map spans the world near ±180° | Use Heatfall 1.1.0 or newer for H3 splitting and extent fixes. See [antimeridian behavior](geography.md#crossing-the-antimeridian). |
+| The map spans the world near ±180° | Upgrade to Heatfall 1.2.0 for the current H3 boundary fixes. See [antimeridian behavior](geography.md#crossing-the-antimeridian). |
 | Cells are invisible | Check whether `opacity=0` was supplied. The default is `0.6`; use `1.0` for solid fills. |
 | The poles are missing | Web Mercator basemaps end at approximately ±85.0511°. See [polar limits](geography.md#polar-limits). |
+
+## Legends and comparisons
+
+| Symptom | Next check |
+| --- | --- |
+| A legend does not fit | Add columns, reduce font size or padding, enlarge the image, or set `allow_clipping=True` when partial placement is intentional. |
+| A legend hides cells | Reduce `background_opacity`, use more columns, or move the panel with `position`. See [legend styling](usage.md#legends). |
+| A legend covers tile attribution | Choose another `LegendOptions.position` and keep the provider attribution visible. |
+| Equal counts have different colors across maps | Supply the same `count_colors` mapping to both maps. Automatic palettes are assigned per layer. |
+
+## Arguments and versions
+
+| Symptom | Next check |
+| --- | --- |
 | `add_circles()` raises `TypeError` | Supply latitude, longitude, and radii sequences; for one circle use `[latitude]`, `[longitude]`, and `[radius]`. |
 | `tile_provider` raises an unexpected keyword error | Heatfall's plotting argument is `tileprovider`; a context uses `set_tile_provider()`. |
 | `opacity` raises an unexpected keyword error | Check the installed version and interpreter; this option requires Heatfall 1.1.0 or newer. |
-| A legend does not fit | Add columns, reduce font size or padding, enlarge the image, or set `allow_clipping=True` when partial placement is intentional. |
-| A legend covers tile attribution | Choose another `LegendOptions.position` and keep the provider attribution visible. |
-| Equal counts have different colors across maps | Supply the same `count_colors` mapping to both maps. Automatic palettes are assigned per layer. |
+| `legend`, `count_colors`, or `sequential` is unavailable | These controls require Heatfall 1.2.0 or newer. Check the interpreter and upgrade below. |
 
 ## Check the running version
 
@@ -29,7 +45,7 @@ python -c "import sys, heatfall; print(sys.executable); print(heatfall.__version
 ```
 
 Run installation commands with the same interpreter that runs your script or
-notebook. Heatfall 1.1.0 is available on PyPI; upgrade an older installation with:
+notebook. Heatfall 1.2.0 is available on PyPI; upgrade an older installation with:
 
 ```sh
 python -m pip install --upgrade heatfall

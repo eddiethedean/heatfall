@@ -1,5 +1,16 @@
 # Usage and styling
 
+::::{container} hf-section-intro
+Start with a grid and a short coordinate list. Heatfall handles cell counts,
+colors, map fitting, and the default legend; add controls only when your map
+needs them.
+::::
+
+::::{container} hf-callout
+**Quick recipe** · Install `heatfall`, pass paired latitude and longitude
+lists, choose a grid precision, then save the returned Pillow image.
+::::
+
 ## Create an H3 heatmap
 
 This example contains 15 synthetic observations around downtown Tampa. Repeated
@@ -42,7 +53,18 @@ image = heatfall.plot_heat_hashes(
 image.save("geohash-heatmap.png")
 ```
 
-![Geohash rectangles over downtown Tampa](images/geohash.png)
+::::{container} hf-gallery
+:::{container}
+![H3 output from the 15-observation example above](images/quickstart-h3.png)
+
+*H3 · Resolution 8. The legend labels each occupied cell's count.*
+:::
+:::{container}
+![Geohash output from the same 15 observations](images/quickstart-geohash.png)
+
+*Geohash · Precision 6. Same observations, rectangular cells.*
+:::
+::::
 
 ## Colors and opacity
 
@@ -71,11 +93,24 @@ once to the supplied alpha. When `count_colors` is supplied, it takes precedence
 over `color_scheme`.
 
 ```python
-shared_colors = {1: "#deebf7", 4: "#9ecae1", 8: "#3182bd"}
+shared_colors = {1: "#deebf7", 2: "#9ecae1", 4: "#4292c6", 8: "#08519c"}
 image = heatfall.plot_heat_h3s(
     lats, lons, precision=8, count_colors=shared_colors
 )
 ```
+
+::::{container} hf-gallery
+:::{container}
+![H3 map with colors fixed to counts 1, 2, 4, and 8](images/shared-counts-h3.png)
+
+*H3 · The explicit count palette at resolution 8.*
+:::
+:::{container}
+![Geohash map using the same explicit count colors](images/shared-counts-geohash.png)
+
+*Geohash · Equal counts use the same colors at precision 6.*
+:::
+::::
 
 Heatmap colors use five fixed steps across the observed count range, from blue
 for the lowest counts to red for the highest. Its legend has one item for each
@@ -83,6 +118,14 @@ color in use and labels the inclusive count range represented by that color.
 The blue `"sequential"` palette interpolates from light blue (`#deebf7`) to
 dark blue (`#08519c`) for every count. Other schemes and explicit
 `count_colors` use one legend entry per distinct count.
+
+<ul class="hf-palette" aria-label="Default heatmap: five ordered color steps from lower to higher counts">
+  <li style="--swatch: #1e88e5"><strong>Blue</strong>Lowest counts</li>
+  <li style="--swatch: #43a047"><strong>Green</strong>Lower</li>
+  <li style="--swatch: #fdd835"><strong>Yellow</strong>Middle</li>
+  <li style="--swatch: #fb8c00"><strong>Orange</strong>Higher</li>
+  <li style="--swatch: #e53935"><strong>Red</strong>Highest counts</li>
+</ul>
 
 ### Legends
 
@@ -122,8 +165,9 @@ The legend is measured against the final image dimensions and raises
 `ValueError` if it does not fit. Add `allow_clipping=True` to deliberately let
 it extend beyond the canvas. `LegendOptions` also configures title, labels,
 font size, colors, border, corner radius, shadow, padding, swatches, row
-spacing, and columns. The default panel uses a bold heading, a subtle divider
-and shadow, rounded corners, and larger color chips for quicker scanning.
+spacing, and columns. Its compact, translucent white panel lets heat cells show
+through while the bold heading, subtle divider and shadow, rounded corners, and
+color chips keep the labels easy to scan.
 Legend counts run high-to-low by default; set `count_order="ascending"` for
 low-to-high order.
 
@@ -162,9 +206,10 @@ and `title_line_spacing` controls the gap between title lines. Entry columns
 and layer headings still determine the minimum panel width.
 
 Set `background_opacity` from `0` (transparent) to `1` (full color opacity) to
-reveal heat cells underneath the card. It defaults to `1` and multiplies any
-alpha already present in `background_color`. Text, swatches, border, and shadow
-retain their independent styling. For example:
+adjust how much of the map shows through the card. It defaults to `1` and
+multiplies any alpha already present in `background_color`; the default white
+color is already translucent. Text, swatches, border, and shadow retain their
+independent styling. For example:
 
 ```python
 context.set_legend(heatfall.LegendOptions(
@@ -174,7 +219,23 @@ context.set_legend(heatfall.LegendOptions(
 ))
 ```
 
-![Legend backgrounds at three opacity levels](images/legend-opacity.png)
+::::{container} hf-gallery hf-placement-gallery
+:::{container}
+![Legend panel at 100% white background opacity](images/legend-opacity-100.png)
+
+*Opaque white · Text and swatches retain their own opacity.*
+:::
+:::{container}
+![Legend panel at 65% white background opacity](images/legend-opacity-65.png)
+
+*65% white fill · Text and swatches retain their own opacity.*
+:::
+:::{container}
+![Legend panel at 35% white background opacity](images/legend-opacity-35.png)
+
+*35% white fill · Text and swatches retain their own opacity.*
+:::
+::::
 
 Each heat layer uses its own palette. A composed map displays separately titled
 sections in layer order; set `legend_label` on a heat method to name a section.
@@ -186,7 +247,55 @@ Keep tile attribution visible when choosing a custom location.
 The placement gallery shows all nine anchors at native image sizes, using
 compact horizontal, standard vertical, and larger two-column legends:
 
-![Legend placement and sizing](images/legend-positions.png)
+::::{container} hf-gallery hf-placement-gallery
+:::{container}
+![Legend positioned at top-left](images/legend-top-left.png)
+
+*top-left · 320 × 240 · 3 columns*
+:::
+:::{container}
+![Legend positioned at top-center](images/legend-top-center.png)
+
+*top-center · 320 × 240 · 3 columns*
+:::
+:::{container}
+![Legend positioned at top-right](images/legend-top-right.png)
+
+*top-right · 320 × 240 · 3 columns*
+:::
+:::{container}
+![Legend positioned at center-left](images/legend-center-left.png)
+
+*center-left · 440 × 300 · 1 column*
+:::
+:::{container}
+![Legend positioned at center](images/legend-center.png)
+
+*center · 440 × 300 · 1 column*
+:::
+:::{container}
+![Legend positioned at center-right](images/legend-center-right.png)
+
+*center-right · 440 × 300 · 1 column*
+:::
+:::{container}
+![Legend positioned at bottom-left](images/legend-bottom-left.png)
+
+*bottom-left · 480 × 340 · 2 columns*
+:::
+:::{container}
+![Legend positioned at bottom-center](images/legend-bottom-center.png)
+
+*bottom-center · 480 × 340 · 2 columns*
+:::
+:::{container}
+![Legend positioned at bottom-right](images/legend-bottom-right.png)
+
+*bottom-right · 480 × 340 · 2 columns*
+:::
+::::
+
+[Open the full placement sheet](images/legend-positions.png).
 
 For a small map, start with `font_size=11`, `padding=10`, `swatch_size=12`,
 and `columns=3`. For larger output, increase `font_size`, `padding`, and
@@ -230,7 +339,7 @@ context.add_circles(
 context.render_pillow(800, 500).save("layered-heatmap.png")
 ```
 
-![An H3 heat layer with a point, route, and circle](images/layers.png)
+![The 15-observation H3 example with a point, route, circle, and legend](images/quickstart-layers.png)
 
 See Landfall's [Context API](https://landfall.readthedocs.io/en/latest/api/#context)
 for inherited layer methods, and its

@@ -61,7 +61,9 @@ def main() -> None:
                 font=caption,
                 fill="#526070",
             )
-            gallery.paste(context.render_pillow(*size).convert("RGB"), (x, y + 56))
+            rendered = context.render_pillow(*size).convert("RGB")
+            gallery.paste(rendered, (x, y + 56))
+            rendered.save(output / "legend-{}.png".format(position))
         y += size[1] + 64
     gallery.save(output / "legend-positions.png")
 
@@ -82,9 +84,9 @@ def main() -> None:
                 shadow=False,
             )
         )
-        transparency.paste(
-            context.render_pillow(480, 300).convert("RGB"), (column * 500 + 10, 50)
-        )
+        rendered = context.render_pillow(480, 300).convert("RGB")
+        transparency.paste(rendered, (column * 500 + 10, 50))
+        rendered.save(output / "legend-opacity-{}.png".format(round(opacity * 100)))
     transparency.save(output / "legend-opacity.png")
 
     # Also exercise independent heading sizes and multiple labelled layers.

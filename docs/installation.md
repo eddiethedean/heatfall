@@ -1,17 +1,24 @@
 # Installation
 
-Heatfall supports **Python 3.8–3.13**. Install the latest published release:
+::::{container} hf-section-intro
+Make your first map with Heatfall **1.2.0**. Python **3.8–3.13** is supported;
+the default basemap needs no API key.
+::::
+
+## Install from PyPI
+
+Install the latest release:
 
 ```sh
 python -m pip install heatfall
 ```
 
-[Heatfall 1.1.0](https://pypi.org/project/heatfall/1.1.0/) was published on
-October 3, 2026 (UTC). It includes configurable opacity, translucent defaults,
-and antimeridian-safe H3 rendering. Install that exact release with:
+[Heatfall 1.2.0](https://pypi.org/project/heatfall/1.2.0/) includes translucent
+count legends, precise placement, sequential colors, and shared count palettes.
+To pin this version:
 
 ```sh
-python -m pip install "heatfall==1.1.0"
+python -m pip install "heatfall==1.2.0"
 ```
 
 To try development changes from `main`, install the current source:
@@ -49,6 +56,15 @@ image.save("first-heatmap.png")
 `image` is a Pillow image. In a notebook, put `image` on its own as the last
 expression in a cell to display it. Coordinates are latitude first, longitude
 second, in decimal degrees; repeated locations count as separate observations.
+
+![Output from the four-observation first-map example above](images/first-map.png)
+
+*Four observations, three occupied H3 cells. Repeated coordinates count twice.*
+
+```{tip} Your first result
+The default heatmap palette and legend are ready immediately. Use
+`legend=False` to make an unobstructed map for a later layout step.
+```
 
 Continue with [usage and styling](usage.md) for the illustrated example,
 [prepare your point data](data.md) to load a CSV, or

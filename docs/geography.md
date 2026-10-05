@@ -1,6 +1,20 @@
 # Geographic considerations
 
+::::{container} hf-section-intro
+Keep coordinate order explicit, understand how H3 cells cross ±180°, and account
+for the latitude limits of a tiled map.
+::::
+
 ## Coordinate rules
+
+| Input | Accepted range or order |
+| --- | --- |
+| Latitude | −90° to 90°, inclusive |
+| Longitude | −180° to 180°, inclusive |
+| Coordinate pairs | Latitude first, longitude second; decimal degrees |
+| Geohash precision | Integer from 1 to 12 |
+| H3 resolution | Integer from 0 to 15 |
+| Fill opacity | Finite value from 0 to 1 |
 
 - Supply parallel latitude and longitude lists in **latitude, longitude** order.
   GeoJSON positions commonly use the reverse order.
@@ -34,6 +48,10 @@ using spherical intersections. The pieces share the original cell's count and
 color and are composited together to avoid a darker transparency seam. Automatic
 map extents follow the short span across the seam. Exact 180 and −180 longitude
 are accepted.
+
+![Schematic of one H3 cell split at the antimeridian with its count and color preserved](images/antimeridian.svg)
+
+*Schematic · Both boundary pieces represent the same cell; they are counted once.*
 
 This behavior applies to rendered H3 cells. Polygon-to-cell filling of external
 GeoJSON is outside Heatfall's point API.

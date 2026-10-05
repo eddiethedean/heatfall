@@ -214,6 +214,28 @@ def test_legend_clipping_overflow_and_invalid_options():
         heatfall.Context().set_legend("yes")
 
 
+def test_legend_validation_handles_integer_overflow():
+    with pytest.raises(ValueError, match="finite"):
+        validate_legend_options(heatfall.LegendOptions(position=(10**1000, 0)))
+
+
+def test_range_labels_preserve_literals_and_reject_unvalidated_fields():
+    color = (30, 136, 229, 153)
+    layer = heatfall.HeatLayerInfo(
+        "h3", 8, None, 5, 1, (5,), ((5, color),), ((2, 5, color),)
+    )
+    layout = layout_legend(
+        (layer,), heatfall.LegendOptions(label_format="Count {count} total"), 300, 240
+    )
+    assert layout is not None
+    assert layout.sections[0][1][0][0].label == "Count 2-5 total"
+
+    with pytest.raises(ValueError, match="only contain the {count} field"):
+        layout_legend(
+            (layer,), heatfall.LegendOptions(label_format="{unknown}"), 300, 240
+        )
+
+
 def test_exact_count_legend_defaults_high_to_low_and_supports_low_to_high():
     layer = heatfall.HeatLayerInfo(
         "h3",
@@ -258,7 +280,8 @@ def test_svg_renders_panel_text_and_opacity():
     svg = ET.fromstring(context.render_svg(400, 300).tostring())
     ns = {"svg": "http://www.w3.org/2000/svg"}
     assert "Counts" in [node.text for node in svg.findall(".//svg:text", ns)]
-    swatches = svg.findall('.//svg:rect[@width="16"]', ns)
+    swatch_width = str(heatfall.LegendOptions().swatch_size)
+    swatches = svg.findall('.//svg:rect[@width="{}"]'.format(swatch_width), ns)
     assert swatches[0].attrib.get("fill-opacity") == str(128 / 255)
 
 

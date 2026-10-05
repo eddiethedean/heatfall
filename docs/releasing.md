@@ -1,54 +1,33 @@
 # Releasing Heatfall
 
-## Published release: 1.1.0
+::::{container} hf-section-intro
+Build, validate, and publish a tagged release. The commands below use **1.2.0**;
+replace that version consistently when preparing a later release.
+::::
 
-Heatfall 1.1.0 was published to [PyPI](https://pypi.org/project/heatfall/1.1.0/)
-on **October 3, 2026 (UTC)**. The annotated
-[tag `v1.1.0`](https://github.com/eddiethedean/heatfall/tree/v1.1.0) points to
-[commit `dc94cb1`](https://github.com/eddiethedean/heatfall/commit/dc94cb17ea00c71e3caa97b813adf093352820c9).
+## 1.2.0 compatibility notes
 
-- All 14 jobs in the [Release workflow](https://github.com/eddiethedean/heatfall/actions/runs/37095082186)
-  passed, including the full test matrix, documentation, code quality, package
-  validation, and trusted publishing.
-- PyPI provides both `heatfall-1.1.0-py3-none-any.whl` and
-  `heatfall-1.1.0.tar.gz`.
-- A fresh installation from PyPI confirmed version 1.1.0 and passed
-  `python -m pip check`.
+Heatfall 1.2.0 adds map legends, precise placement and styling controls,
+sequential colors, explicit count palettes, and immutable heat layer metadata.
+See the [changelog](changelog.md) for the complete release notes.
 
-The checklist below records the release process using 1.1.0 as an example.
-For future releases, replace that version with the new version throughout.
+| Change | What existing users should know |
+| --- | --- |
+| Legends enabled by default | Use `legend=False` or `context.set_legend(False)` to retain the earlier appearance. |
+| Translucent legend panel | Map content shows through the panel; text and swatches retain independent styling. |
+| Shared count colors | Supply `count_colors` to make equal counts match across maps. |
+| Existing plotting calls | Positional arguments, return types, default palettes, fill opacity, and map fitting retain their behavior. |
+| Python support | Runtime: 3.8–3.13. Documentation tools: 3.12 or newer. |
 
-## 1.1.0 release notes
-
-This release builds on 1.0.0 with H3 geometry fixes, configurable transparency,
-stronger input validation, and expanded documentation. The complete changes are
-in the [changelog](changelog.md).
-
-### Compatibility
-
-- Existing positional plotting arguments retain their order. `opacity` is a new
-  keyword-only option on both plotting functions and both context heat methods.
-- Heat fills now default to **60% opacity**. Set `opacity=1.0` to restore the
-  previous solid appearance.
-- H3 boundaries now use the correct latitude/longitude order. Crossing cells
-  split at ±180°, retaining one count and one opacity application per cell.
-- Invalid coordinates, including non-finite values, raise `ValueError` in
-  context heat methods as well as plotting functions.
-- Runtime support remains **Python 3.8–3.13**. Minimum dependencies are
-  `landfall>=0.4.2`, `geodude>=0.1.1`, and `h3>=4.0.0`.
-- The optional documentation extra requires Python 3.12 or newer. Documentation
-  CI, tox, and Read the Docs use Python 3.13.
-
-Color palettes represent count levels within each layer. The default
-``heatmap`` palette runs from blue at the low end through green, yellow, and
-orange to red at the high end; ``sequential`` uses a light-to-dark blue ramp.
-The other palettes distinguish levels without implying order. None of the
-palettes normalizes counts by cell area.
+::::{container} hf-callout
+**Release sequence** · Validate the source → check the installed wheel → confirm
+CI → tag and publish → verify the PyPI installation.
+::::
 
 ## Validate the release candidate
 
 Use a clean checkout of the commit intended for release. Confirm that
-`pyproject.toml`, `heatfall.__version__`, and the changelog all identify `1.1.0`.
+`pyproject.toml`, `heatfall.__version__`, and the changelog all identify `1.2.0`.
 All release changes must be under that version's changelog entry.
 
 Create a Python 3.13 environment:
@@ -64,8 +43,8 @@ Activate it with `source .venv-release/bin/activate` on macOS/Linux, or
 python -m pip install -e ".[dev,docs]" build twine
 python -m pytest --cov-fail-under=100
 python -m tox -e ruff,mypy,docs
-python -m build --outdir dist/1.1.0
-python -m twine check --strict dist/1.1.0/heatfall-1.1.0.tar.gz dist/1.1.0/heatfall-1.1.0-py3-none-any.whl
+python -m build --outdir dist/1.2.0
+python -m twine check --strict dist/1.2.0/heatfall-1.2.0.tar.gz dist/1.2.0/heatfall-1.2.0-py3-none-any.whl
 ```
 
 `python -m build` creates the source archive, then builds the wheel from that
@@ -85,9 +64,9 @@ python -m venv .venv-wheel
 Activate that environment and install the wheel plus test tools:
 
 ```sh
-python -m pip install dist/1.1.0/heatfall-1.1.0-py3-none-any.whl pytest pytest-cov
+python -m pip install dist/1.2.0/heatfall-1.2.0-py3-none-any.whl pytest pytest-cov
 python -m pip check
-python -c "from importlib.metadata import version; import heatfall; assert heatfall.__version__ == version('heatfall') == '1.1.0'; print(heatfall.__file__)"
+python -c "from importlib.metadata import version; import heatfall; assert heatfall.__version__ == version('heatfall') == '1.2.0'; print(heatfall.__file__)"
 python -m pytest --cov-fail-under=100
 ```
 
@@ -147,14 +126,14 @@ Perform these steps when the candidate and its CI results have been accepted:
 2. Create and push the annotated tag:
 
    ```sh
-   git tag -a v1.1.0 -m "Heatfall 1.1.0"
-   git push origin v1.1.0
+   git tag -a v1.2.0 -m "Heatfall 1.2.0"
+   git push origin v1.2.0
    ```
 
 3. Follow the **Release** workflow in GitHub Actions. It validates the tag,
    runs tests and package checks, and publishes the checked wheel and source
    archive. A failed prerequisite prevents the publishing job from running.
-4. After successful publication, create a GitHub release for `v1.1.0` using
+4. After successful publication, create a GitHub release for `v1.2.0` using
    this version's changelog notes.
 5. If Read the Docs hosting is connected, activate the tag's documentation
    version and verify its build. The [connection guide](development.md#connect-read-the-docs)
@@ -162,12 +141,12 @@ Perform these steps when the candidate and its CI results have been accepted:
 6. Verify the published version in a fresh environment:
 
    ```sh
-   python -m pip install --no-cache-dir "heatfall==1.1.0"
+   python -m pip install --no-cache-dir "heatfall==1.2.0"
    python -m pip check
-   python -c "import heatfall; assert heatfall.__version__ == '1.1.0'"
+   python -c "import heatfall; assert heatfall.__version__ == '1.2.0'"
    ```
 
 PyPI version files cannot be replaced with corrected files under the same
 filename. If a published artifact needs a fix, prepare a new version rather
-than reusing 1.1.0. Re-running a successful publishing job will encounter the
+than reusing 1.2.0. Re-running a successful publishing job will encounter the
 existing files; the workflow does not silently skip them.

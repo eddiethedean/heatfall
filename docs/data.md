@@ -4,6 +4,15 @@ Heatfall accepts two parallel lists of decimal-degree coordinates: latitudes
 first, then longitudes. Each row is one observation. Start with the
 [usage guide](usage.md) if you want to try a map before loading a file.
 
+::::{container} hf-flow
+:::{container} hf-flow-desktop
+![Heatfall workflow: paired coordinates become cell counts, then colors and a legend](images/heatfall-workflow.svg)
+:::
+:::{container} hf-flow-mobile
+![Heatfall workflow: paired coordinates become cell counts, then colors and a legend](images/heatfall-workflow-mobile.svg)
+:::
+::::
+
 ## Load a CSV
 
 Save this small example as `observations.csv`:
@@ -79,7 +88,7 @@ Choose the counting unit before plotting:
 | Where did events occur in one time period? | Filter the rows to that period first. |
 | How do two periods compare? | Use the same precision and view, and inspect counts separately; palette colors are assigned independently per layer. |
 
-Heatfall does not accept observation weights, normalize counts by area, smooth
+Heatfall does not accept observation weights, normalize counts by area, or smooth
 neighboring cells. The default legend shows raw observation counts per cell.
 Geohash cells vary in physical area
 with latitude, and H3 cells also vary in area. Interpret the result as **counts

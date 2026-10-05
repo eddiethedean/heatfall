@@ -2,14 +2,16 @@
 
 ## Phase 1.2 — Map legends and meaningful colors
 
-**Status:** Implemented. **Target release:** 1.2.0.
+::::{container} hf-callout
+**Released in 1.2.0** · Map legends, meaningful colors, and inspectable heat layers.
+::::
 
 Make each heat color understandable directly on an exported map, with legends
 enabled by default and precise placement controls. Add complementary color and
 metadata features so users can build readable, reproducible comparisons.
 
 This phase describes the APIs introduced for 1.2.0. All feature tasks and
-acceptance criteria are complete. Version 1.2.0 is prepared but not published.
+acceptance criteria are complete and included in Heatfall 1.2.0.
 
 ### Scope and compatibility
 
@@ -79,7 +81,7 @@ geographic objects repeat across world copies.
 
 ### HF12-03 — Legend styling and composed maps
 
-- [x] Default to an opaque white panel with dark text and a subtle border;
+- [x] Default to a translucent white panel with dark text and a subtle border;
   preserve the swatch's actual RGBA color when compositing onto the panel.
 - [x] Allow `title`, `font_size`, `text_color`, `background_color`,
   `border_color`, `border_width`, `padding`, `swatch_size`, `row_spacing`, and
@@ -134,7 +136,7 @@ counts easier to see, and explicit mappings make comparisons reproducible.
 regardless of grid, input ordering, or other counts present. Sequential colors
 are deterministic, increase in darkness with count, and work for a single count.
 
-### Proposed usage
+### Released API examples
 
 These examples use the implemented interface:
 
@@ -199,11 +201,11 @@ The explicit mapping example assumes observed counts are covered by 1, 4, and 8.
 - [x] Pass the existing test matrix and 100% statement coverage requirement,
   Ruff, mypy, strict Sphinx build, and installed-wheel/package checks.
 - [x] Record completed behavior in the changelog and update both version sources
-  to 1.2.0 for the prepared but unpublished release candidate.
+  to 1.2.0 for this release.
 
 ### Execution order and completion
 
-Phase 1.2 is complete. The 1.2.0 release candidate passes the locally available
+Phase 1.2 is complete. The 1.2.0 implementation passes the locally available
 Python-version test matrix, code quality, documentation, and package checks.
 
 Weighted observations, count binning, density normalization, interactive map

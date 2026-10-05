@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 330" role="img" aria-labelledby="title desc">
+  <title id="title">An H3 cell crossing the antimeridian</title>
+  <desc id="desc">A schematic map centered at 180 degrees shows two parts of one crossing cell with the same count and fill, joined without a darker seam.</desc>
+  <defs>
+    <pattern id="grid" width="44" height="44" patternUnits="userSpaceOnUse"><path d="M44 0H0V44" fill="none" stroke="#d6e3e7" stroke-width="1"/></pattern>
+  </defs>
+  <rect width="760" height="330" rx="20" fill="#fff8f1"/>
+  <g font-family="ui-sans-serif, system-ui, sans-serif" fill="#30211e">
+    <text x="30" y="43" font-size="25" font-weight="750">One cell. Two boundary pieces.</text>
+    <rect x="30" y="65" width="700" height="193" rx="12" fill="#eaf2f4"/>
+    <rect x="30" y="65" width="700" height="193" rx="12" fill="url(#grid)"/>
+    <path d="M286 159l46-64h48v128h-48z" fill="#1e88e5" fill-opacity=".6"/>
+    <path d="M380 95h48l46 64-46 64h-48z" fill="#1e88e5" fill-opacity=".6"/>
+    <path d="M380 70v185" stroke="#a63416" stroke-width="2" stroke-dasharray="6 6"/>
+    <text x="120" y="110" font-size="23" font-weight="700">179.5° E</text>
+    <text x="525" y="110" font-size="23" font-weight="700">179.5° W</text>
+    <text x="332" y="170" font-size="29" font-weight="750" text-anchor="middle">2</text>
+    <text x="428" y="170" font-size="29" font-weight="750" text-anchor="middle">2</text>
+    <text x="380" y="248" font-size="19" text-anchor="middle" fill="#803d29">±180°</text>
+    <text x="380" y="298" font-size="21" text-anchor="middle">Same count · Same color · No darker seam</text>
+  </g>
+</svg>

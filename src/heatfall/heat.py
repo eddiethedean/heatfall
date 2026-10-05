@@ -389,7 +389,14 @@ def _draw_pillow_legend(
         outline=colors["border"] if options.border_width else None,
         width=max(1, int(options.border_width)),
     )
-    from heatfall.legend import _font, _size, _text_height, _title_height, _weight
+    from heatfall.legend import (
+        _font,
+        _size,
+        _text_height,
+        _title_content_spacing,
+        _title_height,
+        _weight,
+    )
 
     label_size = _size(options, "label")
     title_size = _size(options, "title")
@@ -428,7 +435,7 @@ def _draw_pillow_legend(
             title_font, layout.title_lines, options.title_line_spacing
         )
         if options.divider_width:
-            divider_y = y + title_height + max(1, options.title_spacing / 2)
+            divider_y = y + title_height + _title_content_spacing(options) / 2
             draw.line(
                 (
                     x0 + options.padding,
@@ -439,7 +446,7 @@ def _draw_pillow_legend(
                 fill=colors["divider"],
                 width=max(1, int(options.divider_width)),
             )
-        y += title_height + options.title_spacing
+        y += title_height + _title_content_spacing(options)
     row_height = max(_text_height(font, "M"), options.swatch_size)
     for section_title, columns in layout.sections:
         if section_title:

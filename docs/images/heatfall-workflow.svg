@@ -1,0 +1,77 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 310" role="img" aria-labelledby="title desc">
+  <title id="title">Heatfall mapping workflow</title>
+  <desc id="desc">Latitude and longitude observations are grouped into geohash or H3 cells, counted, colored, and shown on a map with a legend.</desc>
+  <defs>
+    <!-- Regular flat-top hexagon: radius 22, height 22 * sqrt(3). -->
+    <polygon id="map-cell" points="22,0 11,19.052559 -11,19.052559 -22,0 -11,-19.052559 11,-19.052559"/>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto">
+      <path d="M0 0 10 5 0 10Z" fill="#bf5526"/>
+    </marker>
+  </defs>
+  <rect width="1200" height="310" rx="24" fill="#fff8f1"/>
+  <g font-family="Inter, ui-sans-serif, system-ui, sans-serif" fill="#30211e">
+    <g transform="translate(24 24)">
+      <rect width="340" height="262" rx="18" fill="#fffdfb" stroke="#ead7c8"/>
+      <circle cx="34" cy="36" r="18" fill="#a63416"/><text x="34" y="42" text-anchor="middle" font-size="16" font-weight="800" fill="#fff">1</text>
+      <text x="64" y="42" font-size="19" font-weight="750">Paired coordinates</text>
+      <text x="26" y="78" font-size="13" fill="#80675d">One row per observation</text>
+      <rect x="26" y="96" width="288" height="36" rx="8" fill="#f8eee5"/>
+      <text x="42" y="119" font-size="13" font-weight="700" fill="#87523b">latitude</text><text x="165" y="119" font-size="13" font-weight="700" fill="#87523b">longitude</text>
+      <g font-size="13" fill="#30211e">
+        <text x="42" y="157">27.9470</text><text x="165" y="157">−82.4580</text>
+        <text x="42" y="187">27.9470</text><text x="165" y="187">−82.4580</text>
+        <text x="42" y="217">27.9515</text><text x="165" y="217">−82.4500</text>
+      </g>
+      <circle cx="284" cy="151" r="4" fill="#a63416"/><circle cx="284" cy="181" r="4" fill="#a63416"/><circle cx="284" cy="211" r="4" fill="#a63416"/>
+    </g>
+    <path d="M378 155h44" fill="none" stroke="#bf5526" stroke-width="3" marker-end="url(#arrow)"/>
+    <g transform="translate(430 24)">
+      <rect width="340" height="262" rx="18" fill="#fffdfb" stroke="#ead7c8"/>
+      <circle cx="34" cy="36" r="18" fill="#a63416"/><text x="34" y="42" text-anchor="middle" font-size="16" font-weight="800" fill="#fff">2</text>
+      <text x="64" y="42" font-size="19" font-weight="750">Aggregate by cell</text>
+      <text x="26" y="78" font-size="13" fill="#80675d">Choose geohash rectangles or H3</text>
+      <g stroke="#fff" stroke-width="3" opacity=".9">
+        <path d="M67 112h70v56H67z" fill="#80b9ed"/><path d="M137 112h70v56h-70z" fill="#80b9ed"/><path d="M207 112h70v56h-70z" fill="#f7dc72"/>
+        <path d="M67 168h70v56H67z" fill="#80b9ed"/><path d="M137 168h70v56h-70z" fill="#f4a266"/><path d="M207 168h70v56h-70z" fill="#e67a70"/>
+      </g>
+      <g font-size="14" font-weight="750" text-anchor="middle" fill="#25303d">
+        <text x="102" y="146">1</text><text x="172" y="146">1</text><text x="242" y="146">2</text>
+        <text x="102" y="202">1</text><text x="172" y="202">4</text><text x="242" y="202">8</text>
+      </g>
+      <text x="170" y="250" text-anchor="middle" font-size="12" fill="#80675d">Repeated points increase the cell count</text>
+    </g>
+    <path d="M784 155h44" fill="none" stroke="#bf5526" stroke-width="3" marker-end="url(#arrow)"/>
+    <g transform="translate(836 24)">
+      <rect width="340" height="262" rx="18" fill="#fffdfb" stroke="#ead7c8"/>
+      <circle cx="34" cy="36" r="18" fill="#a63416"/><text x="34" y="42" text-anchor="middle" font-size="16" font-weight="800" fill="#fff">3</text>
+      <text x="64" y="42" font-size="19" font-weight="750">Map and explain</text>
+      <text x="26" y="78" font-size="13" fill="#80675d">Match cell colors to raw counts</text>
+      <rect x="24" y="96" width="292" height="139" rx="10" fill="#e9f1f1"/>
+      <g fill="none" stroke="#fff" stroke-width="7">
+        <path d="M30 122h280M30 164h280M30 207h280"/>
+        <path d="M90 102v127M158 102v127M270 102v127"/>
+      </g>
+      <g fill="none" stroke="#d3dee0" stroke-width="1">
+        <path d="M30 122h280M30 164h280M30 207h280"/>
+        <path d="M90 102v127M158 102v127M270 102v127"/>
+      </g>
+      <!-- Shared edges use a 33px column step and a sqrt(3) * 11px row offset. -->
+      <g fill-opacity=".6" stroke="#fff" stroke-width="1.25" stroke-linejoin="miter">
+        <use href="#map-cell" transform="translate(70 164)" fill="#1e88e5"/>
+        <use href="#map-cell" transform="translate(103 144.947441)" fill="#1e88e5"/>
+        <use href="#map-cell" transform="translate(103 183.052559)" fill="#fdd835"/>
+        <use href="#map-cell" transform="translate(136 164)" fill="#fb8c00"/>
+        <use href="#map-cell" transform="translate(169 144.947441)" fill="#e53935"/>
+        <use href="#map-cell" transform="translate(169 183.052559)" fill="#fb8c00"/>
+        <use href="#map-cell" transform="translate(202 164)" fill="#1e88e5"/>
+      </g>
+      <rect x="229" y="103" width="77" height="91" rx="8" fill="#fff" fill-opacity=".72" stroke="#d8dee8"/>
+      <text x="239" y="119" font-size="9" font-weight="700">Count / cell</text>
+      <rect x="239" y="128" width="9" height="9" rx="2" fill="#e53935" fill-opacity=".6"/><text x="254" y="136" font-size="9">8</text>
+      <rect x="239" y="143" width="9" height="9" rx="2" fill="#fb8c00" fill-opacity=".6"/><text x="254" y="151" font-size="9">4</text>
+      <rect x="239" y="158" width="9" height="9" rx="2" fill="#fdd835" fill-opacity=".6"/><text x="254" y="166" font-size="9">2</text>
+      <rect x="239" y="173" width="9" height="9" rx="2" fill="#1e88e5" fill-opacity=".6"/><text x="254" y="181" font-size="9">1</text>
+      <text x="170" y="254" text-anchor="middle" font-size="12" fill="#80675d">Same count, same color</text>
+    </g>
+  </g>
+</svg>

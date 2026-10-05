@@ -68,6 +68,37 @@ def main() -> None:
     # Keep this compact fixed-count example predictable across grid systems.
     comparison_lats = [27.9470] * 8 + [27.9515] * 4 + [27.9430] * 2 + [27.9475]
     comparison_lons = [-82.4580] * 8 + [-82.4500] * 4 + [-82.4475] * 2 + [-82.4400]
+    for grid, plot, precision in (
+        ("h3", heatfall.plot_heat_h3s, 8),
+        ("geohash", heatfall.plot_heat_hashes, 6),
+    ):
+        plot(
+            comparison_lats,
+            comparison_lons,
+            precision=precision,
+            color_scheme="wheel",
+            size=(800, 500),
+        ).save(output / "quickstart-{}.png".format(grid))
+
+    heatfall.plot_heat_h3s(
+        [27.9470, 27.9470, 27.9515, 27.9430],
+        [-82.4580, -82.4580, -82.4500, -82.4475],
+        precision=8,
+    ).save(output / "first-map.png")
+
+    heatfall.plot_heat_h3s(
+        comparison_lats,
+        comparison_lons,
+        precision=8,
+        color_scheme="sequential",
+        legend=heatfall.LegendOptions(
+            position=(0.96, 0.08),
+            units="fraction",
+            anchor="top-right",
+            offset=(-8, 8),
+            title="Observations per cell",
+        ),
+    ).save(output / "sequential.png")
     shared_colors = {
         1: "#deebf7",
         2: "#9ecae1",
@@ -92,6 +123,23 @@ def main() -> None:
     comparison.paste(h3_image, (0, 0))
     comparison.paste(geohash_image, (800, 0))
     comparison.save(output / "shared-counts.png")
+    h3_image.save(output / "shared-counts-h3.png")
+    geohash_image.save(output / "shared-counts-geohash.png")
+
+    quickstart_context = heatfall.Context()
+    quickstart_context.add_heat_h3s(
+        comparison_lats, comparison_lons, precision=8, color_scheme="wheel"
+    )
+    quickstart_context.add_points(
+        [27.9470], [-82.4580], colors=["black"], point_size=10
+    )
+    quickstart_context.add_line(
+        [(27.9430, -82.4475), (27.9475, -82.4400)], color="black", width=3
+    )
+    quickstart_context.add_circles(
+        [27.9515], [-82.4500], [300], color="blue", fill_color="transparent", width=2
+    )
+    quickstart_context.render_pillow(800, 500).save(output / "quickstart-layers.png")
 
     context = heatfall.Context()
     context.add_heat_h3s(lats, lons, precision=9, color_scheme="wheel")

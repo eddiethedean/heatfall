@@ -1,14 +1,18 @@
-<img src="https://raw.githubusercontent.com/eddiethedean/heatfall/main/docs/heatfall_logo.png" alt="Heatfall logo: a hexagonal flame in ember, orange, and amber" width="100" align="right">
+<div align="center">
+  <img src="https://raw.githubusercontent.com/eddiethedean/heatfall/main/docs/heatfall_logo.png" alt="Heatfall logo" width="76">
+  <h1>Heatfall</h1>
+  <p><strong>Turn coordinate lists into clear maps colored by count.</strong></p>
+  <p>Geohash rectangles or H3 cells · Legends built in · Pillow images and SVG maps</p>
+  <p><a href="#quick-start">Quick start</a> · <a href="#choose-a-grid">Choose a grid</a> · <a href="#understand-the-colors">Color guide</a> · <a href="https://heatfall.readthedocs.io/en/latest/">Full documentation</a></p>
+</div>
 
-# Heatfall
-
-**Turn latitude and longitude lists into static maps colored by point count.**
-
-[![PyPI](https://img.shields.io/pypi/v/heatfall.svg)](https://pypi.org/project/heatfall/)
-[![Tests](https://github.com/eddiethedean/heatfall/actions/workflows/tests.yml/badge.svg)](https://github.com/eddiethedean/heatfall/actions/workflows/tests.yml)
-[![Documentation](https://app.readthedocs.org/projects/heatfall/badge/?version=latest)](https://heatfall.readthedocs.io/en/latest/index.html)
-[![Python](https://img.shields.io/badge/python-3.8%E2%80%933.13-blue)](https://github.com/eddiethedean/heatfall/blob/main/pyproject.toml)
-[![License: MIT](https://img.shields.io/badge/license-MIT-green)](https://github.com/eddiethedean/heatfall/blob/main/LICENSE)
+<p align="center">
+  <a href="https://pypi.org/project/heatfall/"><img src="https://img.shields.io/pypi/v/heatfall.svg" alt="PyPI version"></a>
+  <a href="https://github.com/eddiethedean/heatfall/actions/workflows/tests.yml"><img src="https://github.com/eddiethedean/heatfall/actions/workflows/tests.yml/badge.svg" alt="Test status"></a>
+  <a href="https://heatfall.readthedocs.io/en/latest/index.html"><img src="https://app.readthedocs.org/projects/heatfall/badge/?version=latest" alt="Documentation status"></a>
+  <a href="https://github.com/eddiethedean/heatfall/blob/main/pyproject.toml"><img src="https://img.shields.io/badge/python-3.8%E2%80%933.13-blue" alt="Python 3.8 to 3.13"></a>
+  <a href="https://github.com/eddiethedean/heatfall/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-MIT-green" alt="MIT license"></a>
+</p>
 
 Heatfall groups geographic observations into geohash rectangles or H3 cells,
 counts the points in each cell, and draws the occupied cells over a basemap.
@@ -22,9 +26,9 @@ neighborhoods with scattered background activity. The default legend labels
 each cell color with the point-count range it represents. Regenerate it with
 [`examples/generate_doc_maps.py`](examples/generate_doc_maps.py).*
 
-[Install](#install) · [Quick start](#quick-start) · [Choose a grid](#choose-a-grid)
-· [Add other layers](#add-other-layers) · [API](#api) · [Troubleshooting](#troubleshooting)
-· [Documentation](https://heatfall.readthedocs.io/en/latest/index.html)
+| Two grid systems | Counts stay explicit | Compose and export |
+| --- | --- | --- |
+| Geohash rectangles or mostly-hexagonal H3 cells. | Raw counts named in built-in legends. | Add points and routes; export images or SVG. |
 
 ## Install
 
@@ -34,22 +38,18 @@ Python **3.8–3.13** is supported. Install the latest published release with:
 python -m pip install heatfall
 ```
 
-**1.1.0 is released** on [PyPI](https://pypi.org/project/heatfall/1.1.0/).
-All 14 [release CI jobs](https://github.com/eddiethedean/heatfall/actions/runs/37095082186)
-passed, including PyPI publication. This version includes configurable opacity and H3
-antimeridian fixes; see the
-[release notes](https://heatfall.readthedocs.io/en/latest/changelog.html).
+> **New in 1.2.0:** Translucent count legends are enabled by default. Place and
+> style them precisely, use a sequential palette, or share explicit count colors
+> across maps. See the [release notes](https://heatfall.readthedocs.io/en/latest/changelog.html).
 
-To install the latest code from `main`, including fixes that may not yet be on PyPI:
+To install this release exactly:
 
 ```sh
-python -m pip install "git+https://github.com/eddiethedean/heatfall.git@main"
+python -m pip install "heatfall==1.2.0"
 ```
 
-The examples below require **1.1.0 or newer** for opacity controls and H3 fixes.
-Check your version with `python -m pip show heatfall`. See the
-[changelog](https://heatfall.readthedocs.io/en/latest/changelog.html) for
-release details.
+The examples below use Heatfall **1.2.0 or newer**. Check your version with
+`python -m pip show heatfall`.
 
 The default OpenStreetMap basemap needs network access when tiles are not cached.
 No API key is required for that default provider.
@@ -98,12 +98,14 @@ point, reduce precision to aggregate more observations. Start with a coarser gri
 for data spread over a large region. The two precision scales are independent:
 geohash precision 8 and H3 resolution 8 do not imply the same cell size.
 
-| Geohash, precision 6 | H3, resolution 8 |
-| --- | --- |
-| ![Geohash rectangles over downtown Tampa](https://raw.githubusercontent.com/eddiethedean/heatfall/main/docs/images/geohash.png) | ![H3 cells over downtown Tampa](https://raw.githubusercontent.com/eddiethedean/heatfall/main/docs/images/h3.png) |
+<p>
+  <img src="https://raw.githubusercontent.com/eddiethedean/heatfall/main/docs/images/quickstart-geohash.png" alt="Geohash at precision 6: the 15 quick-start observations in rectangular cells with a count legend" width="400">
+  <img src="https://raw.githubusercontent.com/eddiethedean/heatfall/main/docs/images/quickstart-h3.png" alt="H3 at resolution 8: the same observations in hexagonal cells with a count legend" width="400">
+</p>
 
-*The same observations, aggregated into different grids. Each map fits its own
-cell boundaries, so the basemap extent can differ.*
+*Geohash at precision 6, then H3 at resolution 8. The same 15 observations from
+the quick start appear in both grids. Each map fits its own cell boundaries,
+so the basemap extent can differ.*
 
 Create the same map using geohash cells:
 
@@ -147,10 +149,11 @@ and `"random"` distinguish count levels without implying an order, and
 `"distinct"` and `"random"` may change between calls. Use `count_colors` to
 assign fixed colors to count values when comparing maps.
 
-The legend below uses a sequential palette. For direct geohash/H3 comparisons,
+The example below uses a sequential palette. For direct geohash/H3 comparisons,
 the [shared color example](docs/images/shared-counts.png) fixes colors by count.
 
-Legends are enabled by default. The default heatmap legend has at most five
+Legends are enabled by default. Their softly translucent panel lets heat cells
+remain visible beneath the labels. The default heatmap legend has at most five
 swatches, one for each palette color, labeled with the count range that color
 represents. Other color schemes show each distinct count. Entries are discrete,
 not a continuous gradient. Set `legend=False` to hide the legend. Use
@@ -161,9 +164,9 @@ default; set `count_order="ascending"` for low-to-high. A map context also expos
 `context.heat_layers` metadata and `context.set_legend()` for composed maps.
 
 Use `LegendOptions(background_color="white", background_opacity=0.65)` for a
-translucent card that reveals cells beneath it. Background opacity ranges from
-`0` to `1` and multiplies the color's existing alpha; text and swatches keep
-their own opacity. Set `shadow=False` to remove the shadow as well.
+more transparent card. Background opacity ranges from `0` to `1` and multiplies
+the color's existing alpha; text and swatches keep their own opacity. Set
+`shadow=False` to remove the shadow as well.
 Titles wrap by default to keep the card compact. Use `title_max_width` to set
 the wrapping width in pixels, `title_line_spacing` to adjust wrapped line
 spacing, or `title_wrap=False` to disable automatic wrapping. See the
@@ -189,6 +192,11 @@ fractions of the output dimensions. Placement is checked against the output
 canvas; use `allow_clipping=True` only when intentional. The result shows raw
 counts per cell, not counts normalized by cell area. It does not apply smoothing
 or accept observation weights.
+
+![The 15-observation example with a sequential blue palette and a translucent legend](https://raw.githubusercontent.com/eddiethedean/heatfall/main/docs/images/sequential.png)
+
+*A sequential palette makes increasing counts read from light to dark blue.
+The legend's background is translucent; text and swatches retain their own opacity.*
 
 ## Add other layers
 
@@ -226,11 +234,12 @@ context.add_circles(
 context.render_pillow(800, 500).save("layered-heatmap.png")
 ```
 
-![A Heatfall H3 layer with a point, route, and circle](https://raw.githubusercontent.com/eddiethedean/heatfall/main/docs/images/layers.png)
+![A Heatfall H3 layer with a point, route, and circle](https://raw.githubusercontent.com/eddiethedean/heatfall/main/docs/images/quickstart-layers.png)
 
 Landfall also supplies polygons, GeoJSON support, styling, and SVG rendering.
 See its [documentation](https://landfall.readthedocs.io/en/latest/) for the
-inherited methods. For Heatfall's own layer methods, see the API below.
+inherited methods. For Heatfall's own layer methods, see the API below. The image shows the
+15-observation example above, including its default count legend.
 
 ## API
 

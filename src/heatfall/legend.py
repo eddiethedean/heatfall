@@ -3,7 +3,7 @@
 from dataclasses import dataclass
 import math
 from pathlib import Path
-from typing import Any, Dict, Optional, Tuple, Union
+from typing import Any, Dict, Optional, Tuple, Union, cast
 from string import Formatter
 
 import staticmaps
@@ -58,7 +58,7 @@ class LegendOptions:
     title_color: Optional[ColorSpec] = None
     section_color: Optional[ColorSpec] = None
     label_color: Optional[ColorSpec] = None
-    background_color: ColorSpec = (255, 255, 255, 248)
+    background_color: ColorSpec = (255, 255, 255, 184)
     border_color: ColorSpec = "#d8dee8"
     border_width: int = 1
     corner_radius: int = 12
@@ -70,11 +70,11 @@ class LegendOptions:
     divider_width: float = 1
     title_spacing: int = 14
     section_spacing: int = 8
-    padding: int = 14
-    swatch_size: int = 16
+    padding: int = 10
+    swatch_size: int = 14
     swatch_radius: float = 4
     label_gap: int = 8
-    row_spacing: int = 8
+    row_spacing: int = 5
     column_spacing: int = 20
     columns: int = 1
     count_order: str = "descending"
@@ -139,6 +139,15 @@ def _color_tuple(color: ColorSpec, option: str) -> Tuple[int, int, int, int]:
     )
 
 
+def _is_finite_number(value: Any) -> bool:
+    if not isinstance(value, (int, float)):
+        return False
+    try:
+        return math.isfinite(value)
+    except OverflowError:
+        return False
+
+
 def _size(options: LegendOptions, name: str) -> int:
     return getattr(options, "{}_font_size".format(name)) or options.font_size
 
@@ -152,6 +161,37 @@ def _style_color(options: LegendOptions, name: str) -> ColorSpec:
     return options.text_color if color is None else color
 
 
+def _title_content_spacing(options: LegendOptions) -> float:
+    """Leave enough room for a divider between a title and its content."""
+    spacing: float = options.title_spacing
+    if options.divider_width:
+        spacing = max(spacing, max(1, options.divider_width) + 1)
+    return spacing
+
+
+def _format_count_range(label_format: str, low: int, high: int) -> str:
+    """Format range endpoints with the same numeric spec as ``{count}``."""
+    formatter = Formatter()
+    result = []
+    for literal, field, format_spec, conversion in formatter.parse(label_format):
+        result.append(literal)
+        if field is None:
+            continue
+        if field != "count":
+            # Validation rejects other fields before layout is requested.
+            raise ValueError("label_format may only contain the {count} field")
+
+        def format_endpoint(value: int) -> str:
+            converted = formatter.convert_field(value, conversion)
+            return cast(str, formatter.format_field(converted, format_spec or ""))
+
+        if low == high:
+            result.append(format_endpoint(low))
+        else:
+            result.append("{}-{}".format(format_endpoint(low), format_endpoint(high)))
+    return "".join(result)
+
+
 def validate_legend_options(options: LegendOptions) -> None:
     if not isinstance(options, LegendOptions):
         raise TypeError("legend must be a bool or LegendOptions")
@@ -162,10 +202,7 @@ def validate_legend_options(options: LegendOptions) -> None:
     elif not (
         isinstance(position, tuple)
         and len(position) == 2
-        and all(
-            isinstance(value, (int, float)) and math.isfinite(value)
-            for value in position
-        )
+        and all(_is_finite_number(value) for value in position)
     ):
         raise ValueError("position must be a named position or a finite (x, y) tuple")
     if options.units not in ("pixels", "fraction"):
@@ -176,10 +213,7 @@ def validate_legend_options(options: LegendOptions) -> None:
         if (
             not isinstance(pair, tuple)
             or len(pair) != 2
-            or not all(
-                isinstance(value, (int, float)) and math.isfinite(value)
-                for value in pair
-            )
+            or not all(_is_finite_number(value) for value in pair)
         ):
             raise ValueError("{} must be a finite pair of numbers".format(name))
     numeric_positive = ("font_size", "swatch_size", "columns")
@@ -202,7 +236,7 @@ def validate_legend_options(options: LegendOptions) -> None:
         "swatch_radius",
     ):
         value = getattr(options, name)
-        if not isinstance(value, (int, float)) or not math.isfinite(value) or value < 0:
+        if not _is_finite_number(value) or value < 0:
             raise ValueError("{} must be a finite non-negative number".format(name))
     if not isinstance(options.allow_clipping, bool):
         raise ValueError("allow_clipping must be bool")
@@ -220,8 +254,7 @@ def validate_legend_options(options: LegendOptions) -> None:
         value = getattr(options, name)
         if (
             isinstance(value, bool)
-            or not isinstance(value, (int, float))
-            or not math.isfinite(value)
+            or not _is_finite_number(value)
             or not 0 <= value <= 1
         ):
             raise ValueError("{} must be between 0 and 1".format(name))
@@ -241,10 +274,7 @@ def validate_legend_options(options: LegendOptions) -> None:
     if (
         not isinstance(options.shadow_offset, tuple)
         or len(options.shadow_offset) != 2
-        or not all(
-            isinstance(value, (int, float)) and math.isfinite(value)
-            for value in options.shadow_offset
-        )
+        or not all(_is_finite_number(value) for value in options.shadow_offset)
     ):
         raise ValueError("shadow_offset must be a finite pair of numbers")
     if options.title is not None and not isinstance(options.title, str):
@@ -289,9 +319,7 @@ def layout_legend(
         if layer.legend_ranges:
             values = tuple(
                 LegendRow(
-                    options.label_format.format(
-                        count=(str(low) if low == high else "{}-{}".format(low, high))
-                    ),
+                    _format_count_range(options.label_format, low, high),
                     color,
                 )
                 for low, high, color in layer.legend_ranges
@@ -374,7 +402,7 @@ def layout_legend(
     panel_height = (
         options.padding * 2
         + title_height
-        + (options.title_spacing if title_height else 0)
+        + (_title_content_spacing(options) if title_height else 0)
         + section_content_height
     )
 
@@ -397,8 +425,16 @@ def layout_legend(
         y -= panel_height * ay
     x += options.offset[0]
     y += options.offset[1]
+    left, top = x, y
+    right, bottom = x + panel_width, y + panel_height
+    if options.shadow:
+        shadow_x, shadow_y = options.shadow_offset
+        left = min(left, x + shadow_x)
+        top = min(top, y + shadow_y)
+        right = max(right, x + shadow_x + panel_width)
+        bottom = max(bottom, y + shadow_y + panel_height)
     if not options.allow_clipping and (
-        x < 0 or y < 0 or x + panel_width > width or y + panel_height > height
+        left < 0 or top < 0 or right > width or bottom > height
     ):
         raise ValueError(
             "legend does not fit inside the {}x{} canvas; use more columns, smaller styling, "
@@ -599,7 +635,7 @@ def draw_svg_legend(
             title_font, layout.title_lines, options.title_line_spacing
         )
         if options.divider_width:
-            divider_y = y + title_height + max(1, options.title_spacing / 2)
+            divider_y = y + title_height + _title_content_spacing(options) / 2
             group.add(
                 drawing.line(
                     start=(layout.x + options.padding, divider_y),
@@ -609,7 +645,7 @@ def draw_svg_legend(
                     stroke_width=options.divider_width,
                 )
             )
-        y += title_height + options.title_spacing
+        y += title_height + _title_content_spacing(options)
     row_height = max(_text_height(label_font, "M"), options.swatch_size)
     for section_title, columns in layout.sections:
         if section_title:
@@ -792,13 +828,13 @@ def draw_cairo_legend(
             )
             context.show_text(line)
         if options.divider_width:
-            divider_y = y + title_height + max(1, options.title_spacing / 2)
+            divider_y = y + title_height + _title_content_spacing(options) / 2
             context.set_source_rgba(*rgba(colors["divider"]))
             context.set_line_width(options.divider_width)
             context.move_to(layout.x + options.padding, divider_y)
             context.line_to(layout.x + layout.width - options.padding, divider_y)
             context.stroke()
-        y += title_height + options.title_spacing
+        y += title_height + _title_content_spacing(options)
     row_height = max(_text_height(label_font, "M"), options.swatch_size)
     for section_title, columns in layout.sections:
         if section_title:

@@ -7,6 +7,37 @@ inherits ordinary map layers and rendering from
 Heat maps include a legend by default; legends are rendered in image coordinates
 after the geographic layers and basemap attribution.
 
+::::{container} hf-feature-strip
+:::{container} hf-feature
+**Image output**
+
+Plotting functions return Pillow images ready for PNG or JPEG export.
+:::
+:::{container} hf-feature
+**Vector output**
+
+Contexts can render cell boundaries and legends as SVG.
+:::
+:::{container} hf-feature
+**Map context**
+
+Add markers and routes without changing the heat aggregation.
+:::
+::::
+
+::::{container} hf-gallery
+:::{container}
+![Heatmap with a compact count legend](images/h3-legend.png)
+
+*A standalone heat map, fitted to its occupied H3 cells.*
+:::
+:::{container}
+![Heatmap composed with a point, route, and circle](images/layers.png)
+
+*A context adds ordinary map layers above the heat cells.*
+:::
+::::
+
 ## Choose a tile provider
 
 The default basemap is OpenStreetMap. Supply a py-staticmaps tile provider with

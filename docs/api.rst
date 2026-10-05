@@ -1,6 +1,11 @@
 API reference
 =============
 
+.. container:: hf-section-intro
+
+   Choose a plotting function for a single map, a context for composed layers,
+   and legend options for the final map key. These APIs are available in 1.2.0.
+
 Plotting functions return Pillow images. Heat layer methods mutate a context and
 return ``None``. Coordinate lists use latitude, longitude order in decimal
 degrees. ``opacity`` is keyword-only and defaults to 0.6. Legends are enabled
@@ -48,10 +53,11 @@ line, or ``title_max_width`` to choose a wrapping width in pixels. Long words
 split if needed to meet an explicit width. Newline characters create deliberate
 line breaks, and ``title_line_spacing`` sets the gap between wrapped lines.
 
-``background_opacity`` ranges from 0 (transparent) to 1 (opaque). It multiplies
+``background_opacity`` ranges from 0 (transparent) to 1 (full color opacity). It multiplies
 the alpha of ``background_color`` so heat cells show through the legend panel;
 text, swatches, borders, and shadows keep their own colors and opacity. For
-example, use a softly transparent white panel and a narrower title:
+example, the default white panel is translucent; use a more transparent panel
+and a narrower title like this:
 
 .. code-block:: python
 
