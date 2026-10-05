@@ -271,7 +271,7 @@ def layout_legend(
             values = tuple(
                 LegendRow(
                     options.label_format.format(
-                        count=(str(low) if low == high else "{}–{}".format(low, high))
+                        count=(str(low) if low == high else "{}-{}".format(low, high))
                     ),
                     color,
                 )
