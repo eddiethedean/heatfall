@@ -165,7 +165,10 @@ translucent card that reveals cells beneath it. Background opacity ranges from
 `0` to `1` and multiplies the color's existing alpha; text and swatches keep
 their own opacity. Set `shadow=False` to remove the shadow as well.
 Titles wrap by default to keep the card compact. Use `title_max_width` to set
-the wrapping width in pixels or `title_wrap=False` to disable automatic wrapping.
+the wrapping width in pixels, `title_line_spacing` to adjust wrapped line
+spacing, or `title_wrap=False` to disable automatic wrapping. See the
+[placement and sizing gallery](docs/images/legend-positions.png) and
+[background opacity preview](docs/images/legend-opacity.png).
 
 ```python
 image = heatfall.plot_heat_h3s(

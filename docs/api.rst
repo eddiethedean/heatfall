@@ -42,6 +42,28 @@ anchors, signed offsets, and styling controls through
 sequence of :class:`heatfall.HeatLayerInfo` records with each layer's exact
 count-to-RGBA palette.
 
+Legend titles wrap automatically to fit the entry width, keeping single-column
+legends compact. Set ``title_wrap=False`` to keep each title paragraph on one
+line, or ``title_max_width`` to choose a wrapping width in pixels. Long words
+split if needed to meet an explicit width. Newline characters create deliberate
+line breaks, and ``title_line_spacing`` sets the gap between wrapped lines.
+
+``background_opacity`` ranges from 0 (transparent) to 1 (opaque). It multiplies
+the alpha of ``background_color`` so heat cells show through the legend panel;
+text, swatches, borders, and shadows keep their own colors and opacity. For
+example, use a softly transparent white panel and a narrower title:
+
+.. code-block:: python
+
+   legend = heatfall.LegendOptions(
+       background_color="white",
+       background_opacity=0.65,
+       title_max_width=160,
+   )
+
+See :doc:`usage` for the legend placement and size gallery, background
+transparency preview, and positioning examples.
+
 Plotting functions
 ------------------
 
