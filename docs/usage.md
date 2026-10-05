@@ -130,8 +130,10 @@ low-to-high order.
 Every visual part can be styled independently. Set a role-specific font size,
 weight, or color for the title, layer headings, and count labels; omitted role
 colors inherit `text_color`, and omitted role font sizes inherit `font_size`.
-`font_family` accepts a system family name or a TrueType/OpenType font file;
-Pillow falls back to DejaVu Sans if it cannot load the requested font.
+Pillow uses bundled DejaVu Sans Regular and Bold, so sizes and weights work
+without installing fonts. `font_family` accepts a font name Pillow can resolve
+or a TrueType/OpenType font file; unavailable fonts fall back to bundled DejaVu
+Sans at the requested size and weight. SVG and Cairo use system font families.
 Panel, shadow, divider, swatch, row, and column dimensions and colors are also
 independent options:
 
@@ -157,6 +159,20 @@ Read the immutable `context.heat_layers` sequence for each layer's grid,
 precision, observation total, occupied cell total, distinct counts, and exact
 count-to-RGBA mapping. The legend is drawn over map content in image coordinates.
 Keep tile attribution visible when choosing a custom location.
+
+The placement gallery shows all nine anchors at native image sizes, using
+compact horizontal, standard vertical, and larger two-column legends:
+
+![Legend placement and sizing](images/legend-positions.png)
+
+For a small map, start with `font_size=11`, `padding=10`, `swatch_size=12`,
+and `columns=3`. For larger output, increase `font_size`, `padding`, and
+`swatch_size` together. These are explicit styling choices; legends retain the
+requested dimensions when moved between positions.
+
+![A legend with independently styled layer headings](images/legend-layers.png)
+
+Regenerate these examples with `python examples/generate_legend_previews.py`.
 
 Fills default to **60% opacity (40% transparent)**. Both plotting functions and
 `Context` heat methods accept the keyword-only `opacity` option:

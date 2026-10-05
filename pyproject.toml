@@ -64,7 +64,7 @@ package-dir = {"" = "src"}
 where = ["src"]
 
 [tool.setuptools.package-data]
-heatfall = ["py.typed"]
+heatfall = ["py.typed", "fonts/*.ttf", "fonts/LICENSE", "fonts/README.md"]
 
 [tool.pytest.ini_options]
 minversion = "6.0"

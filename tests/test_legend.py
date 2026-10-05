@@ -1,6 +1,7 @@
 """Legends, layer metadata, and reproducible count colors."""
 
 from dataclasses import FrozenInstanceError
+from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import MagicMock
 import sys
@@ -251,7 +252,7 @@ def test_svg_renders_panel_text_and_opacity():
     svg = ET.fromstring(context.render_svg(400, 300).tostring())
     ns = {"svg": "http://www.w3.org/2000/svg"}
     assert "Counts" in [node.text for node in svg.findall(".//svg:text", ns)]
-    swatches = svg.findall('.//svg:rect[@width="14"]', ns)
+    swatches = svg.findall('.//svg:rect[@width="16"]', ns)
     assert swatches[0].attrib.get("fill-opacity") == str(128 / 255)
 
 
@@ -262,7 +263,7 @@ def test_legend_default_style_uses_card_and_swatch_corners():
     image = context.render_pillow(400, 300).convert("RGBA")
     svg = context.render_svg(400, 300).tostring()
     assert image.size == (400, 300)
-    assert 'rx="9"' in svg
+    assert 'rx="12"' in svg
     assert 'font-weight="bold"' in svg
     root = ET.fromstring(svg)
     ns = {"svg": "http://www.w3.org/2000/svg"}
@@ -441,6 +442,114 @@ def test_cairo_legend_draws_when_backend_is_available(monkeypatch, title_align):
 @pytest.mark.parametrize("family", ["custom-font.ttf", "Unavailable Family"])
 def test_font_family_accepts_font_files_and_system_family_names(family):
     assert _font(12, bold=True, family=family) is not None
+
+
+@pytest.mark.parametrize("bold", [False, True])
+def test_bundled_font_and_missing_family_preserve_requested_size_and_weight(bold):
+    small = _font(11, bold=bold, family="Missing Heatfall Font")
+    large = _font(24, bold=bold)
+    assert small.size == 11
+    assert large.size == 24
+    assert large.getlength("1-38") > small.getlength("1-38") * 2
+    assert Path(large.path).name == (
+        "DejaVuSans-Bold.ttf" if bold else "DejaVuSans.ttf"
+    )
+    custom = _font(19, bold=bold, family=str(Path(_font(13).path)))
+    assert custom.size == 19
+    assert Path(custom.path).name == Path(large.path).name
+    assert _font(13, True).getlength("Observations") > _font(13).getlength(
+        "Observations"
+    )
+
+
+@pytest.mark.parametrize(
+    "position",
+    [
+        "top-left",
+        "top-center",
+        "top-right",
+        "center-left",
+        "center",
+        "center-right",
+        "bottom-left",
+        "bottom-center",
+        "bottom-right",
+    ],
+)
+@pytest.mark.parametrize(
+    "size,font_size,columns",
+    [((320, 240), 11, 1), ((440, 300), 14, 2), ((640, 400), 20, 3)],
+)
+def test_range_legend_text_stays_inside_card_at_all_positions_and_sizes(
+    monkeypatch, position, size, font_size, columns
+):
+    from PIL import Image, ImageDraw
+
+    layer = heatfall.HeatLayerInfo(
+        "h3",
+        9,
+        None,
+        100,
+        5,
+        (1, 8, 18, 28, 38),
+        (),
+        tuple(
+            (low, high, (30, 136, 229, 153))
+            for low, high in ((1, 5), (6, 14), (15, 24), (25, 33), (34, 38))
+        ),
+    )
+    options = heatfall.LegendOptions(
+        position=position,
+        font_size=font_size,
+        columns=columns,
+        swatch_size=font_size + 3,
+        label_format="gyp {count}",
+    )
+    layout = layout_legend((layer,), options, *size)
+    assert layout is not None
+    bounds = []
+    original = ImageDraw.ImageDraw.text
+
+    def record_text(draw, xy, text, **kwargs):
+        bounds.append(draw.textbbox(xy, text, font=kwargs["font"]))
+        return original(draw, xy, text, **kwargs)
+
+    monkeypatch.setattr(ImageDraw.ImageDraw, "text", record_text)
+    _draw_pillow_legend(Image.new("RGBA", size, "black"), (layer,), options)
+    assert len(bounds) == 6
+    for left, top, right, bottom in bounds:
+        assert left >= layout.x + options.padding
+        assert top >= layout.y + options.padding
+        assert right <= layout.x + layout.width - options.padding
+        assert bottom <= layout.y + layout.height - options.padding
+    # The title's ink must end above the divider and first row's text.
+    assert bounds[0][3] < min(box[1] for box in bounds[1:])
+
+
+def test_translucent_swatches_blend_over_the_panel_instead_of_the_map():
+    from PIL import Image
+
+    color = (229, 57, 53, 153)
+    layer = heatfall.HeatLayerInfo("h3", 9, None, 1, 1, (1,), ((1, color),))
+    options = heatfall.LegendOptions(
+        title=None,
+        position="top-left",
+        background_color="white",
+        shadow=False,
+        swatch_size=30,
+    )
+    layout = layout_legend((layer,), options, 300, 240)
+    image = _draw_pillow_legend(
+        Image.new("RGBA", (300, 240), "black"), (layer,), options
+    )
+    center = (
+        int(layout.x + options.padding + 15),
+        int(layout.y + options.padding + 15),
+    )
+    expected = Image.alpha_composite(
+        Image.new("RGBA", (1, 1), "white"), Image.new("RGBA", (1, 1), color)
+    ).getpixel((0, 0))
+    assert image.getpixel(center) == expected
 
 
 def landfall_context_base():

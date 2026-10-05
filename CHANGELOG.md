@@ -15,6 +15,12 @@
 - Add visual examples for the default legend and shared H3/geohash colors.
 
 ### Changed
+- Refine legend typography, spacing, swatch size, and panel styling; bundle
+  scalable regular and bold fonts for consistent Pillow output.
+- Align text and swatches across renderers, remove trailing row whitespace,
+  and blend Pillow swatches over the legend panel rather than map content.
+- Add visual previews of all nine legend positions at three sizes and a
+  composed map with separately styled layer headings.
 - Set the package version to 1.2.0 for the prepared release candidate.
 - Document the legend's default-on behavior and the `legend=False` opt-out.
 - Use concise numeric count labels by default; the legend title states the unit.

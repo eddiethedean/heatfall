@@ -2,6 +2,7 @@
 
 from dataclasses import dataclass
 import math
+from pathlib import Path
 from typing import Any, Dict, Optional, Tuple, Union
 from string import Formatter
 
@@ -58,21 +59,21 @@ class LegendOptions:
     background_color: ColorSpec = (255, 255, 255, 248)
     border_color: ColorSpec = "#d8dee8"
     border_width: int = 1
-    corner_radius: int = 9
+    corner_radius: int = 12
     shadow: bool = True
     shadow_color: ColorSpec = "#17212f"
-    shadow_opacity: float = 0.16
+    shadow_opacity: float = 0.10
     shadow_offset: Tuple[float, float] = (2, 3)
     divider_color: Optional[ColorSpec] = None
     divider_width: float = 1
-    title_spacing: int = 9
-    section_spacing: int = 5
-    padding: int = 11
-    swatch_size: int = 14
+    title_spacing: int = 14
+    section_spacing: int = 8
+    padding: int = 14
+    swatch_size: int = 16
     swatch_radius: float = 4
-    label_gap: int = 7
-    row_spacing: int = 7
-    column_spacing: int = 12
+    label_gap: int = 8
+    row_spacing: int = 8
+    column_spacing: int = 20
     columns: int = 1
     count_order: str = "descending"
 
@@ -331,7 +332,7 @@ def layout_legend(
         options.padding * 2 + heading_width,
     )
     section_content_height = 0
-    for section_title, cols in sections:
+    for section_index, (section_title, cols) in enumerate(sections):
         section_rows = max(len(column_rows) for column_rows in cols)
         section_content_height += _text_height(section_font, section_title) + (
             options.section_spacing if section_title else 0
@@ -340,7 +341,8 @@ def layout_legend(
             max(_text_height(label_font, "M"), options.swatch_size) * section_rows
         )
         section_content_height += options.row_spacing * max(0, section_rows - 1)
-        section_content_height += options.row_spacing
+        if section_index < len(sections) - 1:
+            section_content_height += options.section_spacing + options.row_spacing
     panel_height = (
         options.padding * 2
         + title_height
@@ -393,9 +395,13 @@ def _columns(
 
 
 def _font(size: int, bold: bool = False, family: str = "DejaVu Sans") -> Any:
+    bundled = str(
+        Path(__file__).with_name("fonts")
+        / ("DejaVuSans-Bold.ttf" if bold else "DejaVuSans.ttf")
+    )
     if family.strip().lower() in ("dejavu sans", "sans", "sans-serif"):
-        names = ["DejaVuSans-Bold.ttf" if bold else "DejaVuSans.ttf"]
-    elif family.lower().endswith((".ttf", ".otf")):
+        return ImageFont.truetype(bundled, size)
+    if family.lower().endswith((".ttf", ".otf")):
         suffix = family[-4:]
         names = ([family[:-4] + "-Bold" + suffix] if bold else []) + [family]
     else:
@@ -405,18 +411,22 @@ def _font(size: int, bold: bool = False, family: str = "DejaVu Sans") -> Any:
             return ImageFont.truetype(name, size)
         except OSError:
             continue
-    return ImageFont.load_default()
+    return ImageFont.truetype(bundled, size)
 
 
 def _text_width(font: Any, text: str) -> int:
-    return int(font.getlength(text))
+    return int(math.ceil(font.getlength(text)))
 
 
 def _text_height(font: Any, text: Optional[str]) -> int:
     if not text:
         return 0
-    bounds = font.getbbox(text)
-    return int(bounds[3] - bounds[1])
+    ascent, descent = font.getmetrics()
+    return int(ascent + descent)
+
+
+def _text_baseline(font: Any) -> int:
+    return int(font.getmetrics()[0])
 
 
 def color_to_rgba(color: ColorSpec) -> Tuple[int, int, int, int]:
@@ -489,9 +499,15 @@ def draw_svg_legend(
     label_size = _size(options, "label")
     title_size = _size(options, "title")
     section_size = _size(options, "section")
-    label_font = _font(label_size, bold=_weight(options, "label"))
-    title_font = _font(title_size, bold=_weight(options, "title"))
-    section_font = _font(section_size, bold=_weight(options, "section"))
+    label_font = _font(
+        label_size, bold=_weight(options, "label"), family=options.font_family
+    )
+    title_font = _font(
+        title_size, bold=_weight(options, "title"), family=options.font_family
+    )
+    section_font = _font(
+        section_size, bold=_weight(options, "section"), family=options.font_family
+    )
     y = layout.y + options.padding
     if layout.title:
         if options.title_align == "center":
@@ -503,7 +519,7 @@ def draw_svg_legend(
         group.add(
             drawing.text(
                 layout.title,
-                insert=(title_x, y + title_size),
+                insert=(title_x, y + _text_baseline(title_font)),
                 text_anchor=text_anchor,
                 fill="#{:02x}{:02x}{:02x}".format(*colors["title"][:3]),
                 fill_opacity=colors["title"][3] / 255,
@@ -531,7 +547,10 @@ def draw_svg_legend(
             group.add(
                 drawing.text(
                     section_title,
-                    insert=(layout.x + options.padding, y + section_size),
+                    insert=(
+                        layout.x + options.padding,
+                        y + _text_baseline(section_font),
+                    ),
                     fill="#{:02x}{:02x}{:02x}".format(*colors["section"][:3]),
                     fill_opacity=colors["section"][3] / 255,
                     font_size=section_size,
@@ -568,7 +587,9 @@ def draw_svg_legend(
                         row.label,
                         insert=(
                             x + options.swatch_size + options.label_gap,
-                            top + label_size,
+                            top
+                            + (row_height - _text_height(label_font, "M")) / 2
+                            + _text_baseline(label_font),
                         ),
                         fill="#{:02x}{:02x}{:02x}".format(*colors["label"][:3]),
                         fill_opacity=colors["label"][3] / 255,
@@ -577,7 +598,8 @@ def draw_svg_legend(
                         font_family=options.font_family,
                     )
                 )
-        y += max_rows * (row_height + options.row_spacing)
+        y += max_rows * row_height + (max_rows - 1) * options.row_spacing
+        y += options.section_spacing + options.row_spacing
     drawing.add(group)
 
 
@@ -662,10 +684,24 @@ def draw_cairo_legend(
     label_size = _size(options, "label")
     title_size = _size(options, "title")
     section_size = _size(options, "section")
+    label_font = _font(
+        label_size, bold=_weight(options, "label"), family=options.font_family
+    )
+    title_font = _font(
+        title_size, bold=_weight(options, "title"), family=options.font_family
+    )
+    section_font = _font(
+        section_size, bold=_weight(options, "section"), family=options.font_family
+    )
+
+    def baseline(top: float, line_height: float) -> float:
+        ascent, descent, _, _, _ = context.font_extents()
+        return float(top + (line_height - ascent - descent) / 2 + ascent)
+
     y = layout.y + options.padding
     if layout.title:
         select_font(title_size, _weight(options, "title"))
-        _, _, text_height, _, _ = context.font_extents()
+        title_height = _text_height(title_font, layout.title)
         title_color = colors["title"]
         context.set_source_rgba(*rgba(title_color))
         advance = context.text_extents(layout.title)[4]
@@ -675,16 +711,8 @@ def draw_cairo_legend(
             title_x = layout.x + layout.width - options.padding - advance
         else:
             title_x = layout.x + options.padding
-        context.move_to(title_x, y + text_height)
+        context.move_to(title_x, baseline(y, title_height))
         context.show_text(layout.title)
-        title_height = _text_height(
-            _font(
-                title_size,
-                bold=_weight(options, "title"),
-                family=options.font_family,
-            ),
-            layout.title,
-        )
         if options.divider_width:
             divider_y = y + title_height + max(1, options.title_spacing / 2)
             context.set_source_rgba(*rgba(colors["divider"]))
@@ -693,35 +721,15 @@ def draw_cairo_legend(
             context.line_to(layout.x + layout.width - options.padding, divider_y)
             context.stroke()
         y += title_height + options.title_spacing
-    row_height = max(
-        _text_height(
-            _font(
-                label_size,
-                bold=_weight(options, "label"),
-                family=options.font_family,
-            ),
-            "M",
-        ),
-        options.swatch_size,
-    )
+    row_height = max(_text_height(label_font, "M"), options.swatch_size)
     for section_title, columns in layout.sections:
         if section_title:
             select_font(section_size, _weight(options, "section"))
-            _, _, text_height, _, _ = context.font_extents()
+            section_height = _text_height(section_font, section_title)
             context.set_source_rgba(*rgba(colors["section"]))
-            context.move_to(layout.x + options.padding, y + text_height)
+            context.move_to(layout.x + options.padding, baseline(y, section_height))
             context.show_text(section_title)
-            y += (
-                _text_height(
-                    _font(
-                        section_size,
-                        bold=_weight(options, "section"),
-                        family=options.font_family,
-                    ),
-                    section_title,
-                )
-                + options.section_spacing
-            )
+            y += section_height + options.section_spacing
         max_rows = max(len(column) for column in columns)
         for column_index, column in enumerate(columns):
             x = (
@@ -745,7 +753,8 @@ def draw_cairo_legend(
                 context.set_source_rgba(*rgba(colors["label"]))
                 context.move_to(
                     x + options.swatch_size + options.label_gap,
-                    top + label_size,
+                    baseline(top, row_height),
                 )
                 context.show_text(row.label)
-        y += max_rows * (row_height + options.row_spacing)
+        y += max_rows * row_height + (max_rows - 1) * options.row_spacing
+        y += options.section_spacing + options.row_spacing

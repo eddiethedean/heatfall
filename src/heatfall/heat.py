@@ -353,6 +353,8 @@ def _draw_pillow_legend(
     colors = legend_colors(options)
     overlay = Image.new("RGBA", image.size, (0, 0, 0, 0))
     draw = ImageDraw.Draw(overlay)
+    swatches = Image.new("RGBA", image.size, (0, 0, 0, 0))
+    swatch_draw = ImageDraw.Draw(swatches)
     x0, y0 = layout.x, layout.y
     if options.shadow:
         shadow = colors["shadow"]
@@ -447,7 +449,7 @@ def _draw_pillow_legend(
             for row_index, row in enumerate(column):
                 top = y + row_index * (row_height + options.row_spacing)
                 swatch_y = top + max(0, (row_height - options.swatch_size) / 2)
-                draw.rounded_rectangle(
+                swatch_draw.rounded_rectangle(
                     (
                         x,
                         swatch_y,
@@ -458,16 +460,17 @@ def _draw_pillow_legend(
                     fill=row.color,
                 )
                 draw.text(
-                    (x + options.swatch_size + options.label_gap, top),
+                    (
+                        x + options.swatch_size + options.label_gap,
+                        top + (row_height - _text_height(font, "M")) / 2,
+                    ),
                     row.label,
                     font=font,
                     fill=colors["label"],
                 )
-        y += (
-            max_rows * (row_height + options.row_spacing)
-            - options.row_spacing
-            + options.row_spacing
-        )
+        y += max_rows * row_height + (max_rows - 1) * options.row_spacing
+        y += options.section_spacing + options.row_spacing
+    overlay = Image.alpha_composite(overlay, swatches)
     composited = Image.alpha_composite(image.convert("RGBA"), overlay)
     return composited if image.mode == "RGBA" else composited.convert(image.mode)
 
