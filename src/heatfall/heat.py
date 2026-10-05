@@ -251,8 +251,8 @@ def _validate_opacity(opacity: float) -> None:
     if (
         isinstance(opacity, bool)
         or not isinstance(opacity, (int, float))
-        or not math.isfinite(opacity)
         or not 0 <= opacity <= 1
+        or not math.isfinite(opacity)
     ):
         raise ValueError("opacity must be between 0 and 1")
 
