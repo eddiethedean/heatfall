@@ -303,6 +303,10 @@ license covers the package; basemap imagery has its own provider terms.
 
 ## Develop and contribute
 
+See the [roadmap](docs/roadmap.md) for the planned **1.2 phase**: map legends
+enabled by default with an opt-out and full placement controls, sequential and
+explicit count colors, and inspectable heat layer metadata.
+
 Create a virtual environment, then install the package with its development tools:
 
 ```sh
