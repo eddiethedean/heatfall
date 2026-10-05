@@ -248,7 +248,12 @@ class _H3Cell(staticmaps.Object):
 
 
 def _validate_opacity(opacity: float) -> None:
-    if not 0 <= opacity <= 1:
+    if (
+        isinstance(opacity, bool)
+        or not isinstance(opacity, (int, float))
+        or not math.isfinite(opacity)
+        or not 0 <= opacity <= 1
+    ):
         raise ValueError("opacity must be between 0 and 1")
 
 
@@ -353,9 +358,12 @@ def _draw_pillow_legend(
     colors = legend_colors(options)
     overlay = Image.new("RGBA", image.size, (0, 0, 0, 0))
     draw = ImageDraw.Draw(overlay)
-    swatches = Image.new("RGBA", image.size, (0, 0, 0, 0))
-    swatch_draw = ImageDraw.Draw(swatches)
     x0, y0 = layout.x, layout.y
+    swatch_origin_x, swatch_origin_y = round(x0), round(y0)
+    swatches = Image.new(
+        "RGBA", (math.ceil(layout.width), math.ceil(layout.height)), (0, 0, 0, 0)
+    )
+    swatch_draw = ImageDraw.Draw(swatches)
     if options.shadow:
         shadow = colors["shadow"]
         shadow_x, shadow_y = options.shadow_offset
@@ -455,10 +463,10 @@ def _draw_pillow_legend(
                 swatch_y = top + max(0, (row_height - options.swatch_size) / 2)
                 swatch_draw.rounded_rectangle(
                     (
-                        x,
-                        swatch_y,
-                        x + options.swatch_size - 1,
-                        swatch_y + options.swatch_size - 1,
+                        x - swatch_origin_x,
+                        swatch_y - swatch_origin_y,
+                        x - swatch_origin_x + options.swatch_size - 1,
+                        swatch_y - swatch_origin_y + options.swatch_size - 1,
                     ),
                     radius=min(options.swatch_radius, options.swatch_size / 2),
                     fill=row.color,
@@ -474,7 +482,7 @@ def _draw_pillow_legend(
                 )
         y += max_rows * row_height + (max_rows - 1) * options.row_spacing
         y += options.section_spacing + options.row_spacing
-    overlay = Image.alpha_composite(overlay, swatches)
+    overlay.alpha_composite(swatches, dest=(swatch_origin_x, swatch_origin_y))
     composited = Image.alpha_composite(image.convert("RGBA"), overlay)
     return composited if image.mode == "RGBA" else composited.convert(image.mode)
 
