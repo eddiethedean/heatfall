@@ -18,6 +18,8 @@ Heatfall groups geographic observations into geohash or H3 cells, counts the
 observations in each occupied cell, and draws the cells over a basemap. Use it
 for a single heat layer or combine heat with points and routes through
 [Landfall](https://landfall.readthedocs.io/en/latest/).
+The underlying map engine is [py-staticmaps](https://github.com/flopp/py-staticmaps),
+used through Landfall.
 
 ![H3 heatmap of synthetic observations across downtown Tampa, rendered by Heatfall](https://raw.githubusercontent.com/eddiethedean/heatfall/main/docs/images/first-map.png)
 
@@ -125,9 +127,25 @@ Landfall's GeoJSON, Shapely, and GeoDataFrame plotting functions also accept
 legend. See the [GIS overlay examples](https://heatfall.readthedocs.io/en/latest/usage.html#geojson-overlays)
 and [optional GIS installation](https://heatfall.readthedocs.io/en/latest/installation.html#optional-gis-dependencies).
 
-The context also exposes the native py-staticmaps controls through Landfall.
-See its [full py-staticmaps guide](https://landfall.readthedocs.io/en/latest/py-staticmaps/)
+The context also exposes the native [py-staticmaps](https://github.com/flopp/py-staticmaps)
+controls through Landfall.
+See Landfall's [guide to the py-staticmaps API](https://landfall.readthedocs.io/en/latest/py-staticmaps/)
 for framing, bounds padding, tile services, and optional Cairo output.
+
+Heatfall's [py-staticmaps interoperability guide](https://heatfall.readthedocs.io/en/latest/staticmaps.html)
+shows how to reuse native objects and helpers, configure a shared context, and
+keep the heat legend across renderers.
+
+## Acknowledgements
+
+[py-staticmaps](https://github.com/flopp/py-staticmaps) provides the map context,
+automatic framing, tile downloads and caching, attribution, and Pillow, SVG,
+and optional Cairo renderers behind Heatfall's maps. Thank you to
+[Florian Pigorsch (`flopp`)](https://github.com/flopp) and the py-staticmaps
+contributors.
+
+Landfall adds plotting helpers, GIS support, and palette generation. Heatfall
+adds observation counts, heat cells, layer metadata, and count legends.
 
 ## Learn and contribute
 

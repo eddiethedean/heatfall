@@ -375,6 +375,9 @@ functions, the argument is spelled `tileprovider`, without an underscore.
 Landfall documents [custom tile services](https://landfall.readthedocs.io/en/latest/custom-tile-service/)
 and [combining shapes and exporting SVG](https://landfall.readthedocs.io/en/latest/shapes-and-styling/#combine-shapes-and-export-svg).
 
+See [py-staticmaps interoperability](staticmaps.md) to reuse native objects and
+helpers in the same context, including the circle radius unit distinction.
+
 ### Polygons with holes
 
 The inherited `add_polygon()` method accepts interior rings. A hole leaves the

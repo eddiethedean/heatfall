@@ -2,10 +2,15 @@
 
 Use a plotting function for a single heat layer. Use `heatfall.Context` when you
 need to configure the view, combine layers, or export SVG. Heatfall's context
-inherits ordinary map layers and rendering from
-[Landfall](https://landfall.readthedocs.io/en/latest/api/#context) and py-staticmaps.
+inherits plotting helpers from
+[Landfall](https://landfall.readthedocs.io/en/latest/api/#context). The underlying
+map context, tile handling, and renderers come from
+[py-staticmaps](https://github.com/flopp/py-staticmaps).
 Heat maps include a legend by default; legends are rendered in image coordinates
 after the geographic layers and basemap attribution.
+
+For native objects, shared contexts, radius units, and renderer return types,
+see [py-staticmaps interoperability](staticmaps.md).
 
 ::::{container} hf-feature-strip
 :::{container} hf-feature

@@ -165,10 +165,14 @@ Heat layer metadata
 .. autoclass:: heatfall.HeatLayerInfo
    :members:
 
-Rendering and ordinary map layers are inherited from
-`Landfall's Context <https://landfall.readthedocs.io/en/latest/api/#context>`_
-and py-staticmaps. For example, call ``context.render_pillow(800, 500)`` after
-adding a heat layer.
+Plotting helpers are inherited from
+`Landfall's Context <https://landfall.readthedocs.io/en/latest/api/#context>`_.
+The base map context and renderers come from
+`py-staticmaps <https://github.com/flopp/py-staticmaps>`_, imported as
+``staticmaps``. For example, call ``context.render_pillow(800, 500)`` after
+adding a heat layer. See :doc:`architecture` for the inheritance chain and
+project credits. The :doc:`staticmaps` guide shows native object composition,
+context controls, and renderer return values.
 
 For inherited functionality, see these Landfall guides:
 
@@ -190,3 +194,6 @@ For inherited functionality, see these Landfall guides:
 * `Full py-staticmaps API <https://landfall.readthedocs.io/en/latest/py-staticmaps/>`_
   for native map objects, framing, bounds padding, and renderer controls inherited
   through Landfall.
+
+For examples from the rendering library itself, see the
+`upstream py-staticmaps examples <https://github.com/flopp/py-staticmaps/tree/master/examples>`_.

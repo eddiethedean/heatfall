@@ -138,7 +138,16 @@ colors in this documentation's theme are independent of your map palette.
 | Diagnose an unexpected map | [Troubleshooting](troubleshooting.md) |
 | Get help or report a vulnerability | [Support](support.md) · [Security](security.md) |
 | Add ordinary map shapes | [Landfall's shapes guide](https://landfall.readthedocs.io/en/latest/shapes-and-styling/) |
+| Reuse native staticmaps objects and helpers | [py-staticmaps interoperability](staticmaps.md) |
 | Contribute a fix | [Contributing](contributing.md) |
+
+## Built on py-staticmaps
+
+[py-staticmaps](https://github.com/flopp/py-staticmaps), by
+[Florian Pigorsch (`flopp`)](https://github.com/flopp) and contributors, supplies
+the map engine used through Landfall. Heatfall adds heat aggregation and count
+legends to that foundation. See [architecture](architecture.md#rendering-boundaries)
+for each project's role.
 
 ```{toctree}
 :hidden:
@@ -149,6 +158,7 @@ installation
 usage
 data
 basemaps
+staticmaps
 geography
 troubleshooting
 architecture

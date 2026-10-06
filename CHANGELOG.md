@@ -24,6 +24,10 @@
 - Set the package version to 1.3.0.
 
 ### Documentation
+- Add a py-staticmaps interoperability guide with native object examples,
+  shared contexts, circle radius units, framing, caching, and renderer outputs.
+- Credit py-staticmaps, Florian Pigorsch, and the project's contributors in
+  the README and documentation; explain each project's role in the rendering stack.
 - Document composing GeoJSON, polygons with holes, and GeoDataFrames with heat
   layers while preserving the heat legend; identify the additions in 1.3.0
   separately from the published 1.2.0 API.

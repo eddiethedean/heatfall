@@ -40,11 +40,22 @@ original cell.
 
 ## Rendering boundaries
 
-`heatfall.Context` extends `landfall.Context`. Heatfall adds heat cell geometry,
-records metadata, and draws the heat legend. Landfall and its py-staticmaps
-dependency handle ordinary shapes, basemap tile providers, and image/vector
-rendering. The plotting functions are convenience wrappers around a context
-and return a Pillow image; use a context to set a fixed view or compose layers.
+The inheritance chain is `heatfall.Context` → `landfall.Context` →
+`staticmaps.Context`. The `staticmaps` module comes from
+[py-staticmaps](https://github.com/flopp/py-staticmaps).
+
+| Project | Responsibility |
+| --- | --- |
+| Heatfall | Count observations, build heat cells, retain layer metadata, and draw count legends. |
+| Landfall | Provide plotting helpers, GIS conversion, shape composition, and generated palettes. |
+| py-staticmaps | Provide the base map context, framing, tile handling and caching, attribution, drawing primitives, and Pillow/SVG/optional Cairo rendering. |
+
+Credit for this rendering foundation belongs to
+[Florian Pigorsch (`flopp`)](https://github.com/flopp) and the py-staticmaps
+contributors.
+
+Heatfall's plotting functions are convenience wrappers around a context and
+return a Pillow image; use a context to set a fixed view or compose layers.
 
 Heatfall registers heat cells through the inherited `add_object()` method.
 Landfall's plotting functions can also render into that same context through
@@ -68,6 +79,7 @@ and attribution guidance.
 
 ## Where to look next
 
+- [py-staticmaps interoperability](staticmaps.md) for native objects and shared contexts.
 - [API reference](api.rst) for signatures and public metadata.
 - [Data guide](data.md) for coordinate order and count semantics.
 - [Performance guidance](performance.md) for input and rendering scale.

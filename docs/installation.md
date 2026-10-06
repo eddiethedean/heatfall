@@ -75,12 +75,18 @@ Continue with [usage and styling](usage.md) for the illustrated example,
 Installation brings in [Landfall](https://github.com/eddiethedean/landfall) for map
 composition and colors, [Geodude](https://github.com/eddiethedean/geodude) and
 [PyGeodesy](https://github.com/mrJean1/PyGeodesy) for geohashes, and
-[H3](https://github.com/uber/h3-py) for H3 cells. Landfall supplies py-staticmaps and
-Pillow for rendering. Landfall's
+[H3](https://github.com/uber/h3-py) for H3 cells.
+[py-staticmaps](https://github.com/flopp/py-staticmaps), installed through
+Landfall, supplies the map context, tile handling, and renderers. Its Python
+module is named `staticmaps`, as used in the examples. Pillow supplies raster
+image operations. Landfall's
 [getting started guide](https://landfall.readthedocs.io/en/latest/getting-started/)
 covers ordinary map layers and image output, and its
 [troubleshooting guide](https://landfall.readthedocs.io/en/latest/troubleshooting/)
 covers tile access and optional dependencies.
+
+See [py-staticmaps interoperability](staticmaps.md) for native objects and context
+controls available through the `staticmaps` import.
 
 Heatfall 1.3.0 requires Landfall **0.5.0 or newer**. Installing or upgrading
 Heatfall installs the required Landfall version automatically.
