@@ -1,9 +1,16 @@
 # Releasing Heatfall
 
-This guide records the published 1.2.0 behavior and gives a version-neutral
-process for the next release. A pushed stable `vX.Y.Z` tag runs the complete CI
-suite and publishes its validated source archive and wheel to PyPI when all
-checks pass.
+This guide covers preparation for 1.3.0, records the published 1.2.0 behavior,
+and gives a version-neutral release process. A pushed stable `vX.Y.Z` tag runs
+the complete CI suite and publishes its validated source archive and wheel to
+PyPI when all checks pass.
+
+## Heatfall 1.3.0 compatibility notes
+
+Version 1.3.0 requires Landfall 0.5.0 or newer and keeps Python 3.8–3.13 support.
+The new `rng` and plotting `api_key` arguments are optional and keyword-only;
+existing calls keep their behavior. The `geo` and `cairo` extras install
+Landfall's optional dependencies for GIS overlays and Cairo rendering.
 
 ## Heatfall 1.2.0 compatibility notes
 
@@ -114,6 +121,7 @@ Wait for every check on the release commit to pass. CI covers:
 - Tests with 100% statement coverage on Python 3.8–3.13 on Linux, plus Python
   3.13 on macOS and Windows.
 - Formatting, linting, and type checking.
+- Composed GIS layers and native Cairo rendering with optional dependencies.
 - Strict Sphinx documentation and external-link checks.
 - Source archive and wheel builds, strict metadata checks, dependency checks,
   and installed-wheel tests on Python 3.8 and 3.13.

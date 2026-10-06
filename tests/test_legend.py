@@ -79,7 +79,7 @@ def test_invalid_legend_label_does_not_mutate_context(method):
 @pytest.mark.parametrize("plot", [heatfall.plot_heat_hashes, heatfall.plot_heat_h3s])
 def test_plot_legend_defaults_to_enabled_and_false_disables(monkeypatch, plot):
     monkeypatch.setattr(
-        "heatfall.heat.process_colors", lambda scheme, n: [staticmaps.RED] * n
+        "heatfall.heat.process_colors", lambda scheme, n, rng=None: [staticmaps.RED] * n
     )
     args = ([27.947, 27.947], [-82.458, -82.458], 6)
     enabled = plot(*args, tileprovider=staticmaps.tile_provider_None, size=(300, 240))

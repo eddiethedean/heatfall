@@ -37,6 +37,7 @@ small coordinate sample. Each check links to the relevant guide.
 | `tile_provider` raises an unexpected keyword error | Heatfall's plotting argument is `tileprovider`; a context uses `set_tile_provider()`. |
 | `opacity` raises an unexpected keyword error | Check the installed version and interpreter; this option requires Heatfall 1.1.0 or newer. |
 | `legend`, `count_colors`, or `sequential` is unavailable | These controls require Heatfall 1.2.0 or newer. Check the interpreter and upgrade below. |
+| `rng`, plotting `api_key`, or the `geo`/`cairo` extras are unavailable | These additions require Heatfall 1.3.0 or newer. Check the interpreter and see [installation](installation.md). |
 
 ## Check the running version
 
@@ -46,7 +47,7 @@ python -c "import sys, heatfall; print(sys.executable); print(heatfall.__version
 ```
 
 Run installation commands with the same interpreter that runs your script or
-notebook. Heatfall 1.2.0 is available on PyPI; upgrade an older installation with:
+notebook. Upgrade an older installation with:
 
 ```sh
 python -m pip install --upgrade heatfall

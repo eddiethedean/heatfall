@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "heatfall"
-version = "1.2.0"
+version = "1.3.0"
 description = "Easy to use functions for plotting heat maps of geographic data on static maps"
 readme = "README.md"
 license = {file = "LICENSE"}
@@ -30,13 +30,15 @@ classifiers = [
 ]
 requires-python = ">=3.8"
 dependencies = [
-    "landfall>=0.4.2",
+    "landfall>=0.5.0",
     "pygeodesy",
     "geodude>=0.1.1",
     "h3>=4.0.0",
 ]
 
 [project.optional-dependencies]
+geo = ["landfall[geo]>=0.5.0"]
+cairo = ["landfall[cairo]>=0.5.0"]
 docs = [
     "Sphinx==9.1.0",
     "myst-parser==5.1.0",

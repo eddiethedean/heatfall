@@ -14,7 +14,9 @@ import heatfall
 @pytest.mark.parametrize("opacity,alpha", [(0, 0), (0.25, 64), (0.6, 153), (1, 255)])
 def test_context_opacity_overrides(monkeypatch, method, opacity, alpha):
     source = staticmaps.Color(20, 40, 60)
-    monkeypatch.setattr("heatfall.heat.process_colors", lambda scheme, n: [source] * n)
+    monkeypatch.setattr(
+        "heatfall.heat.process_colors", lambda scheme, n, rng=None: [source] * n
+    )
     context = heatfall.Context()
     getattr(context, method)(
         [27.947], [-82.458], precision=6, color_scheme="distinct", opacity=opacity
@@ -27,7 +29,7 @@ def test_context_opacity_overrides(monkeypatch, method, opacity, alpha):
 @pytest.mark.parametrize("method", ["add_heat_hashes", "add_heat_h3s"])
 def test_default_is_sixty_percent_opaque(monkeypatch, method):
     monkeypatch.setattr(
-        "heatfall.heat.process_colors", lambda scheme, n: [staticmaps.RED] * n
+        "heatfall.heat.process_colors", lambda scheme, n, rng=None: [staticmaps.RED] * n
     )
     context = heatfall.Context()
     getattr(context, method)([27.947], [-82.458], precision=6, color_scheme="distinct")
@@ -37,7 +39,9 @@ def test_default_is_sixty_percent_opaque(monkeypatch, method):
 @pytest.mark.parametrize("method", ["add_heat_hashes", "add_heat_h3s"])
 def test_existing_palette_alpha_is_preserved(monkeypatch, method):
     color = staticmaps.Color(20, 40, 60, 128)
-    monkeypatch.setattr("heatfall.heat.process_colors", lambda scheme, n: [color] * n)
+    monkeypatch.setattr(
+        "heatfall.heat.process_colors", lambda scheme, n, rng=None: [color] * n
+    )
     context = heatfall.Context()
     getattr(context, method)(
         [27.947], [-82.458], precision=6, color_scheme="distinct", opacity=0.5
@@ -71,7 +75,7 @@ def test_plot_forwards_opacity_and_keeps_positional_arguments(
     monkeypatch, plot, opacity, pixel
 ):
     monkeypatch.setattr(
-        "heatfall.heat.process_colors", lambda scheme, n: [staticmaps.RED] * n
+        "heatfall.heat.process_colors", lambda scheme, n, rng=None: [staticmaps.RED] * n
     )
     # The six existing positional arguments remain valid; opacity is keyword-only.
     image = plot(
@@ -91,7 +95,7 @@ def test_plot_forwards_opacity_and_keeps_positional_arguments(
 @pytest.mark.parametrize("center", [None, 0, 180, -180])
 def test_transparent_cell_has_uniform_alpha_at_seam(monkeypatch, center):
     monkeypatch.setattr(
-        "heatfall.heat.process_colors", lambda scheme, n: [staticmaps.RED] * n
+        "heatfall.heat.process_colors", lambda scheme, n, rng=None: [staticmaps.RED] * n
     )
     context = heatfall.Context()
     context.set_tile_provider(staticmaps.tile_provider_None)
@@ -108,7 +112,7 @@ def test_transparent_cell_has_uniform_alpha_at_seam(monkeypatch, center):
 
 def test_svg_uses_one_opacity_for_both_pieces(monkeypatch):
     monkeypatch.setattr(
-        "heatfall.heat.process_colors", lambda scheme, n: [staticmaps.RED] * n
+        "heatfall.heat.process_colors", lambda scheme, n, rng=None: [staticmaps.RED] * n
     )
     context = heatfall.Context()
     context.set_tile_provider(staticmaps.tile_provider_None)
@@ -123,7 +127,7 @@ def test_svg_uses_one_opacity_for_both_pieces(monkeypatch):
 
 def test_cairo_fills_both_pieces_once(monkeypatch):
     monkeypatch.setattr(
-        "heatfall.heat.process_colors", lambda scheme, n: [staticmaps.RED] * n
+        "heatfall.heat.process_colors", lambda scheme, n, rng=None: [staticmaps.RED] * n
     )
     context = heatfall.Context()
     context.add_heat_h3s([0], [180], precision=5, color_scheme="distinct")
@@ -144,7 +148,7 @@ def test_repeated_world_copies_do_not_darken_polar_cap_edges(
     monkeypatch, latitude, resolution
 ):
     monkeypatch.setattr(
-        "heatfall.heat.process_colors", lambda scheme, n: [staticmaps.RED] * n
+        "heatfall.heat.process_colors", lambda scheme, n, rng=None: [staticmaps.RED] * n
     )
     context = heatfall.Context()
     context.set_tile_provider(staticmaps.tile_provider_None)

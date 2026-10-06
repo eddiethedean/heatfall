@@ -39,6 +39,28 @@ jobs:
       - name: Test
         run: python -m pytest --cov-fail-under=100
 
+  geo:
+    name: Landfall GIS and Cairo integration
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.13"
+      - name: Install Cairo system libraries
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes libcairo2-dev pkg-config
+      - name: Install with GIS and Cairo dependencies
+        run: python -m pip install -e ".[dev,geo,cairo]"
+      - name: Verify optional dependencies
+        run: >-
+          python -c "import geopandas, shapely, staticmaps;
+          assert staticmaps.cairo_is_supported(), 'Cairo renderer is unavailable'"
+      - name: Test with GeoPandas, Shapely, and Cairo
+        run: python -m pytest --cov-fail-under=100
+
   quality:
     name: Lint and type checks
     runs-on: ubuntu-latest

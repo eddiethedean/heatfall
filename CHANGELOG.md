@@ -2,7 +2,31 @@
 
 ## [Unreleased]
 
+## [1.3.0] - 2026-10-06
+
+### Added
+- Expose Landfall's integer palette seed as keyword-only `rng` on both heat
+  plotting functions and Context heat methods for repeatable `random` and
+  `distinct` palettes.
+- Forward keyword-only `api_key` from both heat plotting functions to the
+  inherited tile-provider configuration for keyed tile services.
+- Add a `geo` extra that installs Landfall's GeoPandas and Shapely dependencies,
+  with a dedicated GIS integration CI job and tox environment.
+- Add a `cairo` extra through Landfall 0.5.0 for anti-aliased PNG output,
+  a Cairo tox environment, and real-renderer integration coverage in CI.
+- Test composed heat maps against Landfall's coordinate, circle-unit,
+  polygon-hole, multipart GeoJSON, and GeoDataFrame reprojection behavior.
+
+### Changed
+- Require Landfall >=0.5.0, including its published API-key forwarding and
+  optional Cairo dependency group.
+- Add heat cells through the inherited public `add_object()` hook.
+- Set the package version to 1.3.0.
+
 ### Documentation
+- Document composing GeoJSON, polygons with holes, and GeoDataFrames with heat
+  layers while preserving the heat legend; identify the additions in 1.3.0
+  separately from the published 1.2.0 API.
 - Clarify the 1.2.0 palette migration, binned legend labels, and minimum
   version for antimeridian fixes.
 - Add architecture, data-flow, performance, privacy, contributor, and support

@@ -28,6 +28,10 @@ inclusive ranges in its legend. `"sequential"` maps counts along a blue ramp.
 without implying an order. `count_colors` supplies explicit colors when maps
 need a stable comparison.
 
+Landfall generates the `distinct`, `wheel`, and `random` palettes. Heatfall
+1.3.0 forwards an optional integer `rng` seed for repeatable distinct/random
+colors; see [usage](usage.md#reproduce-generated-palettes) for release availability.
+
 The final count-to-RGBA colors and layer summary are kept in immutable
 `HeatLayerInfo` values exposed as `context.heat_layers`. The legend uses those
 same colors. For H3 cells crossing the antimeridian, Heatfall splits the
@@ -41,6 +45,18 @@ records metadata, and draws the heat legend. Landfall and its py-staticmaps
 dependency handle ordinary shapes, basemap tile providers, and image/vector
 rendering. The plotting functions are convenience wrappers around a context
 and return a Pillow image; use a context to set a fixed view or compose layers.
+
+Heatfall registers heat cells through the inherited `add_object()` method.
+Landfall's plotting functions can also render into that same context through
+their `context` argument, retaining heat layers and the final heat legend.
+GeoJSON requires no extra installation; GeoDataFrame and Shapely overlays use
+Landfall's optional GIS dependencies. Heatfall 1.3.0 offers `heatfall[geo]`
+to install them together. See [installation](installation.md#optional-gis-dependencies).
+
+Landfall 0.5.0 also supplies the Cairo dependency extra, exposed as
+`heatfall[cairo]` in Heatfall 1.3.0. Its
+[full py-staticmaps guide](https://landfall.readthedocs.io/en/latest/py-staticmaps/)
+covers the native context controls and renderers inherited by Heatfall.
 
 The default OpenStreetMap provider may make network requests when tiles are not
 cached. Those requests disclose the map area needed to fetch the tiles to the

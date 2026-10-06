@@ -1,7 +1,7 @@
 # Installation
 
 ::::{container} hf-section-intro
-Make your first map with Heatfall **1.2.0**. Python **3.8–3.13** is supported;
+Make your first map with Heatfall **1.3.0**. Python **3.8–3.13** is supported;
 the default basemap needs no API key.
 ::::
 
@@ -13,15 +13,15 @@ Install the latest release:
 python -m pip install heatfall
 ```
 
-[Heatfall 1.2.0](https://pypi.org/project/heatfall/1.2.0/) includes translucent
-count legends, precise placement, sequential colors, and shared count palettes.
-To pin this version:
+Heatfall 1.3.0 adds repeatable palette seeds, tile API-key forwarding, and
+optional GIS and Cairo extras. To pin the version documented here:
 
 ```sh
-python -m pip install "heatfall==1.2.0"
+python -m pip install "heatfall==1.3.0"
 ```
 
-To try development changes from `main`, install the current source:
+To install from source, including when this version is not yet available on
+PyPI, use `main`:
 
 ```sh
 python -m pip install "git+https://github.com/eddiethedean/heatfall.git@main"
@@ -81,3 +81,45 @@ Pillow for rendering. Landfall's
 covers ordinary map layers and image output, and its
 [troubleshooting guide](https://landfall.readthedocs.io/en/latest/troubleshooting/)
 covers tile access and optional dependencies.
+
+Heatfall 1.3.0 requires Landfall **0.5.0 or newer**. Installing or upgrading
+Heatfall installs the required Landfall version automatically.
+
+## Optional GIS dependencies
+
+GeoJSON composition uses the standard installation. To combine heat layers with
+Shapely geometries or GeoDataFrames, install Heatfall's GIS extra:
+
+```sh
+python -m pip install "heatfall[geo]"
+```
+
+To install the same extra from source:
+
+```sh
+python -m pip install "heatfall[geo] @ git+https://github.com/eddiethedean/heatfall.git@main"
+```
+
+See [compose other layers](usage.md#compose-other-layers) for GeoJSON and
+GeoDataFrame examples. The GIS dependencies are optional; the ordinary heat
+plotting functions do not need them.
+
+## Optional Cairo rendering
+
+The `cairo` extra installs Landfall's optional Cairo dependencies for
+anti-aliased PNG rendering through `context.render_cairo()`:
+
+```sh
+python -m pip install "heatfall[cairo]"
+```
+
+To install the same extra from source:
+
+```sh
+python -m pip install "heatfall[cairo] @ git+https://github.com/eddiethedean/heatfall.git@main"
+```
+
+The Python Cairo extension may need native system libraries. See
+[Cairo setup and rendering](basemaps.md#optional-cairo-rendering) for platform
+requirements and a complete example. Combine the 1.3.0 extras as
+`heatfall[geo,cairo]` when both GIS overlays and Cairo output are needed.

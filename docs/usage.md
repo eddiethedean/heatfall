@@ -86,6 +86,29 @@ separately to each layer. `"distinct"`, `"wheel"`, and `"random"` distinguish
 count levels without implying an order. Distinct/random colors may vary between
 calls.
 
+### Reproduce generated palettes
+
+```{note} Added in 1.3.0
+The `rng` keyword requires Heatfall 1.3.0 or newer.
+See [installation](installation.md) to check your version or install from source.
+```
+
+Pass an integer `rng` seed to either plotting function or context heat method
+to reproduce Landfall's `"random"` or `"distinct"` palette:
+
+```python
+image = heatfall.plot_heat_h3s(
+    lats, lons, precision=8, color_scheme="random", rng=42
+)
+```
+
+The same seed and the same sorted set of observed counts produce the same
+count colors, independent of input row order. Seeded calls leave Python's
+global random state unchanged. Other color schemes and explicit mappings
+ignore the seed.
+
+### Fix colors across datasets
+
 Use `count_colors` to fix colors to specific count values across maps or grids.
 Provide every count present in the data; extra entries are allowed. Colors accept
 hex strings, `staticmaps.Color` values, or RGB/RGBA tuples. Opacity is applied
@@ -351,6 +374,105 @@ functions, the argument is spelled `tileprovider`, without an underscore.
 `Context` also inherits py-staticmaps' SVG and optional Cairo rendering methods.
 Landfall documents [custom tile services](https://landfall.readthedocs.io/en/latest/custom-tile-service/)
 and [combining shapes and exporting SVG](https://landfall.readthedocs.io/en/latest/shapes-and-styling/#combine-shapes-and-export-svg).
+
+### Polygons with holes
+
+The inherited `add_polygon()` method accepts interior rings. A hole leaves the
+heat layer and basemap underneath visible in Pillow, SVG, and Cairo:
+
+```python
+context.add_polygon(
+    [(27.91, -82.50), (27.98, -82.50), (27.98, -82.42), (27.91, -82.42)],
+    holes=[
+        [(27.94, -82.47), (27.96, -82.47), (27.96, -82.44), (27.94, -82.44)]
+    ],
+    color="black",
+    fill_color=(30, 80, 180, 80),
+    width=2,
+)
+context.render_pillow(800, 500).save("heat-with-boundary.png")
+```
+
+These native rings use latitude, longitude order. Landfall closes unclosed
+rings automatically.
+
+### GeoJSON overlays
+
+Landfall's public plotting functions accept an existing Heatfall context. This
+keeps its heat cells, metadata, and legend, and adds the GIS shapes above them.
+GeoJSON uses **longitude, latitude** order and supports multipart shapes,
+geometry collections, and polygon holes:
+
+```python
+import heatfall
+import landfall
+import staticmaps
+
+context = heatfall.Context()
+context.add_heat_h3s([27.9470, 27.9515], [-82.4580, -82.4500], precision=8)
+routes = {
+    "type": "Feature",
+    "properties": {"stroke": "black", "stroke-width": 3},
+    "geometry": {
+        "type": "MultiLineString",
+        "coordinates": [
+            [[-82.4580, 27.9470], [-82.4500, 27.9515]],
+            [[-82.4580, 27.9470], [-82.4475, 27.9430]],
+        ],
+    },
+}
+image = landfall.plot_geojson(
+    routes,
+    context=context,
+    tile_provider=staticmaps.tile_provider_None,
+    window_size=(800, 500),
+)
+image.save("heat-with-routes.png")
+context.render_svg(800, 500).saveas("heat-with-routes.svg")
+```
+
+Landfall's plotting functions set the tile provider and map zoom before
+rendering. Pass `tile_provider`, `window_size`, and, when needed, `set_zoom`
+explicitly. The example disables tiles; choose a provider to add a basemap.
+
+### GeoDataFrame overlays
+
+Install the [optional GIS dependencies](installation.md#optional-gis-dependencies)
+first. Landfall reprojects the GeoDataFrame's geometry to WGS84 and applies
+styles by row position, even with a non-default index:
+
+```python
+import geopandas as gpd
+import heatfall
+import landfall
+import staticmaps
+
+lats = [27.9470, 27.9515]
+lons = [-82.4580, -82.4500]
+places = gpd.GeoDataFrame(
+    {"color": ["black", "red"]},
+    geometry=gpd.points_from_xy(lons, lats),
+    crs="EPSG:4326",
+    index=[10, 30],
+).to_crs("EPSG:3857")
+
+context = heatfall.Context()
+context.add_heat_h3s(lats, lons, precision=8)
+image = landfall.plot_geodataframe(
+    places,
+    color_column="color",
+    context=context,
+    tile_provider=staticmaps.tile_provider_None,
+    window_size=(800, 500),
+)
+image.save("heat-with-places.png")
+```
+
+This adds ordinary GIS overlays. Heat observations still require WGS84 latitude
+and longitude lists; the overlay's automatic reprojection does not reproject
+the lists passed to Heatfall. See Landfall's
+[GeoJSON and GeoPandas guide](https://landfall.readthedocs.io/en/latest/geospatial-data/)
+for Shapely geometry plotting and file inputs.
 
 ## Next steps
 

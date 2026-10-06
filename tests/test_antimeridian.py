@@ -85,7 +85,7 @@ def test_intersection_follows_great_circle():
 
 def red_context(monkeypatch):
     monkeypatch.setattr(
-        "heatfall.heat.process_colors", lambda scheme, n: [staticmaps.RED] * n
+        "heatfall.heat.process_colors", lambda scheme, n, rng=None: [staticmaps.RED] * n
     )
     context = Context()
     context.set_tile_provider(staticmaps.tile_provider_None)
@@ -96,7 +96,7 @@ def red_context(monkeypatch):
 def test_split_pieces_keep_original_observation_count(monkeypatch):
     monkeypatch.setattr(
         "heatfall.heat.process_colors",
-        lambda scheme, n: [staticmaps.BLUE, staticmaps.RED],
+        lambda scheme, n, rng=None: [staticmaps.BLUE, staticmaps.RED],
     )
     context = Context()
     context.add_heat_h3s(

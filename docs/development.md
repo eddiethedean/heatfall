@@ -109,7 +109,7 @@ the repository configuration.
 
 ## Prepare a release
 
-See the [release guide](releasing.md) for 1.2.0 compatibility notes and the
-version-neutral process for validating a package, tagging a release, and
-verifying publication. The [roadmap](roadmap.md) describes current scope and
-how future proposals are tracked.
+See the [release guide](releasing.md) for 1.3.0 and 1.2.0 compatibility notes
+and the version-neutral process for validating a package, tagging a release,
+and verifying publication. The [roadmap](roadmap.md) describes current scope
+and how future proposals are tracked.

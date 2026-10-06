@@ -32,6 +32,11 @@ Python **3.8–3.13** is supported.
 python -m pip install heatfall
 ```
 
+Heatfall **1.3.0** adds repeatable palette seeds, tile API keys, and optional
+GIS/Cairo installation extras. The
+[installation guide](https://heatfall.readthedocs.io/en/latest/installation.html)
+covers these extras and source installation.
+
 The default OpenStreetMap basemap downloads map tiles when they are not cached.
 It needs network access and no API key. To render without tile requests, use
 `staticmaps.tile_provider_None`; the [basemap guide](https://heatfall.readthedocs.io/en/latest/basemaps.html#render-without-a-basemap)
@@ -114,6 +119,15 @@ context.render_pillow(800, 500).save("layered-map.png")
 Heatfall is built on [Landfall](https://landfall.readthedocs.io/en/latest/) for
 map composition. The [basemaps and output guide](https://heatfall.readthedocs.io/en/latest/basemaps.html)
 covers fixed views, offline rendering, SVG, tile providers, and attribution.
+
+Landfall's GeoJSON, Shapely, and GeoDataFrame plotting functions also accept
+`context=context` to combine GIS shapes with heat cells and keep the heat
+legend. See the [GIS overlay examples](https://heatfall.readthedocs.io/en/latest/usage.html#geojson-overlays)
+and [optional GIS installation](https://heatfall.readthedocs.io/en/latest/installation.html#optional-gis-dependencies).
+
+The context also exposes the native py-staticmaps controls through Landfall.
+See its [full py-staticmaps guide](https://landfall.readthedocs.io/en/latest/py-staticmaps/)
+for framing, bounds padding, tile services, and optional Cairo output.
 
 ## Learn and contribute
 

@@ -4,7 +4,13 @@ API reference
 .. container:: hf-section-intro
 
    Choose a plotting function for a single map, a context for composed layers,
-   and legend options for the final map key. These APIs are available in 1.2.0.
+   and legend options for the final map key. This reference follows the current
+   source.
+
+.. note::
+
+   The ``rng`` and plotting ``api_key`` keywords require Heatfall 1.3.0 or newer.
+   See :doc:`installation` to check your version or install from source.
 
 Plotting functions return Pillow images. Heat layer methods mutate a context and
 return ``None``. Coordinate lists use latitude, longitude order in decimal
@@ -31,8 +37,13 @@ Both plotting functions require ``lats``, ``lons``, and ``precision``. Defaults
 are ``color_scheme="heatmap"``, OpenStreetMap tiles, ``size=(800, 500)``,
 ``opacity=0.6``, and ``legend=True``. The context heat methods share the
 coordinates, precision, palette, and opacity arguments; they also accept
-``legend_label`` and ``count_colors``. Configure tiles and dimensions when
+``legend_label`` and ``count_colors``. Both entry points accept ``rng`` in
+Heatfall 1.3.0. Configure tiles and dimensions when
 rendering.
+
+Plotting functions also accept an optional ``api_key`` for the selected tile
+provider. Contexts inherit ``set_tile_provider(provider, api_key=...)``.
+See :doc:`basemaps` for a keyed provider example.
 
 See :doc:`usage` for legend placement and fixed color examples,
 :doc:`data` for count semantics, and :doc:`basemaps` for image and SVG output.
@@ -60,6 +71,11 @@ Important input and validation details
   allowed so a mapping can be shared across datasets. Values may be color
   names, hexadecimal strings, ``staticmaps.Color`` objects, or RGB/RGBA tuples.
   When supplied, this mapping takes precedence over ``color_scheme``.
+* ``rng`` is an integer seed or ``None``. For ``"random"`` and ``"distinct"``,
+  the same seed and the same sorted set of observed counts reproduce the
+  palette. A seed does not affect ``"heatmap"``, ``"sequential"``, ``"wheel"``,
+  or explicit ``count_colors``. Use a fixed mapping when datasets contain
+  different count levels. Boolean and non-integer seeds raise ``ValueError``.
 * ``LegendOptions.label_format`` must be a Python format string containing
   ``{count}``. Only that field is supported; a numeric format such as
   ``"{count:,} observations"`` is valid. For the default heatmap palette, the
@@ -162,7 +178,15 @@ For inherited functionality, see these Landfall guides:
   for ``add_line`` and ``add_lines`` styling.
 * `Circles <https://landfall.readthedocs.io/en/latest/shapes-and-styling/#circles>`_
   for radius units and fill colors.
+* `Polygons <https://landfall.readthedocs.io/en/latest/shapes-and-styling/#polygons>`_
+  for outlines, transparent fills, and interior holes.
+* `GeoJSON and GeoPandas <https://landfall.readthedocs.io/en/latest/geospatial-data/>`_
+  for plotting GIS data with ``context=heatfall.Context()``. See
+  :doc:`usage` for examples that keep the heat layers and legend.
 * `Combining shapes and exporting SVG <https://landfall.readthedocs.io/en/latest/shapes-and-styling/#combine-shapes-and-export-svg>`_
   for ``render_pillow`` and ``render_svg`` output.
 * `Custom tile services <https://landfall.readthedocs.io/en/latest/custom-tile-service/>`_
   for basemap configuration.
+* `Full py-staticmaps API <https://landfall.readthedocs.io/en/latest/py-staticmaps/>`_
+  for native map objects, framing, bounds padding, and renderer controls inherited
+  through Landfall.

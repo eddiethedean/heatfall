@@ -71,6 +71,36 @@ Rendering may download tiles when they are not cached. Provider availability,
 usage limits, and attribution requirements depend on the service you choose.
 Keep the attribution in exported maps.
 
+### Tile services with API keys
+
+Contexts support keyed providers through the inherited Landfall/py-staticmaps
+API, including in Heatfall 1.2.0:
+
+```python
+import os
+
+# provider is the TileProvider instance for your chosen service.
+context = heatfall.Context()
+context.set_tile_provider(provider, api_key=os.environ["MAP_TILE_API_KEY"])
+```
+
+In Heatfall 1.3.0, both heat plotting functions also accept a keyword-only
+`api_key`:
+
+```python
+image = heatfall.plot_heat_h3s(
+    lats, lons, precision=8,
+    tileprovider=provider,
+    api_key=os.environ["MAP_TILE_API_KEY"],
+)
+```
+
+Use a provider instance configured for the service's URL template and preserve
+its attribution. See [installation](installation.md) for the current source
+installation command and Landfall's
+[custom tile service guide](https://landfall.readthedocs.io/en/latest/custom-tile-service/)
+for provider setup.
+
 ## Render without a basemap
 
 Use the built-in provider with no tile downloads to inspect your heat cells
@@ -140,11 +170,11 @@ attribution clear; keep attribution visible when choosing a custom location.
 
 ## Optional Cairo rendering
 
-Cairo output is optional and is provided by py-staticmaps. Install its Cairo
-extra in the same environment as Heatfall:
+Cairo output is optional and is provided by py-staticmaps through Landfall.
+Heatfall's Cairo extra installs the renderer dependencies through Landfall:
 
 ```sh
-python -m pip install "heatfall" "py-staticmaps[cairo]"
+python -m pip install "heatfall[cairo]"
 ```
 
 The `pycairo` extension may need native Cairo development libraries to build.
@@ -152,6 +182,9 @@ On Ubuntu, install `libcairo2-dev` before the Python extra. See the
 [pycairo installation guide](https://pycairo.readthedocs.io/en/latest/getting_started.html)
 for platform-specific requirements. Pillow and SVG rendering do not require
 this extra.
+
+The extra requires Heatfall 1.3.0 or newer. See
+[installation](installation.md#optional-cairo-rendering) to install from source.
 
 ```python
 import heatfall

@@ -257,6 +257,11 @@ def _validate_opacity(opacity: float) -> None:
         raise ValueError("opacity must be between 0 and 1")
 
 
+def _validate_rng(rng: Optional[int]) -> None:
+    if rng is not None and (isinstance(rng, bool) or not isinstance(rng, int)):
+        raise ValueError("rng must be an integer seed or None")
+
+
 def _validate_legend_label(label: Optional[str]) -> None:
     if label is not None and (not isinstance(label, str) or not label.strip()):
         raise ValueError("legend_label must be a non-empty string or None")
@@ -273,6 +278,7 @@ def _make_count_colors(
     color_scheme: str,
     count_colors: Optional[Mapping[int, Any]],
     opacity: float,
+    rng: Optional[int] = None,
 ) -> Mapping[int, Any]:
     """Build one final immutable-by-convention palette for occupied counts."""
     if count_colors is not None:
@@ -309,7 +315,7 @@ def _make_count_colors(
                 rgb = tuple(round(a + (b - a) * ratio) for a, b in zip(*stops))
             colors[count] = staticmaps.Color(*rgb)
         return {count: _with_opacity(colors[count], opacity) for count in counts}
-    palette = process_colors(color_scheme, len(counts))
+    palette = process_colors(color_scheme, len(counts), rng=rng)
     return {
         count: _with_opacity(color, opacity) for count, color in zip(counts, palette)
     }
@@ -565,6 +571,7 @@ class Context(landfall.Context):
         opacity: float = 0.6,
         legend_label: Optional[str] = None,
         count_colors: Optional[Mapping[int, Any]] = None,
+        rng: Optional[int] = None,
     ) -> None:
         """
         Add geohash-based heatmap to the map.
@@ -578,12 +585,14 @@ class Context(landfall.Context):
             opacity: Fill opacity from 0 (invisible) to 1 (solid), default 0.6
             legend_label: Optional section title when this context has multiple heat layers
             count_colors: Optional fixed colors keyed by positive observed counts
+            rng: Optional integer seed for reproducible distinct/random palettes;
+                ignored by other schemes and explicit count_colors
 
         Returns:
             None. Adds occupied cells to this context.
 
         Raises:
-            ValueError: If coordinates, colors, precision, or opacity are invalid
+            ValueError: If coordinates, colors, precision, opacity, or rng are invalid
         """
         _validate_coordinates(lats, lons)
         _validate_legend_label(legend_label)
@@ -592,13 +601,14 @@ class Context(landfall.Context):
                 "Geohash precision must be 1-12 (got {})".format(precision)
             )
         _validate_opacity(opacity)
+        _validate_rng(rng)
         hashes = calculate_geohashes(lats, lons, precision)
         counts = Counter(hashes)
         if not counts:
             return
         unique_counts = tuple(sorted(set(counts.values())))
         count_to_color = _make_count_colors(
-            unique_counts, color_scheme, count_colors, opacity
+            unique_counts, color_scheme, count_colors, opacity, rng=rng
         )
         objects = [
             staticmaps.Area(
@@ -609,7 +619,8 @@ class Context(landfall.Context):
             )
             for h, count in counts.items()
         ]
-        self._objects.extend(objects)
+        for obj in objects:
+            self.add_object(obj)
         self._heat_layers.append(
             _heat_layer_info(
                 "geohash",
@@ -631,6 +642,7 @@ class Context(landfall.Context):
         opacity: float = 0.6,
         legend_label: Optional[str] = None,
         count_colors: Optional[Mapping[int, Any]] = None,
+        rng: Optional[int] = None,
     ) -> None:
         """
         Add H3-based heatmap to the map.
@@ -644,23 +656,26 @@ class Context(landfall.Context):
             opacity: Fill opacity from 0 (invisible) to 1 (solid), default 0.6
             legend_label: Optional section title when this context has multiple heat layers
             count_colors: Optional fixed colors keyed by positive observed counts
+            rng: Optional integer seed for reproducible distinct/random palettes;
+                ignored by other schemes and explicit count_colors
 
         Returns:
             None. Adds occupied cells to this context.
 
         Raises:
-            ValueError: If coordinates, colors, precision, or opacity are invalid
+            ValueError: If coordinates, colors, precision, opacity, or rng are invalid
         """
         _validate_coordinates(lats, lons)
         _validate_legend_label(legend_label)
         _validate_opacity(opacity)
+        _validate_rng(rng)
         hashes = calculate_h3_hashes(lats, lons, precision)
         counts = Counter(hashes)
         if not counts:
             return
         unique_counts = tuple(sorted(set(counts.values())))
         count_to_color = _make_count_colors(
-            unique_counts, color_scheme, count_colors, opacity
+            unique_counts, color_scheme, count_colors, opacity, rng=rng
         )
         objects = [
             _H3Cell(
@@ -670,7 +685,8 @@ class Context(landfall.Context):
             )
             for h, count in counts.items()
         ]
-        self._objects.extend(objects)
+        for obj in objects:
+            self.add_object(obj)
         self._heat_layers.append(
             _heat_layer_info(
                 "h3",
@@ -697,6 +713,8 @@ def plot_heat_hashes(
     opacity: float = 0.6,
     legend: Union[bool, LegendOptions] = True,
     count_colors: Optional[Mapping[int, Any]] = None,
+    rng: Optional[int] = None,
+    api_key: Optional[str] = None,
 ) -> Image.Image:
     """
     Plot a heatmap of geographic points using geohash binning.
@@ -715,12 +733,15 @@ def plot_heat_hashes(
         opacity: Fill opacity from 0 (invisible) to 1 (solid), default 0.6
         legend: Show a heat legend (default True), or configure it with LegendOptions
         count_colors: Optional fixed mapping from observed count levels to colors
+        rng: Optional integer seed for reproducible distinct/random palettes;
+            ignored by other schemes and explicit count_colors
+        api_key: Optional API key for the selected tile provider
 
     Returns:
         PIL Image object containing the rendered heatmap
 
     Raises:
-        ValueError: If coordinates, colors, precision, or opacity are invalid
+        ValueError: If coordinates, colors, precision, opacity, or rng are invalid
 
     Example:
         >>> import heatfall
@@ -740,9 +761,15 @@ def plot_heat_hashes(
 
     # Create context and add heatmap
     context = Context()
-    context.set_tile_provider(tileprovider)
+    context.set_tile_provider(tileprovider, api_key=api_key)
     context.add_heat_hashes(
-        lats, lons, precision, color_scheme, opacity=opacity, count_colors=count_colors
+        lats,
+        lons,
+        precision,
+        color_scheme,
+        opacity=opacity,
+        count_colors=count_colors,
+        rng=rng,
     )
     context.set_legend(legend)
     return context.render_pillow(*size)
@@ -759,6 +786,8 @@ def plot_heat_h3s(
     opacity: float = 0.6,
     legend: Union[bool, LegendOptions] = True,
     count_colors: Optional[Mapping[int, Any]] = None,
+    rng: Optional[int] = None,
+    api_key: Optional[str] = None,
 ) -> Image.Image:
     """
     Plot a heatmap of geographic points using H3 hexagonal binning.
@@ -777,12 +806,15 @@ def plot_heat_h3s(
         opacity: Fill opacity from 0 (invisible) to 1 (solid), default 0.6
         legend: Show a heat legend (default True), or configure it with LegendOptions
         count_colors: Optional fixed mapping from observed count levels to colors
+        rng: Optional integer seed for reproducible distinct/random palettes;
+            ignored by other schemes and explicit count_colors
+        api_key: Optional API key for the selected tile provider
 
     Returns:
         PIL Image object containing the rendered heatmap
 
     Raises:
-        ValueError: If coordinates, colors, precision, or opacity are invalid
+        ValueError: If coordinates, colors, precision, opacity, or rng are invalid
 
     Example:
         >>> import heatfall
@@ -802,9 +834,15 @@ def plot_heat_h3s(
 
     # Create context and add heatmap
     context = Context()
-    context.set_tile_provider(tileprovider)
+    context.set_tile_provider(tileprovider, api_key=api_key)
     context.add_heat_h3s(
-        lats, lons, precision, color_scheme, opacity=opacity, count_colors=count_colors
+        lats,
+        lons,
+        precision,
+        color_scheme,
+        opacity=opacity,
+        count_colors=count_colors,
+        rng=rng,
     )
     context.set_legend(legend)
     return context.render_pillow(*size)

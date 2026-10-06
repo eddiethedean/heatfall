@@ -34,6 +34,27 @@ package. Ordinary tests use mock tiles; only tests explicitly marked
 possible. `ruff` checks lint and formatting, `mypy` checks the source and
 examples, and the Sphinx build treats warnings as errors.
 
+To exercise composed maps with Landfall's optional GeoPandas and Shapely
+dependencies, use a Python 3.13 environment:
+
+```sh
+python -m tox -e geo
+```
+
+This runs the same suite with `heatfall[geo]` installed. The core suite skips
+the GeoDataFrame check when its optional dependencies are absent. GIS CI runs
+it with those dependencies present and uses mock tiles. The same CI job installs
+the Cairo extra and exercises the actual Cairo renderer.
+
+With the native Cairo development libraries installed, run the optional
+renderer suite locally:
+
+```sh
+python -m tox -e cairo
+```
+
+See [Cairo setup](basemaps.md#optional-cairo-rendering) for system requirements.
+
 To verify outbound links as well, run:
 
 ```sh

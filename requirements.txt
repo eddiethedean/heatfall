@@ -1,4 +1,4 @@
-landfall>=0.4.2
+landfall>=0.5.0
 pygeodesy
 geodude>=0.1.1
 h3>=4.0.0
